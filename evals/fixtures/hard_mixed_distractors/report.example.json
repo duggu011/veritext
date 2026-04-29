@@ -1,0 +1,97 @@
+{
+  "data_points": [
+    {
+      "category": "FinancialMetric",
+      "confidence": 0.91,
+      "contributing_candidate_ids": [
+        "candidate-final-revenue-guidance"
+      ],
+      "critic_report_ids": [
+        "critic-final-revenue-guidance"
+      ],
+      "data_point_id": "dp-final-revenue-guidance",
+      "doc_id": "doc-hard-mixed-distractors",
+      "field_name": "statement",
+      "reconciliation_decision_id": "decision-final-revenue-guidance",
+      "run_id": "run-hard-mixed-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-hard-mixed-distractors",
+        "end_byte": 105,
+        "end_char": 105,
+        "start_byte": 79,
+        "start_char": 79,
+        "text": "revenue grew 9% in Q2 2026"
+      },
+      "value": "revenue grew 9% in Q2 2026",
+      "verifier_report_ids": [
+        "verifier-final-revenue-guidance"
+      ]
+    },
+    {
+      "category": "CorporateEvent",
+      "confidence": 0.9,
+      "contributing_candidate_ids": [
+        "candidate-delta-acquisition"
+      ],
+      "critic_report_ids": [
+        "critic-delta-acquisition"
+      ],
+      "data_point_id": "dp-delta-acquisition",
+      "doc_id": "doc-hard-mixed-distractors",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-delta-acquisition",
+      "run_id": "run-hard-mixed-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-hard-mixed-distractors",
+        "end_byte": 228,
+        "end_char": 228,
+        "start_byte": 169,
+        "start_char": 169,
+        "text": "The board approved acquisition of Delta Co on July 14, 2026"
+      },
+      "value": "The board approved acquisition of Delta Co on July 14, 2026",
+      "verifier_report_ids": [
+        "verifier-delta-acquisition"
+      ]
+    },
+    {
+      "category": "PolicyRequirement",
+      "confidence": 0.89,
+      "contributing_candidate_ids": [
+        "candidate-policy-exception-review"
+      ],
+      "critic_report_ids": [
+        "critic-policy-exception-review"
+      ],
+      "data_point_id": "dp-policy-exception-review",
+      "doc_id": "doc-hard-mixed-distractors",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-policy-exception-review",
+      "run_id": "run-hard-mixed-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-hard-mixed-distractors",
+        "end_byte": 295,
+        "end_char": 295,
+        "start_byte": 230,
+        "start_char": 230,
+        "text": "Policy exception requests must be reviewed within 5 business days"
+      },
+      "value": "Policy exception requests must be reviewed within 5 business days",
+      "verifier_report_ids": [
+        "verifier-policy-exception-review"
+      ]
+    }
+  ],
+  "doc_id": "doc-hard-mixed-distractors",
+  "generated_at": "2026-04-29T10:05:00Z",
+  "output_data_point_ids": [
+    "dp-final-revenue-guidance",
+    "dp-delta-acquisition",
+    "dp-policy-exception-review"
+  ],
+  "report_schema_version": "report.v1",
+  "run_id": "run-hard-mixed-distractors"
+}

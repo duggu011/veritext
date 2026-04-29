@@ -1,0 +1,46 @@
+{
+  "case_id": "hard_mixed_distractors",
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  },
+  "expected_data_points": [
+    {
+      "category": "FinancialMetric",
+      "end_byte": 105,
+      "end_char": 105,
+      "expected_id": "expected-final-revenue-guidance",
+      "field_name": "statement",
+      "source_text": "revenue grew 9% in Q2 2026",
+      "start_byte": 79,
+      "start_char": 79,
+      "value": "revenue grew 9% in Q2 2026"
+    },
+    {
+      "category": "CorporateEvent",
+      "end_byte": 228,
+      "end_char": 228,
+      "expected_id": "expected-delta-acquisition",
+      "field_name": "summary",
+      "source_text": "The board approved acquisition of Delta Co on July 14, 2026",
+      "start_byte": 169,
+      "start_char": 169,
+      "value": "The board approved acquisition of Delta Co on July 14, 2026"
+    },
+    {
+      "category": "PolicyRequirement",
+      "end_byte": 295,
+      "end_char": 295,
+      "expected_id": "expected-policy-exception-review",
+      "field_name": "summary",
+      "source_text": "Policy exception requests must be reviewed within 5 business days",
+      "start_byte": 230,
+      "start_char": 230,
+      "value": "Policy exception requests must be reviewed within 5 business days"
+    }
+  ]
+}

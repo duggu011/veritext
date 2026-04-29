@@ -1,0 +1,35 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+dist/
+build/
+*.db
+*.sqlite
+*.sqlite3
+config/local.yaml
+outputs/
+runs/
+
+# Audit DB and run state
+.veritext/
+
+# Editor / OS noise
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Claude Code session state
+.claude/
+plans/

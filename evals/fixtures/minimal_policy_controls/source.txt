@@ -1,0 +1,3 @@
+Remote employees must complete security training every quarter.
+Access requests require manager approval before provisioning.
+Incidents must be reported within 24 hours.

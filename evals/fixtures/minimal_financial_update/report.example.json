@@ -1,0 +1,97 @@
+{
+  "data_points": [
+    {
+      "category": "FinancialMetric",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-revenue-growth"
+      ],
+      "critic_report_ids": [
+        "critic-revenue-growth"
+      ],
+      "data_point_id": "dp-revenue-growth",
+      "doc_id": "doc-minimal-financial-update",
+      "field_name": "statement",
+      "reconciliation_decision_id": "decision-revenue-growth",
+      "run_id": "run-minimal-financial-update",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-financial-update",
+        "end_byte": 21,
+        "end_char": 21,
+        "start_byte": 0,
+        "start_char": 0,
+        "text": "Revenue increased 12%"
+      },
+      "value": "Revenue increased 12%",
+      "verifier_report_ids": [
+        "verifier-revenue-growth"
+      ]
+    },
+    {
+      "category": "FinancialMetric",
+      "confidence": 0.93,
+      "contributing_candidate_ids": [
+        "candidate-margin-decline"
+      ],
+      "critic_report_ids": [
+        "critic-margin-decline"
+      ],
+      "data_point_id": "dp-margin-decline",
+      "doc_id": "doc-minimal-financial-update",
+      "field_name": "statement",
+      "reconciliation_decision_id": "decision-margin-decline",
+      "run_id": "run-minimal-financial-update",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-financial-update",
+        "end_byte": 62,
+        "end_char": 62,
+        "start_byte": 34,
+        "start_char": 34,
+        "text": "Gross margin declined to 48%"
+      },
+      "value": "Gross margin declined to 48%",
+      "verifier_report_ids": [
+        "verifier-margin-decline"
+      ]
+    },
+    {
+      "category": "CorporateEvent",
+      "confidence": 0.91,
+      "contributing_candidate_ids": [
+        "candidate-acquisition-event"
+      ],
+      "critic_report_ids": [
+        "critic-acquisition-event"
+      ],
+      "data_point_id": "dp-acquisition-event",
+      "doc_id": "doc-minimal-financial-update",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-acquisition-event",
+      "run_id": "run-minimal-financial-update",
+      "source_span": {
+        "chunk_id": "chunk-2",
+        "doc_id": "doc-minimal-financial-update",
+        "end_byte": 108,
+        "end_char": 108,
+        "start_byte": 64,
+        "start_char": 64,
+        "text": "Acme Corp acquired Beta LLC on March 3, 2026"
+      },
+      "value": "Acme Corp acquired Beta LLC on March 3, 2026",
+      "verifier_report_ids": [
+        "verifier-acquisition-event"
+      ]
+    }
+  ],
+  "doc_id": "doc-minimal-financial-update",
+  "generated_at": "2026-04-29T10:05:00Z",
+  "output_data_point_ids": [
+    "dp-revenue-growth",
+    "dp-margin-decline",
+    "dp-acquisition-event"
+  ],
+  "report_schema_version": "report.v1",
+  "run_id": "run-minimal-financial-update"
+}

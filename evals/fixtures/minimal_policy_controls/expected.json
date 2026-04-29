@@ -1,0 +1,46 @@
+{
+  "case_id": "minimal_policy_controls",
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  },
+  "expected_data_points": [
+    {
+      "category": "PolicyRequirement",
+      "end_byte": 62,
+      "end_char": 62,
+      "expected_id": "expected-training-requirement",
+      "field_name": "summary",
+      "source_text": "Remote employees must complete security training every quarter",
+      "start_byte": 0,
+      "start_char": 0,
+      "value": "Remote employees must complete security training every quarter"
+    },
+    {
+      "category": "AccessControl",
+      "end_byte": 124,
+      "end_char": 124,
+      "expected_id": "expected-access-approval",
+      "field_name": "summary",
+      "source_text": "Access requests require manager approval before provisioning",
+      "start_byte": 64,
+      "start_char": 64,
+      "value": "Access requests require manager approval before provisioning"
+    },
+    {
+      "category": "IncidentRequirement",
+      "end_byte": 168,
+      "end_char": 168,
+      "expected_id": "expected-incident-reporting",
+      "field_name": "summary",
+      "source_text": "Incidents must be reported within 24 hours",
+      "start_byte": 126,
+      "start_char": 126,
+      "value": "Incidents must be reported within 24 hours"
+    }
+  ]
+}

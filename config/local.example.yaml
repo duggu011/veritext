@@ -1,0 +1,9 @@
+llm:
+  provider: openai_compatible
+  base_url: https://api.moonshot.ai/v1
+  api_key_env: MOONSHOT_API_KEY
+  model: kimi-k2.6
+  stage_overrides:
+    planner: {}
+    executor: {}
+    reconciler: {}

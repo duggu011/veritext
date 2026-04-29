@@ -1,0 +1,46 @@
+{
+  "case_id": "minimal_contract_obligation",
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  },
+  "expected_data_points": [
+    {
+      "category": "Obligation",
+      "end_byte": 49,
+      "end_char": 49,
+      "expected_id": "expected-delivery-obligation",
+      "field_name": "summary",
+      "source_text": "Supplier shall deliver 500 units by June 30, 2026",
+      "start_byte": 0,
+      "start_char": 0,
+      "value": "Supplier shall deliver 500 units by June 30, 2026"
+    },
+    {
+      "category": "PaymentTerm",
+      "end_byte": 100,
+      "end_char": 100,
+      "expected_id": "expected-payment-term",
+      "field_name": "summary",
+      "source_text": "Buyer must pay $25,000 within 15 days of delivery",
+      "start_byte": 51,
+      "start_char": 51,
+      "value": "Buyer must pay $25,000 within 15 days of delivery"
+    },
+    {
+      "category": "TerminationEvent",
+      "end_byte": 147,
+      "end_char": 147,
+      "expected_id": "expected-termination-event",
+      "field_name": "summary",
+      "source_text": "The agreement terminates on December 31, 2026",
+      "start_byte": 102,
+      "start_char": 102,
+      "value": "The agreement terminates on December 31, 2026"
+    }
+  ]
+}

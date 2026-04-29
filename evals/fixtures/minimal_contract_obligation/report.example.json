@@ -1,0 +1,97 @@
+{
+  "data_points": [
+    {
+      "category": "Obligation",
+      "confidence": 0.94,
+      "contributing_candidate_ids": [
+        "candidate-delivery-obligation"
+      ],
+      "critic_report_ids": [
+        "critic-delivery-obligation"
+      ],
+      "data_point_id": "dp-delivery-obligation",
+      "doc_id": "doc-minimal-contract-obligation",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-delivery-obligation",
+      "run_id": "run-minimal-contract-obligation",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-contract-obligation",
+        "end_byte": 49,
+        "end_char": 49,
+        "start_byte": 0,
+        "start_char": 0,
+        "text": "Supplier shall deliver 500 units by June 30, 2026"
+      },
+      "value": "Supplier shall deliver 500 units by June 30, 2026",
+      "verifier_report_ids": [
+        "verifier-delivery-obligation"
+      ]
+    },
+    {
+      "category": "PaymentTerm",
+      "confidence": 0.93,
+      "contributing_candidate_ids": [
+        "candidate-payment-term"
+      ],
+      "critic_report_ids": [
+        "critic-payment-term"
+      ],
+      "data_point_id": "dp-payment-term",
+      "doc_id": "doc-minimal-contract-obligation",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-payment-term",
+      "run_id": "run-minimal-contract-obligation",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-contract-obligation",
+        "end_byte": 100,
+        "end_char": 100,
+        "start_byte": 51,
+        "start_char": 51,
+        "text": "Buyer must pay $25,000 within 15 days of delivery"
+      },
+      "value": "Buyer must pay $25,000 within 15 days of delivery",
+      "verifier_report_ids": [
+        "verifier-payment-term"
+      ]
+    },
+    {
+      "category": "TerminationEvent",
+      "confidence": 0.91,
+      "contributing_candidate_ids": [
+        "candidate-termination-event"
+      ],
+      "critic_report_ids": [
+        "critic-termination-event"
+      ],
+      "data_point_id": "dp-termination-event",
+      "doc_id": "doc-minimal-contract-obligation",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-termination-event",
+      "run_id": "run-minimal-contract-obligation",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-contract-obligation",
+        "end_byte": 147,
+        "end_char": 147,
+        "start_byte": 102,
+        "start_char": 102,
+        "text": "The agreement terminates on December 31, 2026"
+      },
+      "value": "The agreement terminates on December 31, 2026",
+      "verifier_report_ids": [
+        "verifier-termination-event"
+      ]
+    }
+  ],
+  "doc_id": "doc-minimal-contract-obligation",
+  "generated_at": "2026-04-29T10:05:00Z",
+  "output_data_point_ids": [
+    "dp-delivery-obligation",
+    "dp-payment-term",
+    "dp-termination-event"
+  ],
+  "report_schema_version": "report.v1",
+  "run_id": "run-minimal-contract-obligation"
+}

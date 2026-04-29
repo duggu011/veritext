@@ -1,0 +1,97 @@
+{
+  "data_points": [
+    {
+      "category": "PolicyRequirement",
+      "confidence": 0.94,
+      "contributing_candidate_ids": [
+        "candidate-training-requirement"
+      ],
+      "critic_report_ids": [
+        "critic-training-requirement"
+      ],
+      "data_point_id": "dp-training-requirement",
+      "doc_id": "doc-minimal-policy-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-training-requirement",
+      "run_id": "run-minimal-policy-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-policy-controls",
+        "end_byte": 62,
+        "end_char": 62,
+        "start_byte": 0,
+        "start_char": 0,
+        "text": "Remote employees must complete security training every quarter"
+      },
+      "value": "Remote employees must complete security training every quarter",
+      "verifier_report_ids": [
+        "verifier-training-requirement"
+      ]
+    },
+    {
+      "category": "AccessControl",
+      "confidence": 0.92,
+      "contributing_candidate_ids": [
+        "candidate-access-approval"
+      ],
+      "critic_report_ids": [
+        "critic-access-approval"
+      ],
+      "data_point_id": "dp-access-approval",
+      "doc_id": "doc-minimal-policy-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-access-approval",
+      "run_id": "run-minimal-policy-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-policy-controls",
+        "end_byte": 124,
+        "end_char": 124,
+        "start_byte": 64,
+        "start_char": 64,
+        "text": "Access requests require manager approval before provisioning"
+      },
+      "value": "Access requests require manager approval before provisioning",
+      "verifier_report_ids": [
+        "verifier-access-approval"
+      ]
+    },
+    {
+      "category": "IncidentRequirement",
+      "confidence": 0.91,
+      "contributing_candidate_ids": [
+        "candidate-incident-reporting"
+      ],
+      "critic_report_ids": [
+        "critic-incident-reporting"
+      ],
+      "data_point_id": "dp-incident-reporting",
+      "doc_id": "doc-minimal-policy-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-incident-reporting",
+      "run_id": "run-minimal-policy-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-minimal-policy-controls",
+        "end_byte": 168,
+        "end_char": 168,
+        "start_byte": 126,
+        "start_char": 126,
+        "text": "Incidents must be reported within 24 hours"
+      },
+      "value": "Incidents must be reported within 24 hours",
+      "verifier_report_ids": [
+        "verifier-incident-reporting"
+      ]
+    }
+  ],
+  "doc_id": "doc-minimal-policy-controls",
+  "generated_at": "2026-04-29T10:05:00Z",
+  "output_data_point_ids": [
+    "dp-training-requirement",
+    "dp-access-approval",
+    "dp-incident-reporting"
+  ],
+  "report_schema_version": "report.v1",
+  "run_id": "run-minimal-policy-controls"
+}

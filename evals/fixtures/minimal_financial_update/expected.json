@@ -1,0 +1,46 @@
+{
+  "case_id": "minimal_financial_update",
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  },
+  "expected_data_points": [
+    {
+      "category": "FinancialMetric",
+      "end_byte": 21,
+      "end_char": 21,
+      "expected_id": "expected-revenue-growth",
+      "field_name": "statement",
+      "source_text": "Revenue increased 12%",
+      "start_byte": 0,
+      "start_char": 0,
+      "value": "Revenue increased 12%"
+    },
+    {
+      "category": "FinancialMetric",
+      "end_byte": 62,
+      "end_char": 62,
+      "expected_id": "expected-margin-decline",
+      "field_name": "statement",
+      "source_text": "Gross margin declined to 48%",
+      "start_byte": 34,
+      "start_char": 34,
+      "value": "Gross margin declined to 48%"
+    },
+    {
+      "category": "CorporateEvent",
+      "end_byte": 108,
+      "end_char": 108,
+      "expected_id": "expected-acquisition-event",
+      "field_name": "summary",
+      "source_text": "Acme Corp acquired Beta LLC on March 3, 2026",
+      "start_byte": 64,
+      "start_char": 64,
+      "value": "Acme Corp acquired Beta LLC on March 3, 2026"
+    }
+  ]
+}
