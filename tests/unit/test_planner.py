@@ -146,7 +146,7 @@ def valid_tool_payloads() -> list[tuple[str, dict[str, object]]]:
             "classify_document",
             {
                 "document_type": "financial_update",
-                "summary": "Quarterly financial update.",
+                "summary": "Revenue increased in Q1 while margin declined.",
                 "domain_hints": ("finance",),
                 "confidence": 0.9,
             },
@@ -155,7 +155,7 @@ def valid_tool_payloads() -> list[tuple[str, dict[str, object]]]:
             "propose_schema",
             {
                 "categories": (category,),
-                "rationale": "The document contains financial metric claims.",
+                "rationale": "FinancialMetric captures source-backed financial statements.",
             },
         ),
         (
@@ -170,7 +170,7 @@ def valid_tool_payloads() -> list[tuple[str, dict[str, object]]]:
             "select_strategy",
             {
                 "enabled_lenses": ("claim", "number"),
-                "rationale": "Claims and numeric values are both present.",
+                "rationale": "Claim covers statements and number covers numeric values.",
             },
         ),
         (

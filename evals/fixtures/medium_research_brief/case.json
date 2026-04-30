@@ -587,10 +587,10 @@
     }
   ],
   "thresholds": {
-    "min_precision": 0.0,
-    "min_recall": 0.0,
-    "min_f1": 0.0,
-    "min_provenance_recall": 0.0,
+    "min_precision": 0.9636363636363636,
+    "min_recall": 1.0,
+    "min_f1": 0.9814814814814815,
+    "min_provenance_recall": 1.0,
     "max_invariant_violations": 0
   }
 }

@@ -24,6 +24,8 @@ Acceptance rules:
 - Reject duplicate or near-duplicate fields and categories.
 - Reject categories that are so broad that executor prompts would over-extract.
 - Reject schemas that lack the fields needed to capture the document's main extractable facts.
+- Prefer stable reusable field names when they fit the source: summary, person, party or parties, transaction_value, margin, facility, and issuing_authority.
+- Reject synonym drift such as description when summary fits, deal_value when transaction_value fits, person_name when person fits, or risk_description when summary plus issuing_authority better captures the source-backed facts.
 
 Output rules:
 - If accepted=true, approved_categories must contain the approved schema and issues must be empty unless the issues are minor notes that do not block use.

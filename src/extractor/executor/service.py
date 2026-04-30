@@ -338,8 +338,10 @@ def _resolve_source_text(
     """Find the safest chunk-backed span for the model's offset/length claim.
 
     The normal path is a direct chunk slice from start_char + source_length. If
-    that span is structurally invalid or clearly does not support the emitted
-    value, a unique value match can repair offset/length typos.
+    that span is structurally invalid, a unique value match can repair
+    offset/length typos. A valid source slice does not need to contain the value
+    literally: values can be semantic labels such as "appointment" while the
+    source span contains the sentence that supports that label.
     """
     text = chunk.text
     claimed = _slice_claimed_source_text(payload=payload, chunk=chunk)
@@ -366,12 +368,9 @@ def _resolve_source_text(
         claimed_source,
         claimed_exact_matches,
     )
-    if (
-        len(value_matches) == 1
-        and (
-            not _source_supports_value(claimed_source, payload.value)
-            or claimed_source.strip() == text[value_matches[0][0] : value_matches[0][1]]
-        )
+    if len(value_matches) == 1 and not _source_supports_value(
+        claimed_source,
+        payload.value,
     ):
         start, end = value_matches[0]
         return SourceTextResolution(
@@ -385,12 +384,12 @@ def _resolve_source_text(
             claimed_source,
             len(claimed_exact_matches),
         )
-    elif not _source_supports_value(claimed_source, payload.value):
+    elif len(value_matches) > 1 and not _source_supports_value(
+        claimed_source,
+        payload.value,
+    ):
         reasons = [_unsupported_value_reason(payload=payload)]
-        if len(value_matches) > 1:
-            reasons.extend(
-                _ambiguous_source_span_reason(payload.value, len(value_matches))
-            )
+        reasons.extend(_ambiguous_source_span_reason(payload.value, len(value_matches)))
         rejection_reasons = tuple(reasons)
 
     return SourceTextResolution(

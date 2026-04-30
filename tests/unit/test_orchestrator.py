@@ -62,12 +62,15 @@ class DeterministicLLMClient:
         if request.stage == "planner.classify_document":
             return {
                 "document_type": "financial_update",
-                "summary": "Financial update.",
+                "summary": "Revenue increased.",
                 "domain_hints": ("finance",),
                 "confidence": 0.9,
             }
         if request.stage == "planner.propose_schema":
-            return {"categories": (approved_category(),), "rationale": "Document has findings."}
+            return {
+                "categories": (approved_category(),),
+                "rationale": "Finding captures source-backed statements.",
+            }
         if request.stage == "planner.critique_schema":
             if self.reject_planner_schema:
                 return {
@@ -75,9 +78,16 @@ class DeterministicLLMClient:
                     "approved_categories": (),
                     "issues": ("No stable schema should be accepted.",),
                 }
-            return {"accepted": True, "approved_categories": (approved_category(),), "issues": ()}
+            return {
+                "accepted": True,
+                "approved_categories": (approved_category(),),
+                "issues": (),
+            }
         if request.stage == "planner.select_strategy":
-            return {"enabled_lenses": ("claim",), "rationale": "Claims capture findings."}
+            return {
+                "enabled_lenses": ("claim",),
+                "rationale": "Claim covers source-backed findings.",
+            }
         if request.stage == "planner.allocate_budget":
             return {
                 "budget": {

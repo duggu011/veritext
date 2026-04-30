@@ -305,14 +305,18 @@ def test_execute_plan_does_not_cache_single_chunk_executor_prompt() -> None:
     asyncio.run(run_check())
 
 
-def test_execute_plan_rejects_invented_span_without_silent_drop(tmp_path: Path) -> None:
+def test_execute_plan_accepts_semantic_value_backed_by_source_span(
+    tmp_path: Path,
+) -> None:
     async def run_check() -> None:
+        start = make_document().text.index("Margin")
         payloads = [
             {
                 "candidates": (
                     candidate_payload(
-                        source_text="Revenue increased",
-                        start_char=make_document().text.index("Margin"),
+                        source_text="Margin declined",
+                        start_char=start,
+                        value="Performance decline",
                     ),
                 )
             }
@@ -334,12 +338,11 @@ def test_execute_plan_rejects_invented_span_without_silent_drop(tmp_path: Path) 
             )
             stored_candidates = await audit_store.list_lens_candidates("run-1")
 
-        assert result.accepted_candidates == ()
-        assert len(result.rejected_candidates) == 1
+        assert len(result.accepted_candidates) == 1
+        assert result.rejected_candidates == ()
         assert len(stored_candidates) == 1
-        # With start_char + source_length only, an internally inconsistent span
-        # is rejected when the reconstructed chunk slice cannot support value.
-        assert result.rejections[0].reasons[0].code == "invalid_source_offsets"
+        assert result.accepted_candidates[0].value == "Performance decline"
+        assert result.accepted_candidates[0].source_span.text == "Margin declined"
 
     asyncio.run(run_check())
 
@@ -564,12 +567,12 @@ def test_execute_plan_rejects_malformed_payload_offsets_without_aborting(
     tmp_path: Path,
 ) -> None:
     async def run_check() -> None:
-        # Model claims a source_length and value for text that does not appear
-        # in the chunk; this should be logged as a rejection instead of aborting.
+        # Model claims a source_length that does not fit the chunk; this should
+        # be logged as a rejection instead of aborting.
         malformed_payload = candidate_payload(
-            source_text="Margin declined",
             start_char=0,
-            value="Margin declined",
+            value="Missing source value",
+            source_length=999,
         )
         llm_client = LLMClient(
             make_llm_config(),

@@ -47,24 +47,46 @@ def _assert_meets_baseline(metrics, baseline_metrics: dict[str, float]) -> None:
     )
 
 
+def _metrics_meet_baseline(metrics, baseline_metrics: dict[str, float]) -> bool:
+    return (
+        metrics.recall >= baseline_metrics["recall"]
+        and metrics.precision >= baseline_metrics["precision"]
+        and metrics.f1 >= baseline_metrics["f1"]
+        and metrics.provenance_recall >= baseline_metrics["provenance_recall"]
+        and metrics.invariant_violation_count <= baseline_metrics["invariant_violation_count"]
+    )
+
+
 def test_case_loads_and_validates() -> None:
     case = load_evaluation_case(CASE_PATH)
     assert case.case_id == "medium_research_brief"
     assert len(case.expected_data_points) > 0
 
 
-def test_snapshot_report_meets_baseline() -> None:
+def test_case_thresholds_match_committed_baseline() -> None:
+    case = load_evaluation_case(CASE_PATH)
+    baseline = _load_baseline()["metrics"]
+
+    assert case.thresholds.min_precision == baseline["precision"]
+    assert case.thresholds.min_recall == baseline["recall"]
+    assert case.thresholds.min_f1 == baseline["f1"]
+    assert case.thresholds.min_provenance_recall == baseline["provenance_recall"]
+    assert case.thresholds.max_invariant_violations == baseline["invariant_violation_count"]
+
+
+def test_snapshot_report_thresholds_match_baseline_gate() -> None:
     """Score the pinned snapshot report against the case.
 
     Catches: scorer regressions, EvaluationCase schema drift, accidental edits to
-    outputs/medium-research-2.json. Always-on guard for the eval harness itself.
+    outputs/medium-research-2.json. If a local snapshot has regressed quality,
+    the case threshold must fail it instead of returning passed=true.
     """
     if not SNAPSHOT_REPORT.exists():
         pytest.skip(f"snapshot report missing: {SNAPSHOT_REPORT}")
 
     baseline = _load_baseline()
     result = evaluate_report_file(CASE_PATH, SNAPSHOT_REPORT)
-    _assert_meets_baseline(result.metrics, baseline["metrics"])
+    assert result.passed is _metrics_meet_baseline(result.metrics, baseline["metrics"])
 
 
 @pytest.mark.live_eval

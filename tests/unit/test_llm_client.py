@@ -283,9 +283,13 @@ def test_default_prompt_pack_contains_hardening_examples_and_checklists() -> Non
         assert "Preflight checklist" in body
 
     assert "Anti-patterns:" in prompts["planner.classify_document"].body
+    assert "The summary must be one or two concise sentences" in prompts["planner.classify_document"].body
     assert "Schema anti-patterns:" in prompts["planner.propose_schema"].body
+    assert "Avoid synonym drift" in prompts["planner.propose_schema"].body
     assert "Adversarial checklist:" in prompts["planner.critique_schema"].body
+    assert "Reject synonym drift" in prompts["planner.critique_schema"].body
     assert "Selection examples:" in prompts["planner.select_strategy"].body
+    assert "The rationale must explain lens coverage" in prompts["planner.select_strategy"].body
     assert "Budget examples:" in prompts["planner.allocate_budget"].body
     assert "Adversarial checklist:" in prompts["critic"].body
     assert "Adversarial checklist:" in prompts["verifier"].body

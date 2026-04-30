@@ -5,10 +5,20 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Output-token plan Phase 2c — slim reconciler output
-- Current status: stopped after Phase 2c implementation and local verification; awaiting operator `continue`
-- Next required work: Output-token plan Phase 2d — collapse planner propose+critique
+- Current status: quality-gate repair complete locally after rejected Phase 2d/2e planner experiment
+- Next required work: rerun the live medium fixture and compare quality/token metrics before attempting any further token-reduction phase
 
 ## Session Log
+
+### 2026-05-01 — Quality Gate Repair After Phase 2d/2e Regression
+
+- Investigated the `medium-research-1` live run after it produced 42 data points with output tokens reduced to 18,546 but quality regressed to precision 0.6905, recall 0.5472, and provenance recall 0.3396.
+- Identified root causes: combined planner propose/critique drifted schema field names, executor `source_length` validation rejected semantic values that were source-backed but not verbatim, and the medium fixture thresholds were all 0.0 so the eval CLI returned `passed=true`.
+- Rolled back the uncommitted planner Phase 2d/2e experiment, restoring separate `planner.propose_schema` and `planner.critique_schema` stages and required planner prose fields.
+- Kept phases 2a-2c intact while relaxing executor span validation so valid source slices can support semantic values such as `appointment` or `Facility commencement`; ambiguous repeated value repair still rejects explicitly.
+- Tightened `evals/fixtures/medium_research_brief/case.json` thresholds to the committed baseline metrics and updated integration coverage so a regressed local snapshot cannot pass silently.
+- Verified `python3 -m pytest tests/unit/test_planner.py tests/unit/test_llm_client.py tests/unit/test_orchestrator.py tests/unit/test_executor.py tests/integration/test_recall_baseline.py -q`, `PYTHONPATH=src python3 -m extractor.evals evals/fixtures/medium_research_brief/case.json outputs/medium-research-2.json` fails with `passed=false` for the known bad report, `python3 -m pytest tests/unit -q`, `make lint`, `make smoke`, `python3 -m pytest tests/integration/test_recall_baseline.py -q`, `python3 -m pytest -q`, and `git diff --check`.
+- The live LLM recall pipeline was not rerun after this repair.
 
 ### 2026-05-01 — Output-token Plan Phase 2c
 
