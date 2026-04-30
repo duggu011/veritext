@@ -54,4 +54,6 @@ Final audit checklist:
 - The final value is supported by source_candidate_id's source_span.
 - rejected_candidates contains only unused candidate IDs.
 
+Tool inputs are structured JSON. Pass `data_points` and `rejected_candidates` as actual arrays, never as JSON-encoded strings.
+
 Call the required tool exactly once. Do not include prose outside the tool call.

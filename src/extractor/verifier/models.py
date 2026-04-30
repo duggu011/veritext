@@ -23,20 +23,29 @@ class VerifierModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
-class VerifierStageInput(VerifierModel):
-    run_id: NonEmptyStr
-    plan: ExtractionPlan
+class VerifierBatchItem(VerifierModel):
     candidate: LensCandidate
     critic_report: CriticReport
+
+
+class VerifierBatchStageInput(VerifierModel):
+    run_id: NonEmptyStr
+    plan: ExtractionPlan
     chunk: Chunk
+    items: tuple[VerifierBatchItem, ...]
 
 
-class VerifierReviewPayload(VerifierModel):
+class VerifierBatchReportPayload(VerifierModel):
+    candidate_id: NonEmptyStr
     span_verified: bool = Field(strict=True)
     category_verified: bool = Field(strict=True)
     alignment_score: Confidence
     accepted: bool = Field(strict=True)
     rejection_reasons: tuple[RejectionReason, ...]
+
+
+class VerifierBatchReviewPayload(VerifierModel):
+    reports: tuple[VerifierBatchReportPayload, ...]
 
 
 class VerifierTaskResult(VerifierModel):
@@ -52,7 +61,9 @@ class VerificationResult(VerifierTaskResult):
 
 __all__ = [
     "VerificationResult",
-    "VerifierReviewPayload",
-    "VerifierStageInput",
+    "VerifierBatchItem",
+    "VerifierBatchReportPayload",
+    "VerifierBatchReviewPayload",
+    "VerifierBatchStageInput",
     "VerifierTaskResult",
 ]

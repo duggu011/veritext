@@ -331,6 +331,181 @@ def test_execute_plan_auto_corrects_off_by_one_offsets(tmp_path: Path) -> None:
     asyncio.run(run_check())
 
 
+def test_execute_plan_auto_corrects_far_off_unique_offsets() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Intro sentence with unrelated context. "
+            "More unrelated context before the real value. "
+            "Fleet generation"
+        )
+        chunk = Chunk(
+            chunk_id="chunk-far",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=20,
+        )
+        true_start = chunk_text.index("Fleet generation")
+        payload = candidate_payload(
+            source_text="Fleet generation",
+            start_char=0,
+            value="Fleet generation",
+        )
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": (payload,)}]),
+        )
+
+        result = await execute_plan(
+            plan=make_plan(max_calls=1),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert len(result.accepted_candidates) == 1
+        assert result.rejected_candidates == ()
+        assert result.accepted_candidates[0].source_span.start_char == true_start
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_rejects_far_off_ambiguous_offsets() -> None:
+    async def run_check() -> None:
+        chunk_text = "Q1 2026 revenue increased. Q1 2026 guidance reaffirmed."
+        chunk = Chunk(
+            chunk_id="chunk-ambiguous",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=12,
+        )
+        payload = candidate_payload(
+            source_text="Q1 2026",
+            start_char=5,
+            value="Q1 2026",
+        )
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": (payload,)}]),
+        )
+
+        result = await execute_plan(
+            plan=make_plan(max_calls=1),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == ()
+        assert len(result.rejected_candidates) == 1
+        assert {reason.code for reason in result.rejections[0].reasons} == {
+            "invalid_source_offsets",
+            "invented_span",
+        }
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_rejects_claimed_exact_short_ambiguous_span() -> None:
+    async def run_check() -> None:
+        chunk_text = "Q1 2026 revenue increased. Q1 2026 guidance reaffirmed."
+        chunk = Chunk(
+            chunk_id="chunk-ambiguous-exact",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=12,
+        )
+        payload = candidate_payload(
+            source_text="Q1 2026",
+            start_char=0,
+            value="Q1 2026",
+        )
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": (payload,)}]),
+        )
+
+        result = await execute_plan(
+            plan=make_plan(max_calls=1),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == ()
+        assert len(result.rejected_candidates) == 1
+        assert result.rejections[0].reasons[0].code == "ambiguous_source_span"
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_auto_corrects_unique_whitespace_normalized_span() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Full-year 2026 revenue\n"
+            "guidance reaffirmed at $2.10 to $2.25 billion."
+        )
+        chunk = Chunk(
+            chunk_id="chunk-whitespace",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=14,
+        )
+        payload = candidate_payload(
+            source_text=(
+                "Full-year 2026 revenue guidance reaffirmed at "
+                "$2.10 to $2.25 billion."
+            ),
+            start_char=8,
+            value="$2.10 to $2.25 billion",
+        )
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": (payload,)}]),
+        )
+
+        result = await execute_plan(
+            plan=make_plan(max_calls=1),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert len(result.accepted_candidates) == 1
+        assert result.rejected_candidates == ()
+        assert result.accepted_candidates[0].source_span.start_char == 0
+        assert result.accepted_candidates[0].source_span.text == chunk_text
+
+    asyncio.run(run_check())
+
+
 def test_execute_plan_rejects_malformed_payload_offsets_without_aborting(
     tmp_path: Path,
 ) -> None:

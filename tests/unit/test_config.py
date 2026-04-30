@@ -54,14 +54,13 @@ def write_config(path: Path, body: str = BASE_CONFIG) -> None:
 def test_default_config_file_loads() -> None:
     config = load_config(env={}, include_local=False)
 
-    assert config.llm.provider == "openai_compatible"
-    assert config.llm.base_url == "https://api.moonshot.ai/v1"
-    assert config.llm.api_key_env == "MOONSHOT_API_KEY"
-    assert config.llm.model == "kimi-k2.6"
+    assert config.llm.provider == "anthropic"
+    assert config.llm.api_key_env == "ANTHROPIC_API_KEY"
+    assert config.llm.model == "claude-sonnet-4-6"
     assert config.llm.stage_overrides["planner"].model is None
     assert config.llm.stage_overrides["executor"].model is None
     assert config.llm.stage_overrides["reconciler"].model is None
-    assert config.execution.max_stage_concurrency == 2
+    assert config.execution.max_stage_concurrency == 4
     assert config.execution.max_chunk_concurrency == 2
     assert config.logging.format == "json"
     assert config.chunking.overlap_tokens < config.chunking.window_tokens

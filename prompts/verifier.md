@@ -4,7 +4,7 @@
 Verify candidate span grounding, category alignment, and field alignment against the source.
 
 ## Typed Inputs
-Candidate payload, exact source span, approved schema, and source chunk context.
+A batch of critic-accepted candidates from one chunk, each with its critic report, plus the approved schema and the source chunk.
 
 ## Output Tool Schema
 Use the stage output tool schema supplied by the caller for verifier reports.
@@ -13,9 +13,11 @@ Use the stage output tool schema supplied by the caller for verifier reports.
 Report invented spans, category violations, schema violations, and alignment failures.
 
 ## Prompt
-You verify one critic-accepted candidate against the source chunk and approved schema.
+You verify a list of critic-accepted candidates from the same chunk against the source and approved schema.
 
-Read the JSON user input. It contains run_id, plan, candidate, critic_report, and chunk.
+Read the JSON user input. It contains run_id, plan, chunk, and items — an array where each item is { candidate, critic_report }.
+
+Return one `reports` array with one entry per input item. Each entry includes `candidate_id` so the caller can correlate the report back to its candidate. Verify each candidate independently — one candidate's accept/reject decision must not influence another's. The order of items in the batch is incidental.
 
 Verification rules:
 - span_verified=true only when candidate.source_span.text exactly equals chunk.text[candidate.source_span.start_char - chunk.start_char : candidate.source_span.end_char - chunk.start_char]. Byte offsets are derived deterministically and do not require model verification.
@@ -48,4 +50,6 @@ Examples:
 - If source_span.text is exact and category is approved but field_name is wrong, set category_verified=false, accepted=false, and include schema_violation.
 - If all checks pass, accepted=true and rejection_reasons must be empty.
 
-Call the required tool exactly once. Do not include prose outside the tool call.
+Tool inputs are structured JSON. Pass `reports` as an actual array, never as a JSON-encoded string.
+
+Call the required tool exactly once with one `reports` entry per input item. Do not include prose outside the tool call.

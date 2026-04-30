@@ -10,6 +10,18 @@ Running log for repository sessions and accepted phase gates.
 
 ## Session Log
 
+### 2026-04-30 — Medium Research Output Comparison
+
+- Compared `outputs/medium-research.json` against `evals/fixtures/medium_research_brief/source.md` and verified the reported SHA-256/byte length match the run summary.
+- Found all 12 emitted data points are source-backed and come from the first Headlines paragraph, with no distractor extraction from the rejected CleanTech Daily or Northwind/Sunbelt statements.
+- Found major recall loss outside Headlines: executor generated candidates for Operations, Acquisition, Guidance, Risk, and Personnel, but most were rejected as `invalid_source_offsets`/`invented_span` before critic/verifier because claimed offsets did not match chunk text.
+- Confirmed the approved extraction plan covered seven categories, so the missed later-section facts were not caused by planner schema scope.
+- Reviewed `docs/extraction-quality-strategy.md`; the chunk-wide unique-span locator strategy matches the audit failure, but the run-status wording, retry-loop placement, and call-scaling formula need correction before implementation.
+- Shipped the executor locator fix: after a claimed offset miss, executor span resolution now searches the whole chunk and only auto-corrects exact `source_text` when it occurs uniquely.
+- Hardened executor span resolution further with whitespace-normalized unique matching that rewrites provenance to the exact chunk substring, plus typed `ambiguous_source_span` rejection for short repeated snippets even when the claimed offset lands on one occurrence.
+- Added executor coverage for far-off unique offset correction, ambiguous repeated-span rejection, exact claimed short ambiguity rejection, and newline/space normalized correction; verified `python3 -m pytest tests/unit/test_executor.py`, `python3 -m pytest tests/unit/test_executor.py tests/unit/test_contracts.py tests/unit/test_orchestrator.py`, and `make lint`.
+- Investigated the follow-up live rerun that failed at `2026-04-30T08:54:12Z` with Anthropic 429 input-token rate limiting; the DB shows executor produced 137 candidates with no executor offset rejections, critic completed 9 batches / 90 reports, and no verifier or report output was reached.
+
 ### 2026-04-30 — Executor Offset Prompt Hardening
 
 - Updated all executor prompts to spell out absolute offset arithmetic as `start_char = chunk.start_char + chunk_relative_index`.

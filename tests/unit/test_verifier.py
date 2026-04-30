@@ -245,8 +245,9 @@ async def seed_audit_store(
         await audit_store.record_critic_report(report)
 
 
-def accepted_payload() -> dict[str, object]:
+def accepted_payload(*, candidate_id: str = "candidate-1") -> dict[str, object]:
     return {
+        "candidate_id": candidate_id,
         "span_verified": True,
         "category_verified": True,
         "alignment_score": 0.96,
@@ -255,8 +256,9 @@ def accepted_payload() -> dict[str, object]:
     }
 
 
-def rejected_payload() -> dict[str, object]:
+def rejected_payload(*, candidate_id: str = "candidate-1") -> dict[str, object]:
     return {
+        "candidate_id": candidate_id,
         "span_verified": True,
         "category_verified": False,
         "alignment_score": 0.3,
@@ -268,6 +270,10 @@ def rejected_payload() -> dict[str, object]:
             },
         ),
     }
+
+
+def batch_payload(*items: dict[str, object]) -> dict[str, object]:
+    return {"reports": tuple(items)}
 
 
 def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) -> None:
@@ -285,7 +291,12 @@ def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
             ),
         )
         critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
-        anthropic_client = QueuedAnthropicClient([accepted_payload(), rejected_payload()])
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(accepted_payload(candidate_id="candidate-1")),
+                batch_payload(rejected_payload(candidate_id="candidate-2")),
+            ]
+        )
         llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
 
         async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
@@ -316,8 +327,8 @@ def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
         assert rejections[0].reasons[0].code == "schema_violation"
         assert [log.stage for log in logs] == ["verifier", "verifier"]
         assert [call["tool_choice"] for call in anthropic_client.messages.calls] == [
-            {"type": "tool", "name": "verify_candidate"},
-            {"type": "tool", "name": "verify_candidate"},
+            {"type": "tool", "name": "verify_candidates_batch"},
+            {"type": "tool", "name": "verify_candidates_batch"},
         ]
         assert '"critic_report"' in anthropic_client.messages.calls[0]["messages"][0]["content"]
 
@@ -331,7 +342,9 @@ def test_verify_candidates_overrides_accepted_output_for_invented_span(
         bad_start = make_document().text.index("Margin")
         bad_candidate = make_candidate(start_char=bad_start)
         critic_report = make_critic_report(bad_candidate)
-        anthropic_client = QueuedAnthropicClient([accepted_payload()])
+        anthropic_client = QueuedAnthropicClient(
+            [batch_payload(accepted_payload(candidate_id="candidate-1"))]
+        )
         llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
 
         async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
@@ -379,6 +392,84 @@ def test_verify_candidates_rejects_missing_accepted_critic_report_before_llm_cal
             )
 
         assert anthropic_client.messages.calls == []
+
+    asyncio.run(run_check())
+
+
+def test_verify_candidates_batches_per_chunk(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        chunks = make_chunks()
+        chunk_a, chunk_b = chunks
+        second_start = make_document().text.index("Margin")
+        candidates_a = tuple(
+            make_candidate(
+                candidate_id=f"candidate-a-{index}",
+                chunk=chunk_a,
+                source_text="Revenue increased",
+                start_char=0,
+                value=f"Revenue increased {index}",
+            )
+            for index in range(8)
+        )
+        candidates_b = tuple(
+            make_candidate(
+                candidate_id=f"candidate-b-{index}",
+                chunk=chunk_b,
+                source_text="Margin declined",
+                start_char=second_start,
+                value=f"Margin declined {index}",
+            )
+            for index in range(4)
+        )
+        candidates = (*candidates_a, *candidates_b)
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+
+        # batch_size=5 → 2 batches for chunk A (5+3), 1 batch for chunk B (4) = 3 calls.
+        first_chunk_a_payloads = [
+            accepted_payload(candidate_id=candidate.candidate_id)
+            for candidate in candidates_a[:5]
+        ]
+        second_chunk_a_payloads = [
+            accepted_payload(candidate_id=candidate.candidate_id)
+            for candidate in candidates_a[5:]
+        ]
+        chunk_b_payloads = [
+            accepted_payload(candidate_id=candidate.candidate_id)
+            for candidate in candidates_b
+        ]
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(*first_chunk_a_payloads),
+                batch_payload(*second_chunk_a_payloads),
+                batch_payload(*chunk_b_payloads),
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        execution_config = ExecutionConfig(
+            max_stage_concurrency=1,
+            max_chunk_concurrency=1,
+            max_llm_attempts=1,
+            verifier_batch_size=5,
+        )
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, candidates, critic_reports)
+            result = await verify_candidates(
+                plan=make_plan(),
+                chunks=chunks,
+                candidates=candidates,
+                critic_reports=critic_reports,
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=execution_config,
+                audit_store=audit_store,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+
+        assert len(anthropic_client.messages.calls) == 3
+        assert len(result.accepted_candidates) == 12
+        assert len(result.reports) == 12
+        assert [log.stage for log in logs] == ["verifier", "verifier", "verifier"]
 
     asyncio.run(run_check())
 

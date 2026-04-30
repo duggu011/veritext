@@ -38,6 +38,7 @@ RejectionReasonCode = Literal[
     "verifier_rejected",
     "reconciler_rejected",
     "schema_violation",
+    "ambiguous_source_span",
 ]
 
 

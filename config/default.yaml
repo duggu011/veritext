@@ -1,19 +1,16 @@
 llm:
-  provider: openai_compatible
-  base_url: https://api.moonshot.ai/v1
-  api_key_env: MOONSHOT_API_KEY
-  model: kimi-k2.6
+  provider: anthropic
+  api_key_env: ANTHROPIC_API_KEY
+  model: claude-sonnet-4-6
   max_retries: 3
   timeout_seconds: 300
   # Keep a large completion budget for dense structured tool outputs.
   max_output_tokens: 32768
   temperature: 0.0
-  # Only used by OpenAI reasoning models (gpt-5*, o1*, o3*, o4*).
-  # Kimi structured requests explicitly disable thinking because Moonshot rejects
-  # specified tool_choice while thinking is enabled.
+  # Only consulted for OpenAI reasoning models (gpt-5*, o1*, o3*, o4*); ignored
+  # by Anthropic and standard Kimi paths.
   reasoning_effort: minimal
   # Optional per-stage overrides keyed by planner, executor, critic, verifier, reconciler.
-  # Keep overrides available for stage-specific tuning if needed.
   stage_overrides:
     planner: {}
     executor: {}
@@ -23,9 +20,7 @@ chunking:
   window_tokens: 1200
   overlap_tokens: 120
 execution:
-  # Moonshot currently caps this org at 3 concurrent requests. Keep one slot of
-  # headroom so SDK retries or another local run do not trigger 429s.
-  max_stage_concurrency: 2
+  max_stage_concurrency: 4
   max_chunk_concurrency: 2
   max_llm_attempts: 2
 audit:

@@ -18,8 +18,10 @@ from extractor.contracts import (
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
 from extractor.verifier.models import (
     VerificationResult,
-    VerifierReviewPayload,
-    VerifierStageInput,
+    VerifierBatchItem,
+    VerifierBatchReportPayload,
+    VerifierBatchReviewPayload,
+    VerifierBatchStageInput,
     VerifierTaskResult,
 )
 
@@ -54,18 +56,19 @@ async def verify_candidates(
         critic_reports=critic_reports,
     )
     semaphore = asyncio.Semaphore(execution_config.max_stage_concurrency)
+    batches = _partition_into_batches(candidates, execution_config.verifier_batch_size)
     tasks = [
-        _verify_candidate(
+        _verify_batch(
             plan=plan,
-            candidate=candidate,
-            critic_report=reports_by_candidate_id[candidate.candidate_id],
-            chunk=chunks_by_id[candidate.chunk_id],
+            chunk=chunks_by_id[batch[0].chunk_id],
+            batch=batch,
+            critic_reports_by_candidate=reports_by_candidate_id,
             prompt_loader=prompt_loader,
             llm_client=llm_client,
             audit_store=audit_store,
             semaphore=semaphore,
         )
-        for candidate in candidates
+        for batch in batches
     ]
     results = await asyncio.gather(*tasks)
 
@@ -81,70 +84,147 @@ async def verify_candidates(
     )
 
 
-async def _verify_candidate(
+def _partition_into_batches(
+    candidates: tuple[LensCandidate, ...],
+    batch_size: int,
+) -> list[tuple[LensCandidate, ...]]:
+    by_chunk: dict[str, list[LensCandidate]] = {}
+    for candidate in candidates:
+        by_chunk.setdefault(candidate.chunk_id, []).append(candidate)
+    batches: list[tuple[LensCandidate, ...]] = []
+    for group in by_chunk.values():
+        for start in range(0, len(group), batch_size):
+            batches.append(tuple(group[start : start + batch_size]))
+    return batches
+
+
+async def _verify_batch(
     *,
     plan: ExtractionPlan,
-    candidate: LensCandidate,
-    critic_report: CriticReport,
     chunk: Chunk,
+    batch: tuple[LensCandidate, ...],
+    critic_reports_by_candidate: dict[str, CriticReport],
     prompt_loader: PromptLoader,
     llm_client: LLMClient,
     audit_store: AuditStore | None,
     semaphore: asyncio.Semaphore,
 ) -> VerifierTaskResult:
+    items = tuple(
+        VerifierBatchItem(
+            candidate=candidate,
+            critic_report=critic_reports_by_candidate[candidate.candidate_id],
+        )
+        for candidate in batch
+    )
     async with semaphore:
         result = await llm_client.complete_structured(
             StructuredLLMRequest(
                 run_id=plan.run_id,
                 stage="verifier",
                 prompt=prompt_loader.load("verifier"),
-                user_content=VerifierStageInput(
+                user_content=VerifierBatchStageInput(
                     run_id=plan.run_id,
                     plan=plan,
-                    candidate=candidate,
-                    critic_report=critic_report,
                     chunk=chunk,
+                    items=items,
                 ).model_dump_json(),
-                tool_name="verify_candidate",
-                tool_description="Verify one critic-accepted candidate against source and schema.",
+                tool_name="verify_candidates_batch",
+                tool_description=(
+                    "Verify a batch of critic-accepted candidates from one chunk "
+                    "against source and schema."
+                ),
             ),
-            output_model=VerifierReviewPayload,
+            output_model=VerifierBatchReviewPayload,
             audit_store=audit_store,
         )
 
-    report = _build_report(
-        plan=plan,
-        chunk=chunk,
-        candidate=candidate,
-        payload=result.output,
-        verifier_call_id=result.call_log.call_id,
-    )
-    if audit_store is not None:
-        await audit_store.record_verifier_report(report)
+    reports_by_candidate: dict[str, VerifierBatchReportPayload] = {}
+    for report_payload in result.output.reports:
+        reports_by_candidate.setdefault(report_payload.candidate_id, report_payload)
 
-    if report.accepted:
-        return VerifierTaskResult(
-            accepted_candidates=(candidate,),
-            rejected_candidates=(),
-            reports=(report,),
-            rejections=(),
+    accepted_candidates: list[LensCandidate] = []
+    rejected_candidates: list[LensCandidate] = []
+    reports: list[VerifierReport] = []
+    rejections: list[CandidateRejection] = []
+
+    for candidate in batch:
+        report_payload = reports_by_candidate.get(candidate.candidate_id)
+        if report_payload is None:
+            reasons = (
+                RejectionReason(
+                    code="verifier_missing_report",
+                    message=(
+                        "Verifier batch response did not include a report for "
+                        f"candidate {candidate.candidate_id}."
+                    ),
+                ),
+            )
+            report = VerifierReport(
+                report_id=_stable_missing_report_id(
+                    candidate=candidate,
+                    verifier_call_id=result.call_log.call_id,
+                    reasons=reasons,
+                ),
+                run_id=plan.run_id,
+                candidate_id=candidate.candidate_id,
+                verifier_call_id=result.call_log.call_id,
+                span_verified=False,
+                category_verified=False,
+                alignment_score=0.0,
+                accepted=False,
+                rejection_reasons=reasons,
+            )
+            if audit_store is not None:
+                await audit_store.record_verifier_report(report)
+            rejection = CandidateRejection(
+                rejection_id=_stable_rejection_id(candidate, report),
+                run_id=plan.run_id,
+                candidate_id=candidate.candidate_id,
+                stage="verifier",
+                reasons=reasons,
+                created_at=datetime.now(timezone.utc),
+            )
+            if audit_store is not None:
+                await audit_store.record_candidate_rejection(rejection)
+            rejected_candidates.append(candidate)
+            reports.append(report)
+            rejections.append(rejection)
+            continue
+
+        report = _build_report(
+            plan=plan,
+            chunk=chunk,
+            candidate=candidate,
+            payload=report_payload,
+            verifier_call_id=result.call_log.call_id,
         )
+        if audit_store is not None:
+            await audit_store.record_verifier_report(report)
 
-    rejection = CandidateRejection(
-        rejection_id=_stable_rejection_id(candidate, report),
-        run_id=plan.run_id,
-        candidate_id=candidate.candidate_id,
-        stage="verifier",
-        reasons=report.rejection_reasons,
-        created_at=datetime.now(timezone.utc),
-    )
-    if audit_store is not None:
-        await audit_store.record_candidate_rejection(rejection)
+        if report.accepted:
+            accepted_candidates.append(candidate)
+            reports.append(report)
+            continue
+
+        rejection = CandidateRejection(
+            rejection_id=_stable_rejection_id(candidate, report),
+            run_id=plan.run_id,
+            candidate_id=candidate.candidate_id,
+            stage="verifier",
+            reasons=report.rejection_reasons,
+            created_at=datetime.now(timezone.utc),
+        )
+        if audit_store is not None:
+            await audit_store.record_candidate_rejection(rejection)
+        rejected_candidates.append(candidate)
+        reports.append(report)
+        rejections.append(rejection)
+
     return VerifierTaskResult(
-        accepted_candidates=(),
-        rejected_candidates=(candidate,),
-        reports=(report,),
-        rejections=(rejection,),
+        accepted_candidates=tuple(accepted_candidates),
+        rejected_candidates=tuple(rejected_candidates),
+        reports=tuple(reports),
+        rejections=tuple(rejections),
     )
 
 
@@ -195,7 +275,7 @@ def _build_report(
     plan: ExtractionPlan,
     chunk: Chunk,
     candidate: LensCandidate,
-    payload: VerifierReviewPayload,
+    payload: VerifierBatchReportPayload,
     verifier_call_id: str,
 ) -> VerifierReport:
     deterministic_reasons = _deterministic_rejection_reasons(
@@ -288,7 +368,7 @@ def _deterministic_rejection_reasons(
     return tuple(reasons)
 
 
-def _llm_rejection_reasons(payload: VerifierReviewPayload) -> tuple[RejectionReason, ...]:
+def _llm_rejection_reasons(payload: VerifierBatchReportPayload) -> tuple[RejectionReason, ...]:
     reasons: list[RejectionReason] = []
     if not payload.span_verified:
         reasons.append(
@@ -373,6 +453,17 @@ def _stable_report_id(
             reason_identity,
         )
     )
+    return f"verifier-{hashlib.sha256(identity.encode('utf-8')).hexdigest()[:32]}"
+
+
+def _stable_missing_report_id(
+    *,
+    candidate: LensCandidate,
+    verifier_call_id: str,
+    reasons: tuple[RejectionReason, ...],
+) -> str:
+    reason_identity = "|".join(f"{reason.code}:{reason.message}" for reason in reasons)
+    identity = f"{candidate.candidate_id}|{verifier_call_id}|missing|{reason_identity}"
     return f"verifier-{hashlib.sha256(identity.encode('utf-8')).hexdigest()[:32]}"
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -56,6 +57,26 @@ class RejectedCandidatePayload(ReconcilerModel):
 class ReconciliationBatch(ReconcilerModel):
     data_points: tuple[ReconciledDataPointPayload, ...]
     rejected_candidates: tuple[RejectedCandidatePayload, ...]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_stringified_payload(cls, data: object) -> object:
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return data
+        if isinstance(data, dict):
+            coerced = dict(data)
+            for field_name in ("data_points", "rejected_candidates"):
+                value = coerced.get(field_name)
+                if isinstance(value, str):
+                    try:
+                        coerced[field_name] = json.loads(value)
+                    except json.JSONDecodeError:
+                        pass
+            return coerced
+        return data
 
 
 class ReconciliationResult(ReconcilerModel):

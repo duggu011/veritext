@@ -117,12 +117,22 @@ class DeterministicLLMClient:
                 ),
             }
         if request.stage == "verifier":
+            candidate_ids = [
+                item["candidate"]["candidate_id"]
+                for item in json.loads(request.user_content)["items"]
+            ]
             return {
-                "span_verified": True,
-                "category_verified": True,
-                "alignment_score": 0.92,
-                "accepted": True,
-                "rejection_reasons": (),
+                "reports": tuple(
+                    {
+                        "candidate_id": candidate_id,
+                        "span_verified": True,
+                        "category_verified": True,
+                        "alignment_score": 0.92,
+                        "accepted": True,
+                        "rejection_reasons": (),
+                    }
+                    for candidate_id in candidate_ids
+                ),
             }
         if request.stage == "reconciler":
             candidate_id = json.loads(request.user_content)["candidates"][0]["candidate_id"]

@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import os
 import sys
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import cast
 
@@ -29,6 +30,13 @@ from extractor.executor.models import (
 
 class ExecutorError(RuntimeError):
     """Raised when executor inputs or budgets prevent auditable extraction."""
+
+
+@dataclass(frozen=True)
+class SourceTextResolution:
+    start_char: int
+    source_text: str
+    rejection_reasons: tuple[RejectionReason, ...] = ()
 
 
 def _trace_enabled() -> bool:
@@ -149,9 +157,17 @@ async def _execute_lens_chunk(
 
     for index, payload in enumerate(result.output.candidates):
         original_start_char = payload.start_char
-        located = _locate_source_text(payload=payload, chunk=chunk)
-        if located is not None and located != payload.start_char:
-            payload = payload.model_copy(update={"start_char": located})
+        resolution = _resolve_source_text(payload=payload, chunk=chunk)
+        if (
+            resolution.start_char != payload.start_char
+            or resolution.source_text != payload.source_text
+        ):
+            payload = payload.model_copy(
+                update={
+                    "start_char": resolution.start_char,
+                    "source_text": resolution.source_text,
+                }
+            )
         candidate = _build_candidate(
             plan=plan,
             lens=lens,
@@ -166,6 +182,7 @@ async def _execute_lens_chunk(
             chunk=chunk,
             category_fields=category_fields,
         )
+        reasons = [*resolution.rejection_reasons, *reasons]
 
         if audit_store is not None:
             await audit_store.record_lens_candidate(candidate)
@@ -307,49 +324,146 @@ def _candidate_rejection_reasons(
     return reasons
 
 
-_OFFSET_CORRECTION_WINDOW = 8
+_SHORT_AMBIGUOUS_SPAN_MAX_CHARS = 24
 
 
-def _locate_source_text(
+def _resolve_source_text(
     *,
     payload: ExtractedCandidatePayload,
     chunk: Chunk,
-) -> int | None:
-    """Find the absolute start_char where source_text matches chunk text exactly.
+) -> SourceTextResolution:
+    """Find the safest chunk-backed span for source_text.
 
-    Tries the model's claimed start_char first. If that exact position doesn't
-    match, searches a ±_OFFSET_CORRECTION_WINDOW window for a unique occurrence.
-    Returns None if zero matches or more than one match in the window.
+    Exact unique matches are preferred. If exact text is absent, a unique
+    whitespace-normalized match is allowed, but the source span is rewritten to
+    the exact chunk substring so downstream provenance remains byte-for-byte.
     """
     text = chunk.text
     source = payload.source_text
     if len(source) == 0:
-        return None
+        return SourceTextResolution(
+            start_char=payload.start_char,
+            source_text=payload.source_text,
+        )
 
     relative_claimed = payload.start_char - chunk.start_char
-    if 0 <= relative_claimed and relative_claimed + len(source) <= len(text):
-        if text[relative_claimed : relative_claimed + len(source)] == source:
-            return payload.start_char
+    exact_matches = _find_exact_matches(text, source)
+    if relative_claimed in exact_matches:
+        rejection_reasons = (
+            (_ambiguous_source_span_reason(source, len(exact_matches)))
+            if _is_short_ambiguous_source(source, exact_matches)
+            else ()
+        )
+        return SourceTextResolution(
+            start_char=payload.start_char,
+            source_text=payload.source_text,
+            rejection_reasons=rejection_reasons,
+        )
+    if len(exact_matches) == 1:
+        return SourceTextResolution(
+            start_char=chunk.start_char + exact_matches[0],
+            source_text=source,
+        )
 
-    search_start = max(0, relative_claimed - _OFFSET_CORRECTION_WINDOW)
-    search_end = min(len(text), relative_claimed + _OFFSET_CORRECTION_WINDOW + len(source))
-    if search_end - search_start < len(source):
-        return None
+    stripped = source.strip()
+    if stripped and stripped != source:
+        stripped_matches = _find_exact_matches(text, stripped)
+        if len(stripped_matches) == 1:
+            return SourceTextResolution(
+                start_char=chunk.start_char + stripped_matches[0],
+                source_text=stripped,
+            )
 
+    normalized_matches = _find_whitespace_normalized_matches(text, source)
+    if len(normalized_matches) == 1:
+        start, end = normalized_matches[0]
+        return SourceTextResolution(
+            start_char=chunk.start_char + start,
+            source_text=text[start:end],
+        )
+
+    return SourceTextResolution(
+        start_char=payload.start_char,
+        source_text=payload.source_text,
+    )
+
+
+def _find_exact_matches(text: str, source: str) -> list[int]:
     matches: list[int] = []
-    cursor = search_start
-    while cursor + len(source) <= search_end:
-        idx = text.find(source, cursor, search_end)
+    cursor = 0
+    while cursor + len(source) <= len(text):
+        idx = text.find(source, cursor)
         if idx < 0:
             break
         matches.append(idx)
-        if len(matches) > 1:
-            return None
         cursor = idx + 1
+    return matches
 
-    if len(matches) == 1:
-        return chunk.start_char + matches[0]
-    return None
+
+def _is_short_ambiguous_source(source: str, matches: list[int]) -> bool:
+    return len(matches) > 1 and len(source) <= _SHORT_AMBIGUOUS_SPAN_MAX_CHARS
+
+
+def _ambiguous_source_span_reason(
+    source: str,
+    match_count: int,
+) -> tuple[RejectionReason, ...]:
+    return (
+        RejectionReason(
+            code="ambiguous_source_span",
+            message=(
+                f"Candidate source_text {source!r} appears {match_count} times in "
+                "the chunk; emit a wider unique source_text to preserve provenance."
+            ),
+        ),
+    )
+
+
+def _find_whitespace_normalized_matches(
+    text: str,
+    source: str,
+) -> list[tuple[int, int]]:
+    normalized_source = _collapse_whitespace(source)
+    if normalized_source == "" or not any(char.isspace() for char in source):
+        return []
+
+    normalized_text, mapping = _normalize_whitespace_with_mapping(text)
+    matches: list[tuple[int, int]] = []
+    cursor = 0
+    while cursor + len(normalized_source) <= len(normalized_text):
+        idx = normalized_text.find(normalized_source, cursor)
+        if idx < 0:
+            break
+        start = mapping[idx]
+        end = mapping[idx + len(normalized_source) - 1] + 1
+        matches.append((start, end))
+        cursor = idx + 1
+    return matches
+
+
+def _collapse_whitespace(text: str) -> str:
+    return " ".join(text.split())
+
+
+def _normalize_whitespace_with_mapping(text: str) -> tuple[str, list[int]]:
+    normalized: list[str] = []
+    mapping: list[int] = []
+    in_whitespace = False
+    for index, char in enumerate(text):
+        if char.isspace():
+            if normalized and not in_whitespace:
+                normalized.append(" ")
+                mapping.append(index)
+            in_whitespace = True
+            continue
+        normalized.append(char)
+        mapping.append(index)
+        in_whitespace = False
+
+    if normalized and normalized[-1] == " ":
+        normalized.pop()
+        mapping.pop()
+    return "".join(normalized), mapping
 
 
 def _payload_offset_rejection_reason(

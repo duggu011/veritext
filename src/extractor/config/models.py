@@ -66,6 +66,7 @@ class ExecutionConfig(ConfigModel):
     max_chunk_concurrency: PositiveInt
     max_llm_attempts: PositiveInt
     critic_batch_size: PositiveInt = 10
+    verifier_batch_size: PositiveInt = 10
 
 
 class AuditConfig(ConfigModel):
