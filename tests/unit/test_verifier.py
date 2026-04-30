@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,7 +24,7 @@ from extractor.contracts import (
     RunManifest,
     SourceSpan,
 )
-from extractor.llm import LLMClient, PromptLoader
+from extractor.llm import LLMClient, PromptLoader, short_candidate_id
 from extractor.verifier import VerifierError, verify_candidates
 
 
@@ -60,6 +61,13 @@ class QueuedMessages:
 class QueuedAnthropicClient:
     def __init__(self, payloads: list[dict[str, object]]) -> None:
         self.messages = QueuedMessages(payloads)
+
+
+def call_user_text(call: dict[str, object]) -> str:
+    content = call["messages"][0]["content"]  # type: ignore[index]
+    if isinstance(content, str):
+        return content
+    return "".join(str(block["text"]) for block in content)
 
 
 def make_document() -> Document:
@@ -247,33 +255,22 @@ async def seed_audit_store(
 
 def accepted_payload(*, candidate_id: str = "candidate-1") -> dict[str, object]:
     return {
-        "candidate_id": candidate_id,
-        "span_verified": True,
-        "category_verified": True,
-        "alignment_score": 0.96,
-        "accepted": True,
-        "rejection_reasons": (),
+        "id": short_candidate_id(candidate_id),
+        "decision": "accept",
     }
 
 
 def rejected_payload(*, candidate_id: str = "candidate-1") -> dict[str, object]:
     return {
-        "candidate_id": candidate_id,
-        "span_verified": True,
-        "category_verified": False,
-        "alignment_score": 0.3,
-        "accepted": False,
-        "rejection_reasons": (
-            {
-                "code": "schema_violation",
-                "message": "Candidate value does not align with the approved field.",
-            },
-        ),
+        "id": short_candidate_id(candidate_id),
+        "decision": "reject",
+        "code": "schema_violation",
+        "evidence": "Candidate value does not align with the approved field.",
     }
 
 
 def batch_payload(*items: dict[str, object]) -> dict[str, object]:
-    return {"reports": tuple(items)}
+    return {"verdicts": tuple(items)}
 
 
 def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) -> None:
@@ -321,8 +318,14 @@ def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
         assert result.reports == (*first_reports, *second_reports)
         assert result.rejections == rejections
         assert first_reports[0].accepted is True
+        assert first_reports[0].alignment_score == 1.0
+        assert first_reports[0].rejection_reasons == ()
         assert second_reports[0].accepted is False
+        assert second_reports[0].alignment_score == 0.0
         assert second_reports[0].category_verified is False
+        assert second_reports[0].rejection_reasons[0].message == (
+            "Candidate value does not align with the approved field."
+        )
         assert rejections[0].stage == "verifier"
         assert rejections[0].reasons[0].code == "schema_violation"
         assert [log.stage for log in logs] == ["verifier", "verifier"]
@@ -330,7 +333,26 @@ def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
             {"type": "tool", "name": "verify_candidates_batch"},
             {"type": "tool", "name": "verify_candidates_batch"},
         ]
-        assert '"critic_report"' in anthropic_client.messages.calls[0]["messages"][0]["content"]
+        user_payload_text = call_user_text(anthropic_client.messages.calls[0])
+        user_payload = json.loads(user_payload_text)
+        assert user_payload["items"][0]["critic_summary"] == {"accepted": True}
+        assert user_payload["items"][0]["candidate"]["id"] == short_candidate_id(
+            "candidate-1"
+        )
+        for forbidden in (
+            "critic_report",
+            "candidate_id",
+            "chunk_id",
+            "doc_id",
+            "run_id",
+            "start_byte",
+            "end_byte",
+            "chunk_policy",
+            "budget",
+            "domain_hints",
+            "executor_call_id",
+        ):
+            assert f'"{forbidden}"' not in user_payload_text
 
     asyncio.run(run_check())
 

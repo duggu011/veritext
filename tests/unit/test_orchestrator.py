@@ -58,6 +58,7 @@ class DeterministicLLMClient:
         return StructuredLLMResult(output=output, call_log=call_log)
 
     def _payload_for_request(self, request: object) -> dict[str, object]:
+        user_content = request.full_user_content
         if request.stage == "planner.classify_document":
             return {
                 "document_type": "financial_update",
@@ -85,65 +86,57 @@ class DeterministicLLMClient:
                 }
             }
         if request.stage == "executor.claim":
-            chunk = json.loads(request.user_content)["chunk"]
+            chunk = json.loads(user_content)["chunk_view"]
             source_text = "Revenue increased"
+            candidate = {
+                "category": "Finding",
+                "field_name": "summary",
+                "value": source_text,
+                "source_text": source_text,
+                "start_char": chunk["start_char"],
+                "confidence": 0.8,
+            }
             return {
                 "candidates": (
-                    {
-                        "category": "Finding",
-                        "field_name": "summary",
-                        "value": source_text,
-                        "source_text": source_text,
-                        "start_char": chunk["start_char"],
-                        "confidence": 0.8,
-                    },
+                    candidate,
+                    candidate,
                 )
             }
         if request.stage == "critic":
-            candidate_ids = [
-                item["candidate_id"]
-                for item in json.loads(request.user_content)["candidates"]
-            ]
+            candidate_ids = [item["id"] for item in json.loads(user_content)["candidates"]]
             return {
-                "reports": tuple(
+                "verdicts": tuple(
                     {
-                        "candidate_id": candidate_id,
-                        "plausibility_score": 0.9,
-                        "accepted": True,
-                        "issues": (),
-                        "corrected_candidate": None,
+                        "id": candidate_id,
+                        "decision": "accept",
                     }
                     for candidate_id in candidate_ids
                 ),
             }
         if request.stage == "verifier":
-            candidate_ids = [
-                item["candidate"]["candidate_id"]
-                for item in json.loads(request.user_content)["items"]
-            ]
+            candidate_ids = [item["candidate"]["id"] for item in json.loads(user_content)["items"]]
             return {
-                "reports": tuple(
+                "verdicts": tuple(
                     {
-                        "candidate_id": candidate_id,
-                        "span_verified": True,
-                        "category_verified": True,
-                        "alignment_score": 0.92,
-                        "accepted": True,
-                        "rejection_reasons": (),
+                        "id": candidate_id,
+                        "decision": "accept",
                     }
                     for candidate_id in candidate_ids
                 ),
             }
         if request.stage == "reconciler":
-            candidate_id = json.loads(request.user_content)["candidates"][0]["candidate_id"]
+            candidate_ids = [
+                candidate["id"]
+                for candidate in json.loads(user_content)["candidates"]
+            ]
             return {
                 "data_points": (
                     {
                         "category": "Finding",
                         "field_name": "summary",
                         "value": "Revenue increased",
-                        "source_candidate_id": candidate_id,
-                        "contributing_candidate_ids": (candidate_id,),
+                        "source_candidate_id": candidate_ids[0],
+                        "contributing_candidate_ids": tuple(candidate_ids),
                         "confidence": 0.95,
                     },
                 ),
@@ -209,20 +202,46 @@ def test_run_extraction_pipeline_wires_all_stages_and_completes_manifest(tmp_pat
             stored_manifest = await audit_store.get_run_manifest("run-1")
             stored_data_points = await audit_store.list_data_points("run-1")
             llm_logs = await audit_store.list_llm_call_logs("run-1")
+            all_rejections = {
+                candidate.candidate_id: await audit_store.list_candidate_rejections(
+                    candidate.candidate_id
+                )
+                for candidate in result.execution.accepted_candidates
+            }
+            all_critic_reports = {
+                candidate.candidate_id: await audit_store.list_critic_reports(
+                    candidate.candidate_id
+                )
+                for candidate in result.execution.accepted_candidates
+            }
 
         payload = json.loads(output_path.read_text(encoding="utf-8"))
         assert result.run_id == "run-1"
         assert result.document.doc_id == stored_manifest.doc_id
         assert result.plan.domain_hints == ("user-hint", "finance")
         assert len(result.chunks) == 1
-        assert len(result.execution.accepted_candidates) == 1
-        assert len(result.critic.accepted_candidates) == 1
-        assert len(result.verification.accepted_candidates) == 1
+        assert len(result.execution.accepted_candidates) == 2
+        assert len(result.critic.accepted_candidates) == 2
+        assert len(result.verification.accepted_candidates) == 2
         assert stored_data_points == result.reconciliation.data_points
         assert result.completed_manifest == stored_manifest
         assert stored_manifest.status == "completed"
         assert stored_manifest.output_data_point_ids == tuple(payload["output_data_point_ids"])
         assert payload["data_points"][0]["value"] == "Revenue increased"
+        assert len(result.reconciliation.data_points[0].contributing_candidate_ids) == 2
+        dedup_rejections = [
+            rejection
+            for rejections in all_rejections.values()
+            for rejection in rejections
+            if rejection.stage == "dedup"
+        ]
+        assert len(dedup_rejections) == 1
+        duplicate_id = dedup_rejections[0].candidate_id
+        assert dedup_rejections[0].reasons[0].code == "duplicate_candidate"
+        assert all_critic_reports[duplicate_id][0].accepted is True
+        critic_calls = [call for call in llm_client.calls if call.stage == "critic"]
+        assert len(critic_calls) == 1
+        assert len(json.loads(critic_calls[0].full_user_content)["candidates"]) == 1
         assert [log.stage for log in llm_logs] == [
             "planner.classify_document",
             "planner.propose_schema",

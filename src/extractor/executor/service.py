@@ -19,6 +19,7 @@ from extractor.contracts import (
 )
 from extractor.contracts.models import LLMStage, LensName
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm.views import chunk_view_from_chunk, schema_card_from_plan
 from extractor.executor.models import (
     ExecutionResult,
     ExecutorCandidateBatch,
@@ -131,17 +132,18 @@ async def _execute_lens_chunk(
 ) -> ExecutorTaskResult:
     async with semaphore:
         stage = cast(LLMStage, f"executor.{lens}")
+        stage_input = ExecutorStageInput(
+            schema_card=schema_card_from_plan(plan),
+            lens=lens,
+            chunk_view=chunk_view_from_chunk(chunk),
+        ).model_dump_json()
         result = await llm_client.complete_structured(
             StructuredLLMRequest(
                 run_id=plan.run_id,
                 stage=stage,
                 prompt=prompt_loader.load(stage),
-                user_content=ExecutorStageInput(
-                    run_id=plan.run_id,
-                    plan=plan,
-                    lens=lens,
-                    chunk=chunk,
-                ).model_dump_json(),
+                user_content="",
+                stable_user_prefix=stage_input,
                 tool_name=f"extract_{lens}_candidates",
                 tool_description=f"Extract {lens} candidates from one chunk.",
             ),

@@ -13,6 +13,7 @@ from extractor.contracts import (
     VerifierReport,
 )
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm.views import build_candidate_view_map, schema_card_from_plan
 from extractor.reconciler.models import (
     ReconciledDataPointPayload,
     ReconciliationBatch,
@@ -45,17 +46,19 @@ async def reconcile_candidates(
         critic_reports=critic_reports,
         verifier_reports=verifier_reports,
     )
+    try:
+        candidate_views, candidates_by_view_id = build_candidate_view_map(candidates)
+    except ValueError as exc:
+        raise ReconcilerError(str(exc)) from exc
+
     result = await llm_client.complete_structured(
         StructuredLLMRequest(
             run_id=plan.run_id,
             stage="reconciler",
             prompt=prompt_loader.load("reconciler"),
             user_content=ReconcilerStageInput(
-                run_id=plan.run_id,
-                plan=plan,
-                candidates=candidates,
-                critic_reports=tuple(critic_reports_by_candidate_id.values()),
-                verifier_reports=tuple(verifier_reports_by_candidate_id.values()),
+                schema_card=schema_card_from_plan(plan),
+                candidates=candidate_views,
             ).model_dump_json(),
             tool_name="reconcile_candidates",
             tool_description="Reconcile verified candidates into final source-backed data points.",
@@ -63,13 +66,17 @@ async def reconcile_candidates(
         output_model=ReconciliationBatch,
         audit_store=audit_store,
     )
+    expanded_batch = _expand_reconciliation_batch_ids(
+        batch=result.output,
+        candidates_by_view_id=candidates_by_view_id,
+    )
 
     data_points, rejections = _build_reconciliation_result(
         plan=plan,
         candidates_by_id={candidate.candidate_id: candidate for candidate in candidates},
         critic_reports_by_candidate_id=critic_reports_by_candidate_id,
         verifier_reports_by_candidate_id=verifier_reports_by_candidate_id,
-        batch=result.output,
+        batch=expanded_batch,
     )
     if audit_store is not None:
         for data_point in data_points:
@@ -143,6 +150,59 @@ def _accepted_verifier_reports_by_candidate_id(
             raise ReconcilerError("reconciler requires exactly one accepted verifier report per candidate")
         accepted_reports[report.candidate_id] = report
     return accepted_reports
+
+
+def _expand_reconciliation_batch_ids(
+    *,
+    batch: ReconciliationBatch,
+    candidates_by_view_id: dict[str, LensCandidate],
+) -> ReconciliationBatch:
+    data_points: list[ReconciledDataPointPayload] = []
+    for payload in batch.data_points:
+        data_points.append(
+            payload.model_copy(
+                update={
+                    "source_candidate_id": _full_candidate_id(
+                        payload.source_candidate_id,
+                        candidates_by_view_id,
+                    ),
+                    "contributing_candidate_ids": tuple(
+                        _full_candidate_id(candidate_id, candidates_by_view_id)
+                        for candidate_id in payload.contributing_candidate_ids
+                    ),
+                }
+            )
+        )
+
+    rejected_candidates: list[RejectedCandidatePayload] = []
+    for payload in batch.rejected_candidates:
+        rejected_candidates.append(
+            payload.model_copy(
+                update={
+                    "candidate_id": _full_candidate_id(
+                        payload.candidate_id,
+                        candidates_by_view_id,
+                    )
+                }
+            )
+        )
+
+    return ReconciliationBatch(
+        data_points=tuple(data_points),
+        rejected_candidates=tuple(rejected_candidates),
+    )
+
+
+def _full_candidate_id(
+    compact_id: str,
+    candidates_by_view_id: dict[str, LensCandidate],
+) -> str:
+    candidate = candidates_by_view_id.get(compact_id)
+    if candidate is None:
+        raise ReconcilerError(
+            f"reconciler output referenced unknown candidate IDs: {compact_id}"
+        )
+    return candidate.candidate_id
 
 
 def _build_reconciliation_result(

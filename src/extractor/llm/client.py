@@ -9,9 +9,9 @@ import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Generic, TypeVar
+from typing import Annotated, Any, Generic, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from extractor.audit import AuditStore
 from extractor.config import LLMConfig
@@ -21,6 +21,8 @@ from extractor.llm.prompts import PromptTemplate
 
 
 _OPENAI_COMPATIBLE_PROVIDERS = {"openai", "openai_compatible"}
+_ANTHROPIC_CACHEABLE_STAGE_GROUPS = {"planner", "executor", "critic", "verifier"}
+_ANTHROPIC_EPHEMERAL_CACHE_CONTROL = {"type": "ephemeral"}
 # Visual divider widths for the human-readable LLM trace lines.
 _TRACE_OUTER = "=" * 100
 _TRACE_INNER = "-" * 100
@@ -68,7 +70,7 @@ def _print_llm_trace(
         _truncate_for_trace(request.prompt.text),
         _TRACE_INNER,
         "[USER]",
-        _truncate_for_trace(request.user_content),
+        _truncate_for_trace(request.full_user_content),
         _TRACE_INNER,
         "[RESPONSE / TOOL INPUT]",
         _truncate_for_trace(rendered_output),
@@ -88,6 +90,7 @@ def _print_llm_trace(
 
 
 OutputModelT = TypeVar("OutputModelT", bound=BaseModel)
+NonEmptyStr = Annotated[str, Field(strict=True, min_length=1)]
 
 
 class LLMClientError(RuntimeError):
@@ -104,9 +107,20 @@ class StructuredLLMRequest(BaseModel):
     run_id: str = Field(strict=True, min_length=1)
     stage: LLMStage
     prompt: PromptTemplate
-    user_content: str = Field(strict=True, min_length=1)
+    user_content: str = Field(strict=True)
+    stable_user_prefix: NonEmptyStr | None = None
     tool_name: str = Field(strict=True, min_length=1)
     tool_description: str = Field(strict=True, min_length=1)
+
+    @model_validator(mode="after")
+    def validate_user_content(self) -> StructuredLLMRequest:
+        if not self.user_content and self.stable_user_prefix is None:
+            raise ValueError("user_content must be non-empty unless stable_user_prefix is set")
+        return self
+
+    @property
+    def full_user_content(self) -> str:
+        return f"{self.stable_user_prefix or ''}{self.user_content}"
 
 
 class StructuredLLMResult(BaseModel, Generic[OutputModelT]):
@@ -182,19 +196,28 @@ class LLMClient:
             raise LLMClientError("Anthropic client is not configured")
 
         settings = _resolve_llm_settings(self.config, request.stage)
+        cache_enabled = _anthropic_prompt_cache_enabled(self.config, request)
         start = time.perf_counter()
         response = await anthropic_client.messages.create(
             model=settings.model,
             max_tokens=settings.max_output_tokens,
             temperature=self.config.temperature,
-            system=request.prompt.text,
-            messages=[{"role": "user", "content": request.user_content}],
-            tools=[
+            system=_anthropic_system(request, cache_enabled=cache_enabled),
+            messages=[
                 {
-                    "name": request.tool_name,
-                    "description": request.tool_description,
-                    "input_schema": output_model.model_json_schema(),
+                    "role": "user",
+                    "content": _anthropic_user_content(
+                        request,
+                        cache_enabled=cache_enabled,
+                    ),
                 }
+            ],
+            tools=[
+                _anthropic_tool_definition(
+                    request,
+                    output_model,
+                    cache_enabled=cache_enabled,
+                )
             ],
             tool_choice={"type": "tool", "name": request.tool_name},
         )
@@ -282,6 +305,70 @@ def _resolve_llm_settings(config: LLMConfig, stage: LLMStage) -> _ResolvedLLMSet
     )
 
 
+def _anthropic_prompt_cache_enabled(
+    config: LLMConfig,
+    request: StructuredLLMRequest,
+) -> bool:
+    if not config.prompt_cache_enabled:
+        return False
+    return (
+        request.stable_user_prefix is not None
+        or _stage_group(request.stage) in _ANTHROPIC_CACHEABLE_STAGE_GROUPS
+    )
+
+
+def _anthropic_system(
+    request: StructuredLLMRequest,
+    *,
+    cache_enabled: bool,
+) -> str | list[dict[str, object]]:
+    if not cache_enabled:
+        return request.prompt.text
+    return [
+        {
+            "type": "text",
+            "text": request.prompt.text,
+            "cache_control": dict(_ANTHROPIC_EPHEMERAL_CACHE_CONTROL),
+        }
+    ]
+
+
+def _anthropic_user_content(
+    request: StructuredLLMRequest,
+    *,
+    cache_enabled: bool,
+) -> str | list[dict[str, object]]:
+    if not cache_enabled or request.stable_user_prefix is None:
+        return request.full_user_content
+
+    blocks: list[dict[str, object]] = [
+        {
+            "type": "text",
+            "text": request.stable_user_prefix,
+            "cache_control": dict(_ANTHROPIC_EPHEMERAL_CACHE_CONTROL),
+        }
+    ]
+    if request.user_content:
+        blocks.append({"type": "text", "text": request.user_content})
+    return blocks
+
+
+def _anthropic_tool_definition(
+    request: StructuredLLMRequest,
+    output_model: type[BaseModel],
+    *,
+    cache_enabled: bool,
+) -> dict[str, object]:
+    tool = {
+        "name": request.tool_name,
+        "description": request.tool_description,
+        "input_schema": output_model.model_json_schema(),
+    }
+    if cache_enabled:
+        tool["cache_control"] = dict(_ANTHROPIC_EPHEMERAL_CACHE_CONTROL)
+    return tool
+
+
 def _build_openai_chat_kwargs(
     *,
     config: LLMConfig,
@@ -311,7 +398,7 @@ def _build_openai_chat_kwargs(
 def _openai_messages(request: StructuredLLMRequest) -> list[dict[str, str]]:
     return [
         {"role": "system", "content": request.prompt.text},
-        {"role": "user", "content": request.user_content},
+        {"role": "user", "content": request.full_user_content},
     ]
 
 

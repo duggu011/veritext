@@ -39,6 +39,7 @@ RejectionReasonCode = Literal[
     "reconciler_rejected",
     "schema_violation",
     "ambiguous_source_span",
+    "duplicate_candidate",
 ]
 
 

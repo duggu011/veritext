@@ -13,10 +13,27 @@ from extractor.llm.prompts import (
     PromptLoader,
     PromptTemplate,
 )
+from extractor.llm.views import (
+    LLMCategoryCard,
+    LLMChunkView,
+    LLMCandidateView,
+    LLMFieldCard,
+    LLMSchemaCard,
+    build_candidate_view_map,
+    candidate_view_from_candidate,
+    chunk_view_from_chunk,
+    schema_card_from_plan,
+    short_candidate_id,
+)
 
 __all__ = [
     "LLMClient",
     "LLMClientError",
+    "LLMCategoryCard",
+    "LLMChunkView",
+    "LLMCandidateView",
+    "LLMFieldCard",
+    "LLMSchemaCard",
     "LLMToolUseError",
     "PROMPT_STAGES",
     "PromptLoadError",
@@ -24,4 +41,9 @@ __all__ = [
     "PromptTemplate",
     "StructuredLLMRequest",
     "StructuredLLMResult",
+    "build_candidate_view_map",
+    "candidate_view_from_candidate",
+    "chunk_view_from_chunk",
+    "schema_card_from_plan",
+    "short_candidate_id",
 ]

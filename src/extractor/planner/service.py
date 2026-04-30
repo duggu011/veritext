@@ -10,6 +10,7 @@ from extractor.config import ChunkingConfig
 from extractor.contracts import Chunk, ChunkPolicy, Document, ExtractionPlan
 from extractor.contracts.models import LLMStage
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm.payloads import split_model_json_before_field
 from extractor.planner.models import (
     BudgetAllocation,
     DocumentClassification,
@@ -175,12 +176,17 @@ async def _call_planning_stage(
     stage_input: PlanningStageInput,
 ) -> OutputModelT:
     prompt = prompt_loader.load(stage)
+    stable_user_prefix, user_content = split_model_json_before_field(
+        stage_input,
+        "domain_hints",
+    )
     result = await llm_client.complete_structured(
         StructuredLLMRequest(
             run_id=run_id,
             stage=stage,
             prompt=prompt,
-            user_content=stage_input.model_dump_json(),
+            user_content=user_content,
+            stable_user_prefix=stable_user_prefix,
             tool_name=tool_name,
             tool_description=tool_description,
         ),

@@ -35,6 +35,7 @@ class LLMConfig(ConfigModel):
     max_output_tokens: PositiveInt
     temperature: Temperature
     reasoning_effort: ReasoningEffort = "medium"
+    prompt_cache_enabled: bool = True
     stage_overrides: dict[LLMStageGroup, LLMStageOverrideConfig] = Field(default_factory=dict)
 
     @model_validator(mode="after")

@@ -15,14 +15,23 @@ from extractor.contracts import (
     SourceSpan,
     VerifierReport,
 )
+from extractor.contracts.models import RejectionReasonCode
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm.payloads import split_model_json_before_field
+from extractor.llm.views import (
+    build_candidate_view_map,
+    chunk_view_from_chunk,
+    schema_card_from_plan,
+    short_candidate_id,
+)
 from extractor.verifier.models import (
+    CriticSummary,
     VerificationResult,
     VerifierBatchItem,
-    VerifierBatchReportPayload,
-    VerifierBatchReviewPayload,
+    VerifierBatchVerdicts,
     VerifierBatchStageInput,
     VerifierTaskResult,
+    VerifierVerdict,
 )
 
 
@@ -57,18 +66,27 @@ async def verify_candidates(
     )
     semaphore = asyncio.Semaphore(execution_config.max_stage_concurrency)
     batches = _partition_into_batches(candidates, execution_config.verifier_batch_size)
+    cache_primed = (
+        asyncio.Event()
+        if len(batches) > 1
+        and llm_client.config.provider == "anthropic"
+        and llm_client.config.prompt_cache_enabled
+        else None
+    )
     tasks = [
         _verify_batch(
             plan=plan,
             chunk=chunks_by_id[batch[0].chunk_id],
             batch=batch,
             critic_reports_by_candidate=reports_by_candidate_id,
+            batch_index=batch_index,
+            cache_primed=cache_primed,
             prompt_loader=prompt_loader,
             llm_client=llm_client,
             audit_store=audit_store,
             semaphore=semaphore,
         )
-        for batch in batches
+        for batch_index, batch in enumerate(batches)
     ]
     results = await asyncio.gather(*tasks)
 
@@ -104,43 +122,60 @@ async def _verify_batch(
     chunk: Chunk,
     batch: tuple[LensCandidate, ...],
     critic_reports_by_candidate: dict[str, CriticReport],
+    batch_index: int,
+    cache_primed: asyncio.Event | None,
     prompt_loader: PromptLoader,
     llm_client: LLMClient,
     audit_store: AuditStore | None,
     semaphore: asyncio.Semaphore,
 ) -> VerifierTaskResult:
+    candidate_views, _candidates_by_view_id = build_candidate_view_map(batch)
     items = tuple(
         VerifierBatchItem(
-            candidate=candidate,
-            critic_report=critic_reports_by_candidate[candidate.candidate_id],
-        )
-        for candidate in batch
-    )
-    async with semaphore:
-        result = await llm_client.complete_structured(
-            StructuredLLMRequest(
-                run_id=plan.run_id,
-                stage="verifier",
-                prompt=prompt_loader.load("verifier"),
-                user_content=VerifierBatchStageInput(
-                    run_id=plan.run_id,
-                    plan=plan,
-                    chunk=chunk,
-                    items=items,
-                ).model_dump_json(),
-                tool_name="verify_candidates_batch",
-                tool_description=(
-                    "Verify a batch of critic-accepted candidates from one chunk "
-                    "against source and schema."
-                ),
+            candidate=candidate_view,
+            critic_summary=CriticSummary(
+                accepted=critic_reports_by_candidate[candidate.candidate_id].accepted
             ),
-            output_model=VerifierBatchReviewPayload,
-            audit_store=audit_store,
         )
+        for candidate, candidate_view in zip(batch, candidate_views, strict=True)
+    )
+    if batch_index > 0 and cache_primed is not None:
+        await cache_primed.wait()
 
-    reports_by_candidate: dict[str, VerifierBatchReportPayload] = {}
-    for report_payload in result.output.reports:
-        reports_by_candidate.setdefault(report_payload.candidate_id, report_payload)
+    stage_input = VerifierBatchStageInput(
+        schema_card=schema_card_from_plan(plan),
+        chunk_view=chunk_view_from_chunk(chunk),
+        items=items,
+    )
+    stable_user_prefix, user_content = split_model_json_before_field(
+        stage_input,
+        "items",
+    )
+    try:
+        async with semaphore:
+            result = await llm_client.complete_structured(
+                StructuredLLMRequest(
+                    run_id=plan.run_id,
+                    stage="verifier",
+                    prompt=prompt_loader.load("verifier"),
+                    user_content=user_content,
+                    stable_user_prefix=stable_user_prefix,
+                    tool_name="verify_candidates_batch",
+                    tool_description=(
+                        "Verify a batch of critic-accepted candidates from one chunk "
+                        "against source and schema."
+                    ),
+                ),
+                output_model=VerifierBatchVerdicts,
+                audit_store=audit_store,
+            )
+    finally:
+        if batch_index == 0 and cache_primed is not None:
+            cache_primed.set()
+
+    verdicts_by_candidate: dict[str, VerifierVerdict] = {}
+    for verdict in result.output.verdicts:
+        verdicts_by_candidate.setdefault(verdict.id, verdict)
 
     accepted_candidates: list[LensCandidate] = []
     rejected_candidates: list[LensCandidate] = []
@@ -148,8 +183,9 @@ async def _verify_batch(
     rejections: list[CandidateRejection] = []
 
     for candidate in batch:
-        report_payload = reports_by_candidate.get(candidate.candidate_id)
-        if report_payload is None:
+        view_id = short_candidate_id(candidate.candidate_id)
+        verdict = verdicts_by_candidate.get(view_id)
+        if verdict is None:
             reasons = (
                 RejectionReason(
                     code="verifier_missing_report",
@@ -195,7 +231,7 @@ async def _verify_batch(
             plan=plan,
             chunk=chunk,
             candidate=candidate,
-            payload=report_payload,
+            verdict=verdict,
             verifier_call_id=result.call_log.call_id,
         )
         if audit_store is not None:
@@ -275,7 +311,7 @@ def _build_report(
     plan: ExtractionPlan,
     chunk: Chunk,
     candidate: LensCandidate,
-    payload: VerifierBatchReportPayload,
+    verdict: VerifierVerdict,
     verifier_call_id: str,
 ) -> VerifierReport:
     deterministic_reasons = _deterministic_rejection_reasons(
@@ -285,20 +321,20 @@ def _build_report(
     )
     rejection_reasons = _merged_rejection_reasons(
         (
-            *payload.rejection_reasons,
-            *_llm_rejection_reasons(payload),
+            *_llm_rejection_reasons(verdict),
             *deterministic_reasons,
         )
     )
-    span_verified = payload.span_verified and not any(
-        reason.code == "invented_span" for reason in deterministic_reasons
+    span_verified = not any(
+        reason.code in {"invented_span", "invalid_source_offsets", "ambiguous_source_span"}
+        for reason in rejection_reasons
     )
-    category_verified = payload.category_verified and not any(
+    category_verified = not any(
         reason.code in {"category_not_approved", "schema_violation"}
-        for reason in deterministic_reasons
+        for reason in rejection_reasons
     )
     accepted = (
-        payload.accepted
+        verdict.decision == "accept"
         and span_verified
         and category_verified
         and not rejection_reasons
@@ -310,6 +346,7 @@ def _build_report(
                 message="Verifier rejected candidate without a specific reason.",
             ),
         )
+    alignment_score = 1.0 if accepted else 0.0
 
     return VerifierReport(
         report_id=_stable_report_id(
@@ -317,7 +354,7 @@ def _build_report(
             verifier_call_id=verifier_call_id,
             span_verified=span_verified,
             category_verified=category_verified,
-            alignment_score=payload.alignment_score,
+            alignment_score=alignment_score,
             accepted=accepted,
             rejection_reasons=rejection_reasons,
         ),
@@ -326,7 +363,7 @@ def _build_report(
         verifier_call_id=verifier_call_id,
         span_verified=span_verified,
         category_verified=category_verified,
-        alignment_score=payload.alignment_score,
+        alignment_score=alignment_score,
         accepted=accepted,
         rejection_reasons=() if accepted else rejection_reasons,
     )
@@ -368,30 +405,37 @@ def _deterministic_rejection_reasons(
     return tuple(reasons)
 
 
-def _llm_rejection_reasons(payload: VerifierBatchReportPayload) -> tuple[RejectionReason, ...]:
-    reasons: list[RejectionReason] = []
-    if not payload.span_verified:
-        reasons.append(
-            RejectionReason(
-                code="invented_span",
-                message="Verifier did not confirm that the source span grounds the value.",
-            )
-        )
-    if not payload.category_verified:
-        reasons.append(
-            RejectionReason(
-                code="schema_violation",
-                message="Verifier did not confirm category and field alignment.",
-            )
-        )
-    if not payload.accepted:
-        reasons.append(
-            RejectionReason(
-                code="verifier_rejected",
-                message="Verifier rejected candidate.",
-            )
-        )
-    return tuple(reasons)
+def _llm_rejection_reasons(verdict: VerifierVerdict) -> tuple[RejectionReason, ...]:
+    if verdict.decision == "accept":
+        return ()
+    code = _required_code(verdict)
+    return (
+        RejectionReason(
+            code=code,
+            message=verdict.evidence or _default_message(code),
+        ),
+    )
+
+
+def _required_code(verdict: VerifierVerdict) -> RejectionReasonCode:
+    if verdict.code is None:
+        raise VerifierError("rejected verifier verdict must include a rejection code")
+    return verdict.code
+
+
+def _default_message(code: RejectionReasonCode) -> str:
+    messages = {
+        "invalid_source_offsets": "Candidate source offsets are not valid for the source chunk.",
+        "invented_span": "Candidate value is not grounded in the selected source span.",
+        "category_not_approved": "Candidate category is not approved by the extraction schema.",
+        "critic_rejected": "Critic rejected the candidate.",
+        "verifier_rejected": "Verifier rejected the candidate.",
+        "reconciler_rejected": "Reconciler rejected the candidate.",
+        "schema_violation": "Candidate category or field does not match the approved schema.",
+        "ambiguous_source_span": "Candidate source span is ambiguous within the source chunk.",
+        "duplicate_candidate": "Candidate duplicates another candidate selected for review.",
+    }
+    return messages[code]
 
 
 def _merged_rejection_reasons(

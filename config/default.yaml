@@ -10,6 +10,8 @@ llm:
   # Only consulted for OpenAI reasoning models (gpt-5*, o1*, o3*, o4*); ignored
   # by Anthropic and standard Kimi paths.
   reasoning_effort: minimal
+  # Anthropic prompt caching for stable system/tool/user-prefix blocks.
+  prompt_cache_enabled: true
   # Optional per-stage overrides keyed by planner, executor, critic, verifier, reconciler.
   stage_overrides:
     planner: {}

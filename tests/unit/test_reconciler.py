@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -25,6 +26,7 @@ from extractor.contracts import (
     VerifierReport,
 )
 from extractor.llm import LLMClient, PromptLoader
+from extractor.llm.views import short_candidate_id
 from extractor.reconciler import ReconcilerError, reconcile_candidates
 
 
@@ -268,14 +270,15 @@ def reconciliation_payload(
     *,
     rejected_candidates: tuple[dict[str, object], ...] = (),
 ) -> dict[str, object]:
+    first_id = short_candidate_id("candidate-1")
     return {
         "data_points": (
             {
                 "category": "Finding",
                 "field_name": "summary",
                 "value": "Revenue increased",
-                "source_candidate_id": "candidate-1",
-                "contributing_candidate_ids": ("candidate-1",),
+                "source_candidate_id": first_id,
+                "contributing_candidate_ids": (first_id,),
                 "confidence": 0.95,
             },
         ),
@@ -295,7 +298,7 @@ def test_reconcile_candidates_persists_data_points_rejections_and_logs(
                 reconciliation_payload(
                     rejected_candidates=(
                         {
-                            "candidate_id": "candidate-2",
+                            "candidate_id": short_candidate_id("candidate-2"),
                             "reasons": (
                                 {
                                     "code": "reconciler_rejected",
@@ -341,7 +344,16 @@ def test_reconcile_candidates_persists_data_points_rejections_and_logs(
             "type": "tool",
             "name": "reconcile_candidates",
         }
-        assert '"verifier_reports"' in anthropic_client.messages.calls[0]["messages"][0]["content"]
+        user_content = anthropic_client.messages.calls[0]["messages"][0]["content"]
+        user_payload = json.loads(user_content)
+        assert set(user_payload) == {"schema_card", "candidates"}
+        assert "critic_reports" not in user_payload
+        assert "verifier_reports" not in user_payload
+        assert "plan" not in user_payload
+        assert "run_id" not in user_payload
+        assert len(user_payload["candidates"]) == 2
+        assert user_payload["candidates"][0]["id"] == short_candidate_id("candidate-1")
+        assert "candidate_id" not in user_payload["candidates"][0]
 
     asyncio.run(run_check())
 

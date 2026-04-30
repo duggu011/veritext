@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -56,6 +57,13 @@ class QueuedMessages:
 class QueuedAnthropicClient:
     def __init__(self, payloads: list[dict[str, object]]) -> None:
         self.messages = QueuedMessages(payloads)
+
+
+def call_user_text(call: dict[str, object]) -> str:
+    content = call["messages"][0]["content"]  # type: ignore[index]
+    if isinstance(content, str):
+        return content
+    return "".join(str(block["text"]) for block in content)
 
 
 def make_document() -> Document:
@@ -248,7 +256,24 @@ def test_execute_plan_persists_accepted_and_rejected_candidates(tmp_path: Path) 
             {"type": "tool", "name": "extract_claim_candidates"},
             {"type": "tool", "name": "extract_claim_candidates"},
         ]
-        assert '"chunk_id":"chunk-1"' in anthropic_client.messages.calls[0]["messages"][0]["content"]
+        first_payload_text = call_user_text(anthropic_client.messages.calls[0])
+        first_payload = json.loads(first_payload_text)
+        assert first_payload["chunk_view"] == {
+            "start_char": 0,
+            "text": "Revenue increased.",
+        }
+        assert first_payload["schema_card"]["enabled_lenses"] == ["claim"]
+        for forbidden in (
+            "chunk_id",
+            "doc_id",
+            "run_id",
+            "start_byte",
+            "end_byte",
+            "chunk_policy",
+            "budget",
+            "domain_hints",
+        ):
+            assert f'"{forbidden}"' not in first_payload_text
 
     asyncio.run(run_check())
 

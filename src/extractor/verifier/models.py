@@ -1,51 +1,58 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from extractor.audit import CandidateRejection
 from extractor.contracts import (
-    Chunk,
-    CriticReport,
-    ExtractionPlan,
     LensCandidate,
-    RejectionReason,
     VerifierReport,
 )
+from extractor.contracts.models import RejectionReasonCode
+from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
-Confidence = Annotated[float, Field(strict=True, ge=0.0, le=1.0)]
+Evidence = Annotated[str, Field(strict=True, min_length=1, max_length=200)]
 
 
 class VerifierModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class CriticSummary(VerifierModel):
+    accepted: bool = Field(strict=True)
+
+
 class VerifierBatchItem(VerifierModel):
-    candidate: LensCandidate
-    critic_report: CriticReport
+    candidate: LLMCandidateView
+    critic_summary: CriticSummary
 
 
 class VerifierBatchStageInput(VerifierModel):
-    run_id: NonEmptyStr
-    plan: ExtractionPlan
-    chunk: Chunk
+    schema_card: LLMSchemaCard
+    chunk_view: LLMChunkView
     items: tuple[VerifierBatchItem, ...]
 
 
-class VerifierBatchReportPayload(VerifierModel):
-    candidate_id: NonEmptyStr
-    span_verified: bool = Field(strict=True)
-    category_verified: bool = Field(strict=True)
-    alignment_score: Confidence
-    accepted: bool = Field(strict=True)
-    rejection_reasons: tuple[RejectionReason, ...]
+class VerifierVerdict(VerifierModel):
+    id: NonEmptyStr
+    decision: Literal["accept", "reject"]
+    code: RejectionReasonCode | None = None
+    evidence: Evidence | None = None
+
+    @model_validator(mode="after")
+    def validate_decision_fields(self) -> VerifierVerdict:
+        if self.decision == "accept" and self.code is not None:
+            raise ValueError("accepted verifier verdicts must not include code")
+        if self.decision == "reject" and self.code is None:
+            raise ValueError("rejected verifier verdicts must include code")
+        return self
 
 
-class VerifierBatchReviewPayload(VerifierModel):
-    reports: tuple[VerifierBatchReportPayload, ...]
+class VerifierBatchVerdicts(VerifierModel):
+    verdicts: tuple[VerifierVerdict, ...]
 
 
 class VerifierTaskResult(VerifierModel):
@@ -60,10 +67,11 @@ class VerificationResult(VerifierTaskResult):
 
 
 __all__ = [
+    "CriticSummary",
     "VerificationResult",
     "VerifierBatchItem",
-    "VerifierBatchReportPayload",
-    "VerifierBatchReviewPayload",
+    "VerifierBatchVerdicts",
     "VerifierBatchStageInput",
     "VerifierTaskResult",
+    "VerifierVerdict",
 ]

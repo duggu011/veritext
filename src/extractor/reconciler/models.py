@@ -7,13 +7,10 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from extractor.audit import CandidateRejection
 from extractor.contracts import (
-    CriticReport,
     DataPoint,
-    ExtractionPlan,
-    LensCandidate,
     RejectionReason,
-    VerifierReport,
 )
+from extractor.llm.views import LLMCandidateView, LLMSchemaCard
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
@@ -25,11 +22,8 @@ class ReconcilerModel(BaseModel):
 
 
 class ReconcilerStageInput(ReconcilerModel):
-    run_id: NonEmptyStr
-    plan: ExtractionPlan
-    candidates: tuple[LensCandidate, ...] = Field(min_length=1)
-    critic_reports: tuple[CriticReport, ...] = Field(min_length=1)
-    verifier_reports: tuple[VerifierReport, ...] = Field(min_length=1)
+    schema_card: LLMSchemaCard
+    candidates: tuple[LLMCandidateView, ...] = Field(min_length=1)
 
 
 class ReconciledDataPointPayload(ReconcilerModel):

@@ -1,72 +1,63 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from extractor.audit import CandidateRejection
-from extractor.contracts import Chunk, CriticIssue, CriticReport, ExtractionPlan, LensCandidate
-from extractor.contracts.models import LensName
+from extractor.contracts import CriticReport, LensCandidate
+from extractor.contracts.models import RejectionReasonCode
+from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
-Confidence = Annotated[float, Field(strict=True, ge=0.0, le=1.0)]
 NonNegativeInt = Annotated[int, Field(strict=True, ge=0)]
+Evidence = Annotated[str, Field(strict=True, min_length=1, max_length=200)]
 
 
 class CriticModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
-# Relaxed mirror of SourceSpan/LensCandidate for the critic tool input only.
-# The critic returns char offset + exact text; the service derives end_char and
-# byte offsets from the chunk before re-validating against the strict contracts.
-# This both spares the LLM unreliable byte arithmetic and lets a malformed
-# correction surface as a typed rejection rather than crashing the run.
-class RawSourceSpan(CriticModel):
-    doc_id: NonEmptyStr
-    chunk_id: NonEmptyStr
-    start_char: NonNegativeInt
-    text: Annotated[str, Field(strict=True, min_length=1)]
-
-
-class RawCorrectedCandidate(CriticModel):
-    candidate_id: NonEmptyStr
-    run_id: NonEmptyStr
-    doc_id: NonEmptyStr
-    chunk_id: NonEmptyStr
-    lens: LensName
-    category: NonEmptyStr
-    field_name: NonEmptyStr
-    value: NonEmptyStr
-    source_span: RawSourceSpan
-    confidence: Confidence
-    executor_call_id: NonEmptyStr
+class CompactCorrection(CriticModel):
+    # All fields are deltas over the original candidate identified by `id`.
+    # Identity/provenance fields stay server-side and are never accepted from
+    # the model at this boundary.
+    value: NonEmptyStr | None = None
+    category: NonEmptyStr | None = None
+    field_name: NonEmptyStr | None = None
+    source_start_char: NonNegativeInt | None = None
+    source_text: Annotated[str, Field(strict=True, min_length=1)] | None = None
 
 
 class CriticBatchStageInput(CriticModel):
-    run_id: NonEmptyStr
-    plan: ExtractionPlan
-    chunk: Chunk
-    candidates: tuple[LensCandidate, ...]
+    schema_card: LLMSchemaCard
+    chunk_view: LLMChunkView
+    candidates: tuple[LLMCandidateView, ...]
 
 
-class CriticBatchReportPayload(CriticModel):
-    candidate_id: NonEmptyStr
-    plausibility_score: Confidence
-    accepted: bool = Field(strict=True)
-    issues: tuple[CriticIssue, ...]
-    corrected_candidate: RawCorrectedCandidate | None = None
+class CriticVerdict(CriticModel):
+    id: NonEmptyStr
+    decision: Literal["accept", "reject", "correct"]
+    code: RejectionReasonCode | None = None
+    evidence: Evidence | None = None
+    correction: CompactCorrection | None = None
 
     @model_validator(mode="after")
-    def validate_rejection_issues(self) -> CriticBatchReportPayload:
-        if not self.accepted and not self.issues:
-            raise ValueError("rejected critic payloads must include at least one issue")
+    def validate_decision_fields(self) -> CriticVerdict:
+        if self.decision == "accept" and self.code is not None:
+            raise ValueError("accepted critic verdicts must not include code")
+        if self.decision != "accept" and self.code is None:
+            raise ValueError("non-accepted critic verdicts must include code")
+        if self.decision == "correct" and self.correction is None:
+            raise ValueError("corrected critic verdicts must include correction")
+        if self.decision != "correct" and self.correction is not None:
+            raise ValueError("only corrected critic verdicts may include correction")
         return self
 
 
-class CriticBatchReviewPayload(CriticModel):
-    reports: tuple[CriticBatchReportPayload, ...]
+class CriticBatchVerdicts(CriticModel):
+    verdicts: tuple[CriticVerdict, ...]
 
 
 class CriticTaskResult(CriticModel):
@@ -81,11 +72,10 @@ class CriticResult(CriticTaskResult):
 
 
 __all__ = [
-    "CriticBatchReportPayload",
-    "CriticBatchReviewPayload",
+    "CriticBatchVerdicts",
     "CriticBatchStageInput",
+    "CriticVerdict",
     "CriticResult",
     "CriticTaskResult",
-    "RawCorrectedCandidate",
-    "RawSourceSpan",
+    "CompactCorrection",
 ]

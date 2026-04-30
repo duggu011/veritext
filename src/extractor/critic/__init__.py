@@ -1,18 +1,18 @@
 """Candidate critique stages."""
 
 from extractor.critic.models import (
-    CriticBatchReportPayload,
-    CriticBatchReviewPayload,
+    CriticBatchVerdicts,
     CriticBatchStageInput,
+    CriticVerdict,
     CriticResult,
     CriticTaskResult,
 )
 from extractor.critic.service import CriticError, review_candidates
 
 __all__ = [
-    "CriticBatchReportPayload",
-    "CriticBatchReviewPayload",
+    "CriticBatchVerdicts",
     "CriticBatchStageInput",
+    "CriticVerdict",
     "CriticError",
     "CriticResult",
     "CriticTaskResult",

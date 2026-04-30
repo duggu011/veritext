@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,7 +23,7 @@ from extractor.contracts import (
     SourceSpan,
 )
 from extractor.critic import CriticError, review_candidates
-from extractor.llm import LLMClient, PromptLoader
+from extractor.llm import LLMClient, PromptLoader, short_candidate_id
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,6 +38,7 @@ class QueuedMessages:
 
     async def create(self, **kwargs: object) -> object:
         self.calls.append(kwargs)
+        cache_read_tokens = 50 if len(self.calls) > 1 else 0
         return SimpleNamespace(
             content=[
                 SimpleNamespace(
@@ -49,7 +51,7 @@ class QueuedMessages:
             usage=SimpleNamespace(
                 input_tokens=30 + len(self.calls),
                 output_tokens=9,
-                cache_read_input_tokens=0,
+                cache_read_input_tokens=cache_read_tokens,
                 cache_creation_input_tokens=0,
             ),
         )
@@ -58,6 +60,13 @@ class QueuedMessages:
 class QueuedAnthropicClient:
     def __init__(self, payloads: list[dict[str, object]]) -> None:
         self.messages = QueuedMessages(payloads)
+
+
+def call_user_text(call: dict[str, object]) -> str:
+    content = call["messages"][0]["content"]  # type: ignore[index]
+    if isinstance(content, str):
+        return content
+    return "".join(str(block["text"]) for block in content)
 
 
 def make_document() -> Document:
@@ -227,60 +236,42 @@ def accepted_payload(
     candidate_id: str,
     corrected_candidate: LensCandidate | None = None,
 ) -> dict[str, object]:
+    if corrected_candidate is None:
+        return {
+            "id": short_candidate_id(candidate_id),
+            "decision": "accept",
+        }
     return {
-        "candidate_id": candidate_id,
-        "plausibility_score": 0.91,
-        "accepted": True,
-        "issues": (),
-        "corrected_candidate": _raw_correction(corrected_candidate),
+        "id": short_candidate_id(candidate_id),
+        "decision": "correct",
+        "code": "schema_violation",
+        "evidence": "Small correction makes the candidate source-faithful.",
+        "correction": _raw_correction(corrected_candidate),
     }
 
 
 def batch_payload(*items: dict[str, object]) -> dict[str, object]:
-    return {"reports": tuple(items)}
+    return {"verdicts": tuple(items)}
 
 
 def _raw_correction(candidate: LensCandidate | None) -> dict[str, object] | None:
-    """Project a strict LensCandidate into the relaxed critic tool input shape.
-
-    The critic tool no longer accepts byte offsets / end_char from the model;
-    bytes are derived server-side from start_char + text + the chunk.
-    """
     if candidate is None:
         return None
     return {
-        "candidate_id": candidate.candidate_id,
-        "run_id": candidate.run_id,
-        "doc_id": candidate.doc_id,
-        "chunk_id": candidate.chunk_id,
-        "lens": candidate.lens,
         "category": candidate.category,
         "field_name": candidate.field_name,
         "value": candidate.value,
-        "source_span": {
-            "doc_id": candidate.source_span.doc_id,
-            "chunk_id": candidate.source_span.chunk_id,
-            "start_char": candidate.source_span.start_char,
-            "text": candidate.source_span.text,
-        },
-        "confidence": candidate.confidence,
-        "executor_call_id": candidate.executor_call_id,
+        "source_start_char": candidate.source_span.start_char,
+        "source_text": candidate.source_span.text,
     }
 
 
 def rejected_payload(*, candidate_id: str) -> dict[str, object]:
     return {
-        "candidate_id": candidate_id,
-        "plausibility_score": 0.2,
-        "accepted": False,
-        "issues": (
-            {
-                "code": "weak_evidence",
-                "severity": "high",
-                "message": "Value overstates the provided source evidence.",
-            },
-        ),
-        "corrected_candidate": None,
+        "id": short_candidate_id(candidate_id),
+        "decision": "reject",
+        "code": "critic_rejected",
+        "evidence": "Value overstates the provided source evidence.",
     }
 
 
@@ -327,7 +318,15 @@ def test_review_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
         assert result.reports == (*first_reports, *second_reports)
         assert result.rejections == rejections
         assert first_reports[0].accepted is True
+        assert first_reports[0].plausibility_score == 1.0
+        assert first_reports[0].issues == ()
         assert second_reports[0].accepted is False
+        assert second_reports[0].plausibility_score == 0.0
+        assert second_reports[0].issues[0].code == "critic_rejected"
+        assert second_reports[0].issues[0].severity == "medium"
+        assert second_reports[0].issues[0].message == (
+            "Value overstates the provided source evidence."
+        )
         assert rejections[0].stage == "critic"
         assert rejections[0].reasons[0].code == "critic_rejected"
         # Two chunks → two batches → two LLM calls (each batch carries one candidate).
@@ -336,9 +335,26 @@ def test_review_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
             {"type": "tool", "name": "review_candidates_batch"},
             {"type": "tool", "name": "review_candidates_batch"},
         ]
-        assert '"candidate_id":"candidate-1"' in anthropic_client.messages.calls[0]["messages"][0][
-            "content"
-        ]
+        user_payload_text = call_user_text(anthropic_client.messages.calls[0])
+        user_payload = json.loads(user_payload_text)
+        assert user_payload["candidates"][0]["id"] == short_candidate_id("candidate-1")
+        assert user_payload["chunk_view"] == {
+            "start_char": 0,
+            "text": "Revenue increased.",
+        }
+        for forbidden in (
+            "candidate_id",
+            "chunk_id",
+            "doc_id",
+            "run_id",
+            "start_byte",
+            "end_byte",
+            "chunk_policy",
+            "budget",
+            "domain_hints",
+            "executor_call_id",
+        ):
+            assert f'"{forbidden}"' not in user_payload_text
 
     asyncio.run(run_check())
 
@@ -441,18 +457,14 @@ def test_review_candidates_survives_malformed_correction_offsets(tmp_path: Path)
         # The chunk-slice check must catch this and surface a typed rejection
         # instead of letting Pydantic crash the run.
         bad_correction = _raw_correction(candidate) or {}
-        bad_correction["source_span"] = {
-            "doc_id": candidate.source_span.doc_id,
-            "chunk_id": candidate.source_span.chunk_id,
-            "start_char": candidate.source_span.start_char,
-            "text": "Margin declined",
-        }
+        bad_correction["source_start_char"] = candidate.source_span.start_char
+        bad_correction["source_text"] = "Margin declined"
         item = {
-            "candidate_id": candidate.candidate_id,
-            "plausibility_score": 0.7,
-            "accepted": True,
-            "issues": (),
-            "corrected_candidate": bad_correction,
+            "id": short_candidate_id(candidate.candidate_id),
+            "decision": "correct",
+            "code": "schema_violation",
+            "evidence": "Correction should fail span validation.",
+            "correction": bad_correction,
         }
         anthropic_client = QueuedAnthropicClient([batch_payload(item)])
         llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
@@ -544,6 +556,8 @@ def test_review_candidates_batches_per_chunk(tmp_path: Path) -> None:
 
         assert len(logs) == 3
         assert all(log.stage == "critic" for log in logs)
+        assert logs[0].cache_read_tokens == 0
+        assert all(log.cache_read_tokens > 0 for log in logs[1:])
         assert len(result.accepted_candidates) == 12
         assert result.rejected_candidates == ()
         assert len(result.reports) == 12

@@ -10,7 +10,14 @@ from extractor.contracts import RejectionReason
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
 Timestamp = Annotated[datetime, Field(strict=True)]
-RejectionStage = Literal["executor", "critic", "verifier", "reconciler", "schema"]
+RejectionStage = Literal[
+    "executor",
+    "critic",
+    "verifier",
+    "reconciler",
+    "schema",
+    "dedup",
+]
 
 
 class AuditModel(BaseModel):

@@ -42,6 +42,13 @@ class QueuedAnthropicClient:
         self.messages = QueuedMessages(tool_payloads)
 
 
+def call_user_text(call: dict[str, object]) -> str:
+    content = call["messages"][0]["content"]  # type: ignore[index]
+    if isinstance(content, str):
+        return content
+    return "".join(str(block["text"]) for block in content)
+
+
 def make_document() -> Document:
     text = "Revenue increased in Q1. Margin declined."
     text_bytes = text.encode("utf-8")
@@ -235,7 +242,7 @@ def test_create_extraction_plan_runs_planner_calls_and_persists_audit(tmp_path: 
             {"type": "tool", "name": "select_strategy"},
             {"type": "tool", "name": "allocate_budget"},
         ]
-        assert "Revenue increased" in anthropic_client.messages.calls[0]["messages"][0]["content"]
+        assert "Revenue increased" in call_user_text(anthropic_client.messages.calls[0])
 
     asyncio.run(run_check())
 

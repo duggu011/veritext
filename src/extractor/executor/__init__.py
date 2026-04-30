@@ -7,9 +7,12 @@ from extractor.executor.models import (
     ExecutorTaskResult,
     ExtractedCandidatePayload,
 )
+from extractor.executor.dedup import build_dedup_rejections, deduplicate_candidates
 from extractor.executor.service import ExecutorError, execute_plan
 
 __all__ = [
+    "build_dedup_rejections",
+    "deduplicate_candidates",
     "ExecutionResult",
     "ExecutorCandidateBatch",
     "ExecutorError",

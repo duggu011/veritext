@@ -3,20 +3,20 @@
 from extractor.verifier.models import (
     VerificationResult,
     VerifierBatchItem,
-    VerifierBatchReportPayload,
-    VerifierBatchReviewPayload,
+    VerifierBatchVerdicts,
     VerifierBatchStageInput,
     VerifierTaskResult,
+    VerifierVerdict,
 )
 from extractor.verifier.service import VerifierError, verify_candidates
 
 __all__ = [
     "VerificationResult",
     "VerifierBatchItem",
-    "VerifierBatchReportPayload",
-    "VerifierBatchReviewPayload",
+    "VerifierBatchVerdicts",
     "VerifierBatchStageInput",
     "VerifierError",
     "VerifierTaskResult",
+    "VerifierVerdict",
     "verify_candidates",
 ]

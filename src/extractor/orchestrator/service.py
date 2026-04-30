@@ -11,7 +11,11 @@ from extractor.chunker import chunk_document
 from extractor.config import ExtractorConfig, RunContext, bind_run_context
 from extractor.contracts import RunManifest
 from extractor.critic import review_candidates
-from extractor.executor import execute_plan
+from extractor.executor import (
+    build_dedup_rejections,
+    deduplicate_candidates,
+    execute_plan,
+)
 from extractor.ingestion import ingest_document
 from extractor.llm import LLMClient, PromptLoader
 from extractor.orchestrator.models import PipelineRunResult
@@ -119,11 +123,37 @@ async def run_extraction_pipeline(
                 )
                 _print_stage("executor.done", f"candidates={len(execution.accepted_candidates)}")
 
-                _print_stage("critic", f"candidates_in={len(execution.accepted_candidates)}")
+                canonical_candidates, merged_into = deduplicate_candidates(
+                    execution.accepted_candidates
+                )
+                dedup_rejections = build_dedup_rejections(
+                    run_id=plan.run_id,
+                    candidates=execution.accepted_candidates,
+                    merged_into=merged_into,
+                )
+                for rejection in dedup_rejections:
+                    await audit_store.record_candidate_rejection(rejection)
+                merged_candidate_ids = set(merged_into)
+                merged_candidates = tuple(
+                    candidate
+                    for candidate in execution.accepted_candidates
+                    if candidate.candidate_id in merged_candidate_ids
+                )
+                _print_stage(
+                    "dedup.done",
+                    (
+                        f"canonical={len(canonical_candidates)} "
+                        f"duplicates={len(merged_into)}"
+                    ),
+                )
+
+                _print_stage("critic", f"candidates_in={len(canonical_candidates)}")
                 critic = await review_candidates(
                     plan=plan,
                     chunks=chunks,
-                    candidates=execution.accepted_candidates,
+                    candidates=canonical_candidates,
+                    merged_into=merged_into,
+                    merged_candidates=merged_candidates,
                     prompt_loader=prompt_loader,
                     llm_client=actual_llm_client,
                     execution_config=config.execution,

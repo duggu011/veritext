@@ -5,8 +5,9 @@ from typing import Annotated
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from extractor.audit import CandidateRejection
-from extractor.contracts import Chunk, ExtractionPlan, LensCandidate
+from extractor.contracts import LensCandidate
 from extractor.contracts.models import LensName
+from extractor.llm.views import LLMChunkView, LLMSchemaCard
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
@@ -19,10 +20,9 @@ class ExecutorModel(BaseModel):
 
 
 class ExecutorStageInput(ExecutorModel):
-    run_id: NonEmptyStr
-    plan: ExtractionPlan
+    schema_card: LLMSchemaCard
     lens: LensName
-    chunk: Chunk
+    chunk_view: LLMChunkView
 
 
 class ExtractedCandidatePayload(ExecutorModel):

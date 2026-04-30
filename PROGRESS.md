@@ -4,11 +4,66 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 18 — Multi-provider LLM Client
-- Current status: awaiting explicit `continue` before Phase 19
-- Next required work: Phase 19 scope is not yet defined in repository docs
+- Last completed phase: Phase 23 — Reconciler input slim
+- Current status: awaiting explicit `continue` before Phase 24
+- Next required work: Phase 24 — Batch-size tuning and observability
 
 ## Session Log
+
+### 2026-04-30 — Phase 23 Reconciler Input Slim
+
+- Replaced the reconciler LLM input payload with compact `schema_card` and `candidates` view data, removing full `run_id`, `plan`, `critic_reports`, and `verifier_reports` from the LLM boundary.
+- Kept reconciler service-side validation of one accepted critic report and one accepted verifier report per candidate before the LLM call.
+- Added compact-ID expansion for reconciler tool output so existing full candidate IDs, critic report IDs, verifier report IDs, data-point construction, and no-silent-drop accounting remain unchanged.
+- Updated the reconciler prompt to reference compact candidate IDs, `schema_card`, and `span_text` instead of full plan/report/source-span payloads.
+- Updated reconciler and orchestrator tests to emit compact candidate IDs and assert the reconciler user payload contains only `schema_card` and `candidates`.
+- Verified `python3 -m pytest tests/unit/test_reconciler.py tests/unit/test_orchestrator.py tests/unit/test_llm_views.py`, `make lint`, `make test`, and `make smoke`.
+- Live/eval fixture token measurement was not run in this session; cost/quality acceptance checks remain deferred until all token-reduction phases are complete.
+
+### 2026-04-30 — Phase 22 Pre-critic Candidate Deduplication
+
+- Added exact duplicate candidate deduplication using the conservative key `(chunk_id, category, field_name, source_span.text, value)` with lexical candidate ID primary selection.
+- Added `duplicate_candidate` as a typed rejection reason and `dedup` as an audit rejection stage.
+- Persisted dedup rejections in the orchestrator between executor and critic, with each duplicate recording `merged_into:<primary_id>`.
+- Changed critic review to run only on canonical candidates while mirroring each primary critic report to merged duplicates with stable derived report IDs.
+- Preserved downstream reconciliation invariants by returning mirrored duplicate candidates in the critic result when the primary is accepted or rejected.
+- Added unit coverage for exact-duplicate grouping, distinct-value/source preservation, dedup rejection records, canonical-only critic input, and mirrored duplicate critic reports.
+- Verified `python3 -m pytest tests/unit/test_dedup.py tests/unit/test_orchestrator.py tests/unit/test_critic.py tests/unit/test_verifier.py`, `make lint`, `make test`, and `make smoke`.
+- Live/eval fixture candidate-count and final data-point comparison were not run in this session; those cost/quality acceptance checks remain deferred until all token-reduction phases are complete.
+
+### 2026-04-30 — Phase 21 Compact Critic / Verifier Output Schema
+
+- Replaced verbose critic tool output with compact `verdicts` containing `{id, decision, code, evidence, correction}` and cross-field validation for accept/reject/correct decisions.
+- Expanded critic verdicts server-side into existing `CriticReport` contracts with deterministic `plausibility_score`, severity mapping, default messages, and compact correction validation through the existing strict materialization path.
+- Replaced verbose verifier tool output with compact `{id, decision, code, evidence}` verdicts and expanded them server-side into existing `VerifierReport` contracts.
+- Derived verifier `span_verified`, `category_verified`, `alignment_score`, acceptance, and rejection reasons deterministically from the compact verdict plus existing invariant checks.
+- Updated critic and verifier prompts to request compact `verdicts` instead of full report objects while preserving adversarial and verification rules.
+- Updated unit and orchestrator mocks for compact verdict payloads and retained coverage for accepted, rejected, corrected, and invalid-correction paths.
+- Verified `python3 -m pytest tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_llm_client.py tests/unit/test_orchestrator.py`, `make lint`, `make test`, and `make smoke`.
+- Live/eval fixture recall comparison and token-output measurement were not run in this session; those cost/quality acceptance checks remain deferred until all token-reduction phases are complete.
+
+### 2026-04-30 — Phase 20 Compact LLM-boundary View Models
+
+- Added compact LLM view models for schema cards, chunks, and candidates, including stable short candidate IDs and collision rejection before LLM calls.
+- Reworked executor LLM input to send only `schema_card`, `lens`, and `chunk_view`; full plan, run/doc IDs, chunk IDs, byte offsets, budgets, chunk policy, and domain hints stay server-side.
+- Reworked critic LLM input to send `schema_card`, `chunk_view`, and compact candidate views keyed by short `id`; critic output now maps reports by `id` back to full candidates.
+- Replaced full critic correction payloads with compact correction deltas while preserving original candidate identity/provenance and running the existing strict materialization/validation path.
+- Reworked verifier LLM input to send compact candidate views plus `{accepted: true}` critic summaries instead of full `CriticReport` payloads; verifier output maps reports by short `id`.
+- Updated executor, critic, and verifier prompts to describe compact field names and removed instructions that referred to audit-only payload fields.
+- Added `tests/unit/test_llm_views.py` plus executor/critic/verifier payload regression assertions proving audit-only fields are absent at LLM boundaries.
+- Verified `python3 -m pytest tests/unit/test_llm_views.py tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_llm_client.py tests/unit/test_orchestrator.py`, `python3 -m pytest tests/unit/test_planner.py tests/unit/test_reconciler.py tests/unit/test_reporter.py`, `make lint`, `make test`, and `make smoke`.
+- Live/eval fixture recall comparison and token-size measurement were not run in this session; those cost/quality acceptance checks remain deferred until all token-reduction phases are complete.
+
+### 2026-04-30 — Phase 19 Anthropic Prompt Caching
+
+- Added `llm.prompt_cache_enabled` to canonical config with a reversible default of `true`.
+- Extended `StructuredLLMRequest` with `stable_user_prefix` and preserved `full_user_content` for providers or configs that do not use Anthropic cache blocks.
+- Updated Anthropic request construction to put ephemeral `cache_control` on cacheable system prompts, tool schemas, and stable user-prefix text blocks while leaving OpenAI/OpenAI-compatible requests as concatenated plain user content.
+- Split planner, executor, critic, and verifier user payloads at stable JSON boundaries so the concatenated payload remains exactly the same JSON shape as before caching.
+- Added one-shot critic/verifier priming so later batches wait for the first batch before entering normal stage concurrency.
+- Added LLM-client prompt-cache regression coverage, config coverage, critic cache-read log coverage, and updated stage tests to read concatenated block content.
+- Verified `python3 -m pytest tests/unit/test_llm_client.py tests/unit/test_config.py tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_planner.py tests/unit/test_orchestrator.py`, `make lint`, `make test`, and `make smoke`.
+- Live Anthropic rerun of `medium_research_brief` was not run in this session; external-cost acceptance remains for the operator.
 
 ### 2026-04-30 — Medium Research Output Comparison
 
