@@ -49,6 +49,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stable run ID to use instead of generating one.",
     )
     parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume an existing failed or interrupted run_id from audited state.",
+    )
+    parser.add_argument(
         "--domain-hint",
         action="append",
         default=[],
@@ -77,6 +82,7 @@ async def async_main(argv: Sequence[str] | None = None) -> int:
         config=config,
         run_id=args.run_id,
         domain_hints=tuple(args.domain_hint),
+        resume=args.resume,
     )
     print(render_summary(result))
     return 0

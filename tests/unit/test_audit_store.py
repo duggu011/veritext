@@ -9,6 +9,7 @@ from extractor.audit import (
     AuditNotFoundError,
     AuditStore,
     CandidateRejection,
+    RunStageState,
 )
 from extractor.contracts import (
     CategoryDefinition,
@@ -206,6 +207,14 @@ def make_rejection() -> CandidateRejection:
     )
 
 
+def make_stage_state() -> RunStageState:
+    return RunStageState(
+        run_id="run-1",
+        stage="planner",
+        completed_at=STARTED,
+    )
+
+
 async def seed_provenance(store: AuditStore) -> None:
     await store.record_run_manifest(make_manifest())
     await store.record_document(make_document())
@@ -371,6 +380,21 @@ def test_audit_store_updates_existing_run_manifest(tmp_path: Path) -> None:
 
             with pytest.raises(AuditNotFoundError):
                 await store.update_run_manifest(completed.model_copy(update={"run_id": "missing-run"}))
+
+    asyncio.run(run_check())
+
+
+def test_audit_store_records_run_stage_state(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        async with AuditStore(tmp_path / "audit.sqlite3") as store:
+            await store.record_run_manifest(make_manifest())
+            await store.record_run_stage_state(make_stage_state())
+
+            assert await store.get_run_stage_state("run-1", "planner") == make_stage_state()
+            assert await store.list_run_stage_states("run-1") == (make_stage_state(),)
+
+            with pytest.raises(AuditIntegrityError):
+                await store.record_run_stage_state(make_stage_state())
 
     asyncio.run(run_check())
 

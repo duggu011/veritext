@@ -127,6 +127,7 @@ def test_async_main_loads_config_runs_pipeline_and_prints_summary(
                 "--no-local-config",
                 "--run-id",
                 "run-1",
+                "--resume",
                 "--domain-hint",
                 "finance",
                 "--domain-hint",
@@ -145,6 +146,7 @@ def test_async_main_loads_config_runs_pipeline_and_prints_summary(
     assert observed["source_path"] == tmp_path / "source.txt"
     assert observed["output_path"] == tmp_path / "report.json"
     assert observed["run_id"] == "run-1"
+    assert observed["resume"] is True
     assert observed["domain_hints"] == ("finance", "earnings")
     assert observed["config"].audit.database_path == tmp_path / "audit.sqlite3"
 

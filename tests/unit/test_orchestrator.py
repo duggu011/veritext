@@ -16,7 +16,7 @@ from extractor.config import (
 )
 from extractor.contracts import LLMCallLog
 from extractor.llm import StructuredLLMResult
-from extractor.orchestrator import run_extraction_pipeline
+from extractor.orchestrator import OrchestratorError, run_extraction_pipeline
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,8 +24,14 @@ HASH = "a" * 64
 
 
 class DeterministicLLMClient:
-    def __init__(self, *, reject_planner_schema: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        reject_planner_schema: bool = False,
+        fail_stage: str | None = None,
+    ) -> None:
         self.reject_planner_schema = reject_planner_schema
+        self.fail_stage = fail_stage
         self.calls: list[object] = []
 
     async def complete_structured(
@@ -35,6 +41,8 @@ class DeterministicLLMClient:
         output_model: type[object],
         audit_store: AuditStore | None = None,
     ) -> StructuredLLMResult[object]:
+        if request.stage == self.fail_stage:
+            raise RuntimeError(f"forced failure at {request.stage}")
         self.calls.append(request)
         call_log = LLMCallLog(
             call_id=f"llm-{len(self.calls)}",
@@ -285,6 +293,123 @@ def test_run_extraction_pipeline_marks_manifest_failed_on_stage_error(tmp_path: 
         assert stored_manifest.output_data_point_ids == ()
         assert data_points == ()
         assert not (tmp_path / "report.json").exists()
+
+    import asyncio
+
+    asyncio.run(run_check())
+
+
+def test_run_extraction_pipeline_existing_run_id_requires_resume(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        source_path = tmp_path / "source.txt"
+        source_path.write_text("Revenue increased.", encoding="utf-8")
+        config = make_config(tmp_path)
+        llm_client = DeterministicLLMClient()
+
+        await run_extraction_pipeline(
+            source_path=source_path,
+            output_path=tmp_path / "report.json",
+            config=config,
+            llm_client=llm_client,
+            run_id="run-1",
+        )
+
+        with pytest.raises(OrchestratorError, match="Use --resume"):
+            await run_extraction_pipeline(
+                source_path=source_path,
+                output_path=tmp_path / "report-2.json",
+                config=config,
+                llm_client=llm_client,
+                run_id="run-1",
+            )
+
+    import asyncio
+
+    asyncio.run(run_check())
+
+
+def test_run_extraction_pipeline_resume_reuses_manifest_without_duplicate_insert(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        source_path = tmp_path / "source.txt"
+        source_path.write_text("Revenue increased.", encoding="utf-8")
+        config = make_config(tmp_path)
+        llm_client = DeterministicLLMClient(reject_planner_schema=True)
+
+        with pytest.raises(RuntimeError, match="Schema critique rejected"):
+            await run_extraction_pipeline(
+                source_path=source_path,
+                output_path=tmp_path / "failed-report.json",
+                config=config,
+                llm_client=llm_client,
+                run_id="run-1",
+            )
+
+        llm_client.reject_planner_schema = False
+        result = await run_extraction_pipeline(
+            source_path=source_path,
+            output_path=tmp_path / "report.json",
+            config=config,
+            llm_client=llm_client,
+            run_id="run-1",
+            resume=True,
+        )
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            manifests = await audit_store.list_run_manifests()
+
+        assert len(manifests) == 1
+        assert manifests[0].run_id == "run-1"
+        assert result.completed_manifest.status == "completed"
+
+    import asyncio
+
+    asyncio.run(run_check())
+
+
+def test_run_extraction_pipeline_resume_skips_completed_planner_stage(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        source_path = tmp_path / "source.txt"
+        source_path.write_text("Revenue increased.", encoding="utf-8")
+        config = make_config(tmp_path)
+        llm_client = DeterministicLLMClient(fail_stage="executor.claim")
+
+        with pytest.raises(RuntimeError, match="forced failure at executor.claim"):
+            await run_extraction_pipeline(
+                source_path=source_path,
+                output_path=tmp_path / "failed-report.json",
+                config=config,
+                llm_client=llm_client,
+                run_id="run-1",
+            )
+
+        first_run_stage_count = len(llm_client.calls)
+        assert [call.stage for call in llm_client.calls] == [
+            "planner.classify_document",
+            "planner.propose_schema",
+            "planner.critique_schema",
+            "planner.select_strategy",
+            "planner.allocate_budget",
+        ]
+
+        llm_client.fail_stage = None
+        result = await run_extraction_pipeline(
+            source_path=source_path,
+            output_path=tmp_path / "report.json",
+            config=config,
+            llm_client=llm_client,
+            run_id="run-1",
+            resume=True,
+        )
+
+        resumed_stages = [
+            call.stage for call in llm_client.calls[first_run_stage_count:]
+        ]
+        assert resumed_stages == ["executor.claim", "critic", "verifier", "reconciler"]
+        assert result.completed_manifest.status == "completed"
 
     import asyncio
 

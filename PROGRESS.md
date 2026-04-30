@@ -10,6 +10,14 @@ Running log for repository sessions and accepted phase gates.
 
 ## Session Log
 
+### 2026-05-01 — Safe Resume Support
+
+- Added explicit `--resume` CLI behavior so existing `--run-id` values fail clearly unless resume is requested.
+- Added audited stage-completion state and resume reconstruction from existing Pydantic audit payloads for documents, chunks, plans, candidates, critic reports, verifier reports, data points, and rejections.
+- Avoided duplicate `run_manifests` inserts on resume while preserving strict duplicate checks for normal runs.
+- Added unit coverage for clear existing-run failures, manifest reuse under `--resume`, planner-stage skipping after a failed run, CLI resume plumbing, and stage-state audit storage.
+- Verified `python3 -m pytest tests/unit/test_orchestrator.py tests/unit/test_cli.py tests/unit/test_audit_store.py -q`, `python3 -m pytest tests/unit -q`, `make lint`, `make smoke`, `python3 -m pytest tests/integration/test_recall_baseline.py -q`, `make test`, and `git diff --check`.
+
 ### 2026-05-01 — Compact Verdict Evidence Boundary Repair
 
 - Investigated a live Anthropic critic failure where one compact correction tuple had evidence longer than the 200-character boundary cap, causing `CriticBatchVerdicts` validation to abort the whole run.

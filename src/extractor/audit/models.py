@@ -18,6 +18,17 @@ RejectionStage = Literal[
     "schema",
     "dedup",
 ]
+RunStageName = Literal[
+    "ingestion",
+    "chunker",
+    "planner",
+    "executor",
+    "dedup",
+    "critic",
+    "verifier",
+    "reconciler",
+    "reporter",
+]
 
 
 class AuditModel(BaseModel):
@@ -33,4 +44,15 @@ class CandidateRejection(AuditModel):
     created_at: Timestamp
 
 
-__all__ = ["CandidateRejection", "RejectionStage"]
+class RunStageState(AuditModel):
+    run_id: NonEmptyStr
+    stage: RunStageName
+    completed_at: Timestamp
+
+
+__all__ = [
+    "CandidateRejection",
+    "RejectionStage",
+    "RunStageName",
+    "RunStageState",
+]

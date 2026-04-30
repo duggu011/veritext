@@ -9,7 +9,7 @@ from typing import Any, TypeVar
 import aiosqlite
 from pydantic import BaseModel
 
-from extractor.audit.models import CandidateRejection
+from extractor.audit.models import CandidateRejection, RunStageName, RunStageState
 from extractor.contracts import (
     Chunk,
     CriticReport,
@@ -132,6 +132,15 @@ CREATE TABLE IF NOT EXISTS candidate_rejections (
     FOREIGN KEY (run_id) REFERENCES run_manifests(run_id),
     FOREIGN KEY (candidate_id) REFERENCES lens_candidates(candidate_id)
 );
+
+CREATE TABLE IF NOT EXISTS run_stage_states (
+    run_id TEXT NOT NULL,
+    stage TEXT NOT NULL,
+    completed_at TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    PRIMARY KEY (run_id, stage),
+    FOREIGN KEY (run_id) REFERENCES run_manifests(run_id)
+);
 """
 
 
@@ -236,6 +245,40 @@ class AuditStore:
             "1 = 1",
             (),
             "started_at DESC, run_id ASC",
+        )
+
+    async def record_run_stage_state(self, state: RunStageState) -> None:
+        values = state.model_dump(mode="json")
+        await self._insert_payload(
+            "run_stage_states",
+            {
+                "run_id": state.run_id,
+                "stage": state.stage,
+                "completed_at": values["completed_at"],
+                "payload_json": state.model_dump_json(),
+            },
+        )
+
+    async def get_run_stage_state(
+        self,
+        run_id: str,
+        stage: RunStageName,
+    ) -> RunStageState | None:
+        row = await self._fetch_one(
+            "SELECT payload_json FROM run_stage_states WHERE run_id = ? AND stage = ?",
+            (run_id, stage),
+        )
+        if row is None:
+            return None
+        return RunStageState.model_validate_json(row["payload_json"])
+
+    async def list_run_stage_states(self, run_id: str) -> tuple[RunStageState, ...]:
+        return await self._list_payloads(
+            "run_stage_states",
+            RunStageState,
+            "run_id = ?",
+            (run_id,),
+            "completed_at ASC, stage ASC",
         )
 
     async def record_document(self, document: Document) -> None:
