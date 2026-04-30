@@ -10,12 +10,13 @@ from extractor.contracts import (
     VerifierReport,
 )
 from extractor.contracts.models import RejectionReasonCode
-from extractor.llm.payloads import expand_compact_verdict_tuple
+from extractor.llm.payloads import normalize_verdict_payload
 from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
-Evidence = Annotated[str, Field(strict=True, min_length=1, max_length=200)]
+EVIDENCE_MAX_CHARS = 200
+Evidence = Annotated[str, Field(strict=True, min_length=1, max_length=EVIDENCE_MAX_CHARS)]
 
 
 class VerifierModel(BaseModel):
@@ -64,17 +65,19 @@ VerifierCompactVerdict = tuple[
 class VerifierBatchVerdicts(VerifierModel):
     verdicts: tuple[VerifierVerdict | VerifierCompactVerdict, ...]
 
-    @field_validator("verdicts", mode="after")
+    @field_validator("verdicts", mode="before")
     @classmethod
-    def expand_compact_verdicts(
+    def normalize_compact_verdicts(
         cls,
-        verdicts: tuple[VerifierVerdict | VerifierCompactVerdict, ...],
-    ) -> tuple[VerifierVerdict, ...]:
+        verdicts: object,
+    ) -> object:
+        if not isinstance(verdicts, (list, tuple)):
+            return verdicts
         return tuple(
-            verdict
-            if isinstance(verdict, VerifierVerdict)
-            else VerifierVerdict.model_validate(
-                expand_compact_verdict_tuple(verdict, allow_correction=False)
+            normalize_verdict_payload(
+                verdict,
+                allow_correction=False,
+                evidence_max_chars=EVIDENCE_MAX_CHARS,
             )
             for verdict in verdicts
         )

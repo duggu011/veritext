@@ -40,6 +40,7 @@ Verdict rules:
 - If the field is not approved for the category or value does not align with the field, use code "schema_violation".
 - If the candidate is otherwise not acceptable, use code "verifier_rejected".
 - evidence, when present, must be specific, source-grounded, and under 200 characters.
+- If evidence would exceed 200 characters, set evidence to null and rely on the code.
 
 Adversarial checklist:
 - Compare candidate.span_text with the exact substring selected by character offsets.

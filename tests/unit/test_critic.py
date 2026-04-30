@@ -296,6 +296,29 @@ def test_critic_batch_verdicts_expand_compact_tuple_shape() -> None:
     assert batch.verdicts[2].correction.value == "Revenue increased"
 
 
+def test_critic_batch_verdicts_omit_overlong_compact_evidence() -> None:
+    correction = {"value": "Anya Kowalski"}
+    batch = CriticBatchVerdicts.model_validate(
+        {
+            "verdicts": [
+                [
+                    "abc123",
+                    "c",
+                    "schema_violation",
+                    "x" * 201,
+                    correction,
+                ],
+            ]
+        }
+    )
+
+    assert batch.verdicts[0].decision == "correct"
+    assert batch.verdicts[0].code == "schema_violation"
+    assert batch.verdicts[0].evidence is None
+    assert batch.verdicts[0].correction is not None
+    assert batch.verdicts[0].correction.value == "Anya Kowalski"
+
+
 def rejected_payload(*, candidate_id: str) -> dict[str, object]:
     return {
         "id": short_candidate_id(candidate_id),

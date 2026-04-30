@@ -50,6 +50,7 @@ Verdict rules:
 - Use decision_code="c" when correction makes the candidate valid. Include one code, optional evidence, and correction.
 - code is required for reject and correct. Use "invented_span", "category_not_approved", "schema_violation", "ambiguous_source_span", or "critic_rejected" as appropriate.
 - evidence, when present, must be a short source-grounded explanation under 200 characters.
+- If evidence would exceed 200 characters, set evidence to null and rely on the code.
 
 Adversarial checklist:
 - Does value add words like "secure", "material", "high risk", "current", or "final" that are absent from span_text?

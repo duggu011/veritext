@@ -7,13 +7,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from extractor.audit import CandidateRejection
 from extractor.contracts import CriticReport, LensCandidate
 from extractor.contracts.models import RejectionReasonCode
-from extractor.llm.payloads import expand_compact_verdict_tuple
+from extractor.llm.payloads import normalize_verdict_payload
 from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
 NonNegativeInt = Annotated[int, Field(strict=True, ge=0)]
-Evidence = Annotated[str, Field(strict=True, min_length=1, max_length=200)]
+EVIDENCE_MAX_CHARS = 200
+Evidence = Annotated[str, Field(strict=True, min_length=1, max_length=EVIDENCE_MAX_CHARS)]
 
 
 class CriticModel(BaseModel):
@@ -69,17 +70,19 @@ CriticCompactVerdict = tuple[
 class CriticBatchVerdicts(CriticModel):
     verdicts: tuple[CriticVerdict | CriticCompactVerdict, ...]
 
-    @field_validator("verdicts", mode="after")
+    @field_validator("verdicts", mode="before")
     @classmethod
-    def expand_compact_verdicts(
+    def normalize_compact_verdicts(
         cls,
-        verdicts: tuple[CriticVerdict | CriticCompactVerdict, ...],
-    ) -> tuple[CriticVerdict, ...]:
+        verdicts: object,
+    ) -> object:
+        if not isinstance(verdicts, (list, tuple)):
+            return verdicts
         return tuple(
-            verdict
-            if isinstance(verdict, CriticVerdict)
-            else CriticVerdict.model_validate(
-                expand_compact_verdict_tuple(verdict, allow_correction=True)
+            normalize_verdict_payload(
+                verdict,
+                allow_correction=True,
+                evidence_max_chars=EVIDENCE_MAX_CHARS,
             )
             for verdict in verdicts
         )

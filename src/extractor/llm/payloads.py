@@ -34,19 +34,23 @@ _DECISION_CODE_MAP = {
 }
 
 
-def expand_compact_verdict_tuple(
+def normalize_verdict_payload(
     verdict: object,
     *,
     allow_correction: bool,
+    evidence_max_chars: int | None = None,
 ) -> object:
-    """Expand `[id, decision_code, code, evidence, correction]` verdict tuples.
+    """Normalize compact and full verdict payloads before model validation.
 
-    Existing object-shaped verdicts pass through unchanged so tests and callers
-    can validate the full audit-side contract directly.
+    Compact `[id, decision_code, code, evidence, correction]` arrays are the LLM
+    wire shape. Evidence is optional; if the model exceeds the cap, omit it so
+    the verdict code still reaches deterministic service handling.
     """
-    if isinstance(verdict, BaseModel) or not isinstance(verdict, tuple):
+    if isinstance(verdict, BaseModel):
         return verdict
-    if len(verdict) != 5:
+    if isinstance(verdict, dict):
+        return _drop_overlong_evidence(verdict, evidence_max_chars=evidence_max_chars)
+    if not isinstance(verdict, (list, tuple)) or len(verdict) != 5:
         return verdict
 
     short_id, decision_code, code, evidence, correction = verdict
@@ -62,7 +66,7 @@ def expand_compact_verdict_tuple(
     }
     if code is not None:
         expanded["code"] = code
-    if evidence is not None:
+    if _valid_evidence(evidence, evidence_max_chars=evidence_max_chars):
         expanded["evidence"] = evidence
     if correction is not None:
         expanded["correction"] = correction
@@ -75,4 +79,25 @@ def _expand_decision_code(decision_code: object) -> object:
     return _DECISION_CODE_MAP.get(decision_code.casefold(), decision_code)
 
 
-__all__ = ["expand_compact_verdict_tuple", "split_model_json_before_field"]
+def _drop_overlong_evidence(
+    verdict: dict[str, object],
+    *,
+    evidence_max_chars: int | None,
+) -> dict[str, object]:
+    evidence = verdict.get("evidence")
+    if _valid_evidence(evidence, evidence_max_chars=evidence_max_chars):
+        return verdict
+    sanitized = dict(verdict)
+    sanitized.pop("evidence", None)
+    return sanitized
+
+
+def _valid_evidence(evidence: object, *, evidence_max_chars: int | None) -> bool:
+    if evidence is None:
+        return False
+    if evidence_max_chars is None or not isinstance(evidence, str):
+        return True
+    return len(evidence) <= evidence_max_chars
+
+
+__all__ = ["normalize_verdict_payload", "split_model_json_before_field"]

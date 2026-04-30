@@ -298,6 +298,26 @@ def test_verifier_batch_verdicts_expand_compact_tuple_shape() -> None:
     )
 
 
+def test_verifier_batch_verdicts_omit_overlong_compact_evidence() -> None:
+    batch = VerifierBatchVerdicts.model_validate(
+        {
+            "verdicts": [
+                [
+                    "abc123",
+                    "r",
+                    "schema_violation",
+                    "x" * 201,
+                    None,
+                ],
+            ]
+        }
+    )
+
+    assert batch.verdicts[0].decision == "reject"
+    assert batch.verdicts[0].code == "schema_violation"
+    assert batch.verdicts[0].evidence is None
+
+
 def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) -> None:
     async def run_check() -> None:
         chunks = make_chunks()

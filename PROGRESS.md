@@ -10,6 +10,15 @@ Running log for repository sessions and accepted phase gates.
 
 ## Session Log
 
+### 2026-05-01 — Compact Verdict Evidence Boundary Repair
+
+- Investigated a live Anthropic critic failure where one compact correction tuple had evidence longer than the 200-character boundary cap, causing `CriticBatchVerdicts` validation to abort the whole run.
+- Moved compact critic/verifier verdict expansion to pre-validation and made optional overlong evidence omitted before strict verdict validation, preserving the decision code and correction payload instead of failing the batch.
+- Updated critic/verifier prompts to tell models to set evidence to null when an explanation would exceed 200 characters.
+- Added unit coverage for overlong compact evidence in both critic and verifier verdict batches.
+- Verified `python3 -m pytest tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_llm_client.py -q`, `python3 -m pytest tests/unit -q`, `make lint`, `make smoke`, `python3 -m pytest tests/integration/test_recall_baseline.py -q`, `python3 -m pytest -q`, and `git diff --check`.
+- The live LLM recall pipeline was not rerun after this boundary repair.
+
 ### 2026-05-01 — Quality Gate Repair After Phase 2d/2e Regression
 
 - Investigated the `medium-research-1` live run after it produced 42 data points with output tokens reduced to 18,546 but quality regressed to precision 0.6905, recall 0.5472, and provenance recall 0.3396.
