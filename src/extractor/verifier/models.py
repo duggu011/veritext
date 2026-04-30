@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from extractor.audit import CandidateRejection
 from extractor.contracts import (
@@ -10,6 +10,7 @@ from extractor.contracts import (
     VerifierReport,
 )
 from extractor.contracts.models import RejectionReasonCode
+from extractor.llm.payloads import expand_compact_verdict_tuple
 from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
@@ -51,8 +52,32 @@ class VerifierVerdict(VerifierModel):
         return self
 
 
+VerifierCompactVerdict = tuple[
+    NonEmptyStr,
+    NonEmptyStr,
+    RejectionReasonCode | None,
+    Evidence | None,
+    None,
+]
+
+
 class VerifierBatchVerdicts(VerifierModel):
-    verdicts: tuple[VerifierVerdict, ...]
+    verdicts: tuple[VerifierVerdict | VerifierCompactVerdict, ...]
+
+    @field_validator("verdicts", mode="after")
+    @classmethod
+    def expand_compact_verdicts(
+        cls,
+        verdicts: tuple[VerifierVerdict | VerifierCompactVerdict, ...],
+    ) -> tuple[VerifierVerdict, ...]:
+        return tuple(
+            verdict
+            if isinstance(verdict, VerifierVerdict)
+            else VerifierVerdict.model_validate(
+                expand_compact_verdict_tuple(verdict, allow_correction=False)
+            )
+            for verdict in verdicts
+        )
 
 
 class VerifierTaskResult(VerifierModel):
@@ -72,6 +97,7 @@ __all__ = [
     "VerifierBatchItem",
     "VerifierBatchVerdicts",
     "VerifierBatchStageInput",
+    "VerifierCompactVerdict",
     "VerifierTaskResult",
     "VerifierVerdict",
 ]

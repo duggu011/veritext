@@ -19,7 +19,15 @@ Read the JSON user input. It contains schema_card, chunk_view, and candidates â€
 
 Review each candidate independently. One candidate's accept/reject decision must not influence another's; the order of candidates in the batch is incidental.
 
-For each candidate in candidates, return one entry in the verdicts array with that candidate's id and decision. The number of entries in verdicts must equal the number of input candidates, and every id must appear exactly once.
+For each candidate in candidates, return one positional array entry in verdicts. The number of entries in verdicts must equal the number of input candidates, and every id must appear exactly once.
+
+Verdict tuple format:
+- Use `[id, decision_code, code_or_null, evidence_or_null, correction_or_null]`.
+- decision_code values are `"a"` for accept, `"r"` for reject, and `"c"` for correct.
+- Accept example: `["abc123", "a", null, null, null]`.
+- Reject example: `["abc123", "r", "critic_rejected", "Value overstates the source.", null]`.
+- Correct example: `["abc123", "c", "schema_violation", null, {"value":"Revenue increased"}]`.
+- Do not return object-shaped verdicts with id/decision/code/evidence keys.
 
 Acceptance rules (apply per candidate):
 - Accept only when the candidate value is faithful to the candidate's span_text.
@@ -37,9 +45,9 @@ Correction rules:
 - If correction would require guessing or changing identity/provenance, reject instead of correcting.
 
 Verdict rules:
-- Use decision="accept" only when the candidate is valid as written. Do not include code, evidence, or correction.
-- Use decision="reject" when the candidate cannot be made valid with a small correction. Include one code and optional evidence.
-- Use decision="correct" when correction makes the candidate valid. Include one code, optional evidence, and correction.
+- Use decision_code="a" only when the candidate is valid as written. Put null in code, evidence, and correction slots.
+- Use decision_code="r" when the candidate cannot be made valid with a small correction. Include one code, optional evidence, and null correction.
+- Use decision_code="c" when correction makes the candidate valid. Include one code, optional evidence, and correction.
 - code is required for reject and correct. Use "invented_span", "category_not_approved", "schema_violation", "ambiguous_source_span", or "critic_rejected" as appropriate.
 - evidence, when present, must be a short source-grounded explanation under 200 characters.
 
@@ -55,5 +63,7 @@ Examples:
 - Reject with code schema_violation when category is PaymentTerm but span_text is an acquisition event.
 - Accept when value is a concise restatement fully covered by span_text and schema alignment is exact.
 - Correct only minor span/value precision, such as trimming surrounding punctuation while preserving all identity and provenance fields.
+
+Tool inputs are structured JSON. Pass `verdicts` as an actual array of arrays, never as a JSON-encoded string.
 
 Call the required tool exactly once with one verdicts entry per input candidate. Do not include prose outside the tool call.

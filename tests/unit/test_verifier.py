@@ -26,6 +26,7 @@ from extractor.contracts import (
 )
 from extractor.llm import LLMClient, PromptLoader, short_candidate_id
 from extractor.verifier import VerifierError, verify_candidates
+from extractor.verifier.models import VerifierBatchVerdicts
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -271,6 +272,30 @@ def rejected_payload(*, candidate_id: str = "candidate-1") -> dict[str, object]:
 
 def batch_payload(*items: dict[str, object]) -> dict[str, object]:
     return {"verdicts": tuple(items)}
+
+
+def test_verifier_batch_verdicts_expand_compact_tuple_shape() -> None:
+    batch = VerifierBatchVerdicts.model_validate(
+        {
+            "verdicts": (
+                ("abc123", "a", None, None, None),
+                (
+                    "def456",
+                    "r",
+                    "schema_violation",
+                    "Value does not align with the approved field.",
+                    None,
+                ),
+            )
+        }
+    )
+
+    assert [verdict.decision for verdict in batch.verdicts] == ["accept", "reject"]
+    assert batch.verdicts[0].code is None
+    assert batch.verdicts[1].code == "schema_violation"
+    assert batch.verdicts[1].evidence == (
+        "Value does not align with the approved field."
+    )
 
 
 def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) -> None:

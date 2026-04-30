@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from extractor.audit import CandidateRejection
 from extractor.contracts import CriticReport, LensCandidate
 from extractor.contracts.models import RejectionReasonCode
+from extractor.llm.payloads import expand_compact_verdict_tuple
 from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
@@ -56,8 +57,32 @@ class CriticVerdict(CriticModel):
         return self
 
 
+CriticCompactVerdict = tuple[
+    NonEmptyStr,
+    NonEmptyStr,
+    RejectionReasonCode | None,
+    Evidence | None,
+    CompactCorrection | None,
+]
+
+
 class CriticBatchVerdicts(CriticModel):
-    verdicts: tuple[CriticVerdict, ...]
+    verdicts: tuple[CriticVerdict | CriticCompactVerdict, ...]
+
+    @field_validator("verdicts", mode="after")
+    @classmethod
+    def expand_compact_verdicts(
+        cls,
+        verdicts: tuple[CriticVerdict | CriticCompactVerdict, ...],
+    ) -> tuple[CriticVerdict, ...]:
+        return tuple(
+            verdict
+            if isinstance(verdict, CriticVerdict)
+            else CriticVerdict.model_validate(
+                expand_compact_verdict_tuple(verdict, allow_correction=True)
+            )
+            for verdict in verdicts
+        )
 
 
 class CriticTaskResult(CriticModel):
@@ -74,6 +99,7 @@ class CriticResult(CriticTaskResult):
 __all__ = [
     "CriticBatchVerdicts",
     "CriticBatchStageInput",
+    "CriticCompactVerdict",
     "CriticVerdict",
     "CriticResult",
     "CriticTaskResult",

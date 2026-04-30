@@ -23,6 +23,7 @@ from extractor.contracts import (
     SourceSpan,
 )
 from extractor.critic import CriticError, review_candidates
+from extractor.critic.models import CriticBatchVerdicts
 from extractor.llm import LLMClient, PromptLoader, short_candidate_id
 
 
@@ -264,6 +265,35 @@ def _raw_correction(candidate: LensCandidate | None) -> dict[str, object] | None
         "span_start_char": candidate.source_span.start_char,
         "span_text": candidate.source_span.text,
     }
+
+
+def test_critic_batch_verdicts_expand_compact_tuple_shape() -> None:
+    correction = {"value": "Revenue increased"}
+
+    batch = CriticBatchVerdicts.model_validate(
+        {
+            "verdicts": (
+                ("abc123", "a", None, None, None),
+                (
+                    "def456",
+                    "r",
+                    "critic_rejected",
+                    "Value overstates the source.",
+                    None,
+                ),
+                ("ghi789", "c", "schema_violation", None, correction),
+            )
+        }
+    )
+
+    assert [verdict.decision for verdict in batch.verdicts] == [
+        "accept",
+        "reject",
+        "correct",
+    ]
+    assert batch.verdicts[1].code == "critic_rejected"
+    assert batch.verdicts[2].correction is not None
+    assert batch.verdicts[2].correction.value == "Revenue increased"
 
 
 def rejected_payload(*, candidate_id: str) -> dict[str, object]:

@@ -270,7 +270,7 @@ def test_default_prompt_pack_contains_source_provenance_rules() -> None:
         assert "end_char, start_byte, or end_byte" in body
 
     assert "Every input candidate must be accounted for exactly once" in prompts["reconciler"].body
-    assert 'decision="accept" only when' in prompts["verifier"].body
+    assert 'decision_code="a" only when' in prompts["verifier"].body
 
 
 def test_default_prompt_pack_contains_hardening_examples_and_checklists() -> None:

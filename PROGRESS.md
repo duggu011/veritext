@@ -4,11 +4,21 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Output-token plan Phase 2a — executor `source_length` boundary
-- Current status: stopped after Phase 2a implementation and local verification; awaiting operator `continue`
-- Next required work: Output-token plan Phase 2b — compact critic/verifier verdict tuples
+- Last completed phase: Output-token plan Phase 2b — compact critic/verifier verdict tuples
+- Current status: stopped after Phase 2b implementation and local verification; awaiting operator `continue`
+- Next required work: Output-token plan Phase 2c — slim reconciler output
 
 ## Session Log
+
+### 2026-05-01 — Output-token Plan Phase 2b
+
+- Added reusable LLM payload expansion for positional verdict tuples shaped as `[id, decision_code, code_or_null, evidence_or_null, correction_or_null]`.
+- Updated critic and verifier batch boundary models to accept compact tuple verdicts and immediately expand them into existing full `CriticVerdict` and `VerifierVerdict` objects for service logic and audit-side contracts.
+- Kept existing object-shaped verdict fixtures valid so internal tests and audit storage continue to exercise the full contract.
+- Updated critic and verifier prompts to request array-of-array verdicts with decision codes `"a"`, `"r"`, and critic-only `"c"`.
+- Added focused unit coverage for critic and verifier compact tuple expansion.
+- Verified `python3 -m pytest tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_llm_client.py tests/unit/test_orchestrator.py -q`, `python3 -m pytest tests/unit -q`, `python3 -m pytest tests/integration/test_recall_baseline.py -q`, `make lint`, `make smoke`, `python3 -m pytest -q`, and `git diff --check`.
+- The live LLM recall pipeline was not run because `VERITEXT_RUN_LIVE_EVAL=1` was not enabled.
 
 ### 2026-05-01 — Output-token Plan Phase 2a
 
