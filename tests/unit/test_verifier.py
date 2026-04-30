@@ -395,6 +395,48 @@ def test_verify_candidates_overrides_accepted_output_for_invented_span(
     asyncio.run(run_check())
 
 
+def test_verify_candidates_overrides_hallucinated_span_rejection(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        candidate = make_candidate()
+        critic_report = make_critic_report(candidate)
+        hallucinated_payload = {
+            "id": short_candidate_id("candidate-1"),
+            "decision": "reject",
+            "code": "invalid_source_offsets",
+            "evidence": "Offsets do not match the claimed span_text.",
+        }
+        anthropic_client = QueuedAnthropicClient(
+            [batch_payload(hallucinated_payload)]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, (candidate,), (critic_report,))
+            result = await verify_candidates(
+                plan=make_plan(),
+                chunks=make_chunks(),
+                candidates=(candidate,),
+                critic_reports=(critic_report,),
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=make_execution_config(),
+                audit_store=audit_store,
+            )
+            reports = await audit_store.list_verifier_reports(candidate.candidate_id)
+            rejections = await audit_store.list_candidate_rejections(candidate.candidate_id)
+
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert reports[0].accepted is True
+        assert reports[0].span_verified is True
+        assert reports[0].rejection_reasons == ()
+        assert rejections == ()
+
+    asyncio.run(run_check())
+
+
 def test_verify_candidates_rejects_missing_accepted_critic_report_before_llm_calls() -> None:
     async def run_check() -> None:
         candidate = make_candidate()

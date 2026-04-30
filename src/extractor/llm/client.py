@@ -109,6 +109,7 @@ class StructuredLLMRequest(BaseModel):
     prompt: PromptTemplate
     user_content: str = Field(strict=True)
     stable_user_prefix: NonEmptyStr | None = None
+    prompt_cache_allowed: bool = Field(default=True, strict=True)
     tool_name: str = Field(strict=True, min_length=1)
     tool_description: str = Field(strict=True, min_length=1)
 
@@ -310,6 +311,8 @@ def _anthropic_prompt_cache_enabled(
     request: StructuredLLMRequest,
 ) -> bool:
     if not config.prompt_cache_enabled:
+        return False
+    if not request.prompt_cache_allowed:
         return False
     return (
         request.stable_user_prefix is not None

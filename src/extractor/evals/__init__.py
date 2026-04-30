@@ -9,6 +9,12 @@ from extractor.evals.models import (
     ExpectedDataPoint,
     InvariantViolation,
 )
+from extractor.evals.drops import (
+    RunDropSummary,
+    StageDropSummary,
+    summarize_rejections,
+    summarize_run_drops,
+)
 from extractor.evals.scoring import (
     EvaluationError,
     evaluate_report,
@@ -26,8 +32,12 @@ __all__ = [
     "EvaluationThresholds",
     "ExpectedDataPoint",
     "InvariantViolation",
+    "RunDropSummary",
+    "StageDropSummary",
     "evaluate_report",
     "evaluate_report_file",
     "load_evaluation_case",
     "load_extraction_report",
+    "summarize_rejections",
+    "summarize_run_drops",
 ]

@@ -197,6 +197,7 @@ async def run_extraction_pipeline(
                     "reporter.done",
                     f"output={report.output_path} sha256={report.output_sha256[:12]}…",
                 )
+                usage_summary = await audit_store.summarize_run(actual_run_id)
         except Exception:
             failed_manifest = _transition_manifest(
                 running_manifest,
@@ -217,6 +218,7 @@ async def run_extraction_pipeline(
         reconciliation=reconciliation,
         report=report,
         completed_manifest=report.completed_manifest,
+        usage_summary=usage_summary,
     )
 
 

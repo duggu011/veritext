@@ -256,15 +256,17 @@ def test_default_prompt_pack_contains_source_provenance_rules() -> None:
         assert "absolute document character offsets" in body or "absolute document character offset" in body
         assert "start_char = chunk_view.start_char + chunk_relative_index" in body
         assert "Do not estimate start_char" in body
-        # Bytes are now derived server-side; the prompts must NOT ask the model
-        # to produce byte offsets, since LLM byte arithmetic is unreliable.
+        # Source text and bytes are now derived server-side; the prompts must
+        # NOT ask the model to produce them, since LLM copying/byte arithmetic
+        # is expensive and unreliable.
         assert "byte offsets are derived server-side" in body
-        assert "source_text must be copied exactly" in body
+        assert "Return source_length as the number of characters" in body
         assert (
             "chunk_view.text[start_char - chunk_view.start_char : start_char - chunk_view.start_char + "
-            "len(source_text)]"
+            "source_length]"
         ) in body
-        assert "Never output start_text" in body
+        assert "Never output source_text" in body
+        assert "start_text" in body
         assert "end_char, start_byte, or end_byte" in body
 
     assert "Every input candidate must be accounted for exactly once" in prompts["reconciler"].body
@@ -390,6 +392,43 @@ def test_llm_client_sends_anthropic_prompt_cache_blocks() -> None:
                 ],
             }
         ]
+
+    asyncio.run(run_check())
+
+
+def test_llm_client_honors_anthropic_prompt_cache_opt_out() -> None:
+    async def run_check() -> None:
+        response = make_response(
+            [
+                SimpleNamespace(
+                    type="tool_use",
+                    name="extract_claim",
+                    input={"value": "hello world", "confidence": 0.9},
+                )
+            ]
+        )
+        anthropic_client = FakeAnthropicClient(response)
+        request = make_request().model_copy(
+            update={
+                "stage": "critic",
+                "stable_user_prefix": '{"run_id":"run-1","candidates":',
+                "user_content": "[]}",
+                "prompt_cache_allowed": False,
+            },
+        )
+        client = LLMClient(make_config(), anthropic_client=anthropic_client)
+
+        await client.complete_structured(request, output_model=ExtractClaimOutput)
+
+        call = anthropic_client.messages.calls[0]
+        assert call["system"] == PROMPT_TEXT
+        assert call["messages"] == [
+            {
+                "role": "user",
+                "content": '{"run_id":"run-1","candidates":[]}',
+            }
+        ]
+        assert "cache_control" not in call["tools"][0]
 
     asyncio.run(run_check())
 

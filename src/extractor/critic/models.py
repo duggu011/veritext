@@ -26,8 +26,8 @@ class CompactCorrection(CriticModel):
     value: NonEmptyStr | None = None
     category: NonEmptyStr | None = None
     field_name: NonEmptyStr | None = None
-    source_start_char: NonNegativeInt | None = None
-    source_text: Annotated[str, Field(strict=True, min_length=1)] | None = None
+    span_start_char: NonNegativeInt | None = None
+    span_text: Annotated[str, Field(strict=True, min_length=1)] | None = None
 
 
 class CriticBatchStageInput(CriticModel):

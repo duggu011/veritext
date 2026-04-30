@@ -1,5 +1,6 @@
 """SQLite audit store."""
 
+from extractor.audit.inspection import AuditInspectionError, inspect_audit_database
 from extractor.audit.models import CandidateRejection, RejectionStage
 from extractor.audit.store import (
     AuditIntegrityError,
@@ -7,16 +8,20 @@ from extractor.audit.store import (
     AuditSchemaError,
     AuditStore,
     AuditStoreError,
+    UsageSummary,
     open_audit_store,
 )
 
 __all__ = [
     "AuditIntegrityError",
+    "AuditInspectionError",
     "AuditNotFoundError",
     "AuditSchemaError",
     "AuditStore",
     "AuditStoreError",
     "CandidateRejection",
     "RejectionStage",
+    "UsageSummary",
+    "inspect_audit_database",
     "open_audit_store",
 ]

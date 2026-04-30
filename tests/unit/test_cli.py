@@ -62,6 +62,15 @@ def fake_pipeline_result() -> SimpleNamespace:
             output_byte_length=123,
         ),
         reconciliation=SimpleNamespace(data_points=(SimpleNamespace(data_point_id="dp-1"),)),
+        usage_summary={
+            "critic": {
+                "calls": 2,
+                "input_tokens": 160,
+                "output_tokens": 35,
+                "cache_read_tokens": 50,
+                "cache_creation_tokens": 5,
+            }
+        },
     )
 
 
@@ -78,6 +87,15 @@ def test_render_summary_outputs_stable_json() -> None:
         "output_sha256": "a" * 64,
         "run_id": "run-1",
         "status": "completed",
+        "usage_summary": {
+            "critic": {
+                "cache_creation_tokens": 5,
+                "cache_read_tokens": 50,
+                "calls": 2,
+                "input_tokens": 160,
+                "output_tokens": 35,
+            }
+        },
     }
 
 
@@ -159,3 +177,4 @@ def test_pyproject_registers_console_script() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert pyproject["project"]["scripts"]["veritext"] == "extractor.cli.main:main"
+    assert pyproject["project"]["scripts"]["veritext-audit"] == "extractor.audit.cli:main"

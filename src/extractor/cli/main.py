@@ -93,6 +93,7 @@ def render_summary(result: object) -> str:
         "output_byte_length": result.report.output_byte_length,
         "data_point_count": len(result.reconciliation.data_points),
         "output_data_point_ids": result.completed_manifest.output_data_point_ids,
+        "usage_summary": result.usage_summary,
     }
     return json.dumps(summary, sort_keys=True)
 

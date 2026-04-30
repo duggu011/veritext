@@ -63,6 +63,8 @@ def test_default_config_file_loads() -> None:
     assert config.llm.prompt_cache_enabled is True
     assert config.execution.max_stage_concurrency == 4
     assert config.execution.max_chunk_concurrency == 2
+    assert config.execution.critic_batch_size == 20
+    assert config.execution.verifier_batch_size == 20
     assert config.logging.format == "json"
     assert config.chunking.overlap_tokens < config.chunking.window_tokens
 

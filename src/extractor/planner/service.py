@@ -187,6 +187,7 @@ async def _call_planning_stage(
             prompt=prompt,
             user_content=user_content,
             stable_user_prefix=stable_user_prefix,
+            prompt_cache_allowed=False,
             tool_name=tool_name,
             tool_description=tool_description,
         ),

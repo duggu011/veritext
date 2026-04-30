@@ -261,8 +261,8 @@ def _raw_correction(candidate: LensCandidate | None) -> dict[str, object] | None
         "category": candidate.category,
         "field_name": candidate.field_name,
         "value": candidate.value,
-        "source_start_char": candidate.source_span.start_char,
-        "source_text": candidate.source_span.text,
+        "span_start_char": candidate.source_span.start_char,
+        "span_text": candidate.source_span.text,
     }
 
 
@@ -452,13 +452,13 @@ def test_review_candidates_rejects_invalid_correction_without_silent_drop(
 def test_review_candidates_survives_malformed_correction_offsets(tmp_path: Path) -> None:
     async def run_check() -> None:
         candidate = make_candidate()
-        # The critic claims source_text is "Margin declined" at the original
+        # The critic claims span_text is "Margin declined" at the original
         # candidate's start_char (which actually points at "Revenue increased").
         # The chunk-slice check must catch this and surface a typed rejection
         # instead of letting Pydantic crash the run.
         bad_correction = _raw_correction(candidate) or {}
-        bad_correction["source_start_char"] = candidate.source_span.start_char
-        bad_correction["source_text"] = "Margin declined"
+        bad_correction["span_start_char"] = candidate.source_span.start_char
+        bad_correction["span_text"] = "Margin declined"
         item = {
             "id": short_candidate_id(candidate.candidate_id),
             "decision": "correct",

@@ -74,6 +74,16 @@ python3 -m extractor.evals evals/fixtures/minimal_financial_update/expected.json
 
 The included fixtures cover minimal financial update, contract obligation, policy control, and a mixed distractor example.
 
+## Audit Inspection
+
+Inspect a completed SQLite audit database and print the stage/token/cache details needed for acceptance checks:
+
+```bash
+PYTHONPATH=src python3 -m extractor.audit .veritext/audit.sqlite3 --run-id run-1 --details
+```
+
+The installed console script is `veritext-audit`. Without `--run-id`, it inspects the latest run in the database. The JSON includes run/document metadata, stage usage totals, critic/verifier batch checks, cache-read checks, candidate/report/rejection counts, and optional detailed LLM call/data-point rows.
+
 ## Prompt Pack
 
 The active prompt pack lives under `prompts/`. Each prompt keeps the required contract sections and instructs the model to use forced tool output, approved schema names, exact source spans, explicit rejection behavior, stage-specific examples, and adversarial checks.

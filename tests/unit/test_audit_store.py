@@ -240,6 +240,66 @@ def test_audit_store_round_trips_contract_payloads(tmp_path: Path) -> None:
     asyncio.run(run_check())
 
 
+def test_audit_store_summarizes_run_usage_by_stage(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        async with AuditStore(tmp_path / "audit.sqlite3") as store:
+            await store.record_run_manifest(make_manifest())
+            logs = (
+                make_llm_call_log().model_copy(
+                    update={
+                        "call_id": "call-critic-1",
+                        "stage": "critic",
+                        "input_tokens": 100,
+                        "output_tokens": 20,
+                        "cache_read_tokens": 40,
+                        "cache_creation_tokens": 5,
+                    }
+                ),
+                make_llm_call_log().model_copy(
+                    update={
+                        "call_id": "call-critic-2",
+                        "stage": "critic",
+                        "input_tokens": 60,
+                        "output_tokens": 15,
+                        "cache_read_tokens": 10,
+                        "cache_creation_tokens": 0,
+                    }
+                ),
+                make_llm_call_log().model_copy(
+                    update={
+                        "call_id": "call-verifier-1",
+                        "stage": "verifier",
+                        "input_tokens": 30,
+                        "output_tokens": 8,
+                        "cache_read_tokens": 6,
+                        "cache_creation_tokens": 2,
+                    }
+                ),
+            )
+            for log in logs:
+                await store.record_llm_call_log(log)
+
+            assert await store.summarize_run("run-1") == {
+                "critic": {
+                    "calls": 2,
+                    "input_tokens": 160,
+                    "output_tokens": 35,
+                    "cache_read_tokens": 50,
+                    "cache_creation_tokens": 5,
+                },
+                "verifier": {
+                    "calls": 1,
+                    "input_tokens": 30,
+                    "output_tokens": 8,
+                    "cache_read_tokens": 6,
+                    "cache_creation_tokens": 2,
+                },
+            }
+            assert await store.summarize_run("missing-run") == {}
+
+    asyncio.run(run_check())
+
+
 def test_audit_store_rejects_duplicate_audit_ids(tmp_path: Path) -> None:
     async def run_check() -> None:
         async with AuditStore(tmp_path / "audit.sqlite3") as store:

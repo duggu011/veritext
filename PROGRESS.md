@@ -4,11 +4,56 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 23 — Reconciler input slim
-- Current status: awaiting explicit `continue` before Phase 24
-- Next required work: Phase 24 — Batch-size tuning and observability
+- Last completed phase: Output-token plan Phase 2a — executor `source_length` boundary
+- Current status: stopped after Phase 2a implementation and local verification; awaiting operator `continue`
+- Next required work: Output-token plan Phase 2b — compact critic/verifier verdict tuples
 
 ## Session Log
+
+### 2026-05-01 — Output-token Plan Phase 2a
+
+- Replaced executor LLM output `source_text` with `source_length` while preserving full reconstructed `SourceSpan.text` in `LensCandidate` and audit storage.
+- Updated executor span resolution to slice chunk text from `start_char + source_length`, auto-correct unique value-based offset/length typos, and reject ambiguous or unsupported reconstructed spans with explicit reasons.
+- Updated all executor prompts to request `start_char` plus `source_length` and forbid returning `source_text`, byte offsets, and end offsets.
+- Updated executor, prompt-pack, and orchestrator test fixtures for the compact executor output boundary.
+- Verified `python3 -m pytest tests/unit/test_executor.py tests/unit/test_llm_client.py tests/unit/test_orchestrator.py -q`, `python3 -m pytest tests/unit -q`, `python3 -m pytest tests/integration/test_recall_baseline.py -q`, `make lint`, `make smoke`, `python3 -m pytest -q`, and `git diff --check`.
+- The live LLM recall pipeline was not run because `VERITEXT_RUN_LIVE_EVAL=1` was not enabled.
+
+### 2026-04-30 — System Flow Review Document
+
+- Added `docs/system-flow-review.md` with an end-to-end application flow diagram, per-stage responsibilities, LLM input/output examples, audit database notes, prompt-cache behavior, cost patterns, and review questions for external system analysis.
+- Included a mini extraction example showing how source text becomes executor candidates, critic/verifier verdicts, reconciler data points, and final audited output.
+- Added a token-problem appendix covering output-token cost dominance, repeated JSON keys/schema names, evidence length failures, cache writes without reads, batching limits, and compact wire-format mitigation.
+- Verified `git diff --check`.
+
+### 2026-04-30 — Prompt Cache Write Pruning
+
+- Investigated the `medium-research-1` token ledger and found planner/executor cache writes with no corresponding reads, while critic/verifier were the stages actually benefiting from prompt caching.
+- Added per-request Anthropic prompt-cache opt-out so stages can preserve split prompt construction without forcing `cache_control` onto one-shot prefixes.
+- Disabled planner prompt caching because each planning call uses a different prompt/tool prefix, which invalidates message-prefix reuse under Anthropic's `tools -> system -> messages` cache hierarchy.
+- Changed executor caching to apply only when a run has multiple chunks, and split the cached executor user prefix before `chunk_view` so chunk text is not written into one-off cache entries.
+- Left critic/verifier cache behavior intact for repeated batch review and verification.
+- Verified `python3 -m pytest tests/unit/test_llm_client.py tests/unit/test_executor.py`, `python3 -m pytest tests/unit/test_planner.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_orchestrator.py`, `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_audit_store.py tests/unit/test_cli.py`, `python3 -m pytest`, `make lint`, `make smoke`, and `git diff --check`.
+- A live Sonnet rerun was not run in this session.
+
+### 2026-04-30 — Audit Inspection CLI
+
+- Added a reusable `veritext-audit` / `python -m extractor.audit` inspector for SQLite audit databases.
+- The inspector selects a requested run or the latest run and reports database/schema metadata, run/document/plan summaries, candidate/report/rejection/data-point counts, per-stage token/cache usage, and Phase 24 acceptance checks for critic/verifier batch counts and cache reads.
+- Added `--details` output for LLM call rows, candidates, critic/verifier reports, candidate rejections, and data points.
+- Added public audit-store list helpers needed by the inspector for run-level reports and rejections.
+- Documented local usage in `README.md`.
+- Verified `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_audit_store.py tests/unit/test_cli.py`, `make lint`, `make test`, `make smoke`, and `git diff --check`.
+
+### 2026-04-30 — Phase 24 Batch-size Tuning and Observability
+
+- Raised the default critic and verifier batch sizes to 20 in canonical config and config model defaults.
+- Added `AuditStore.summarize_run(run_id)` to aggregate per-stage LLM `calls`, `input_tokens`, `output_tokens`, `cache_read_tokens`, and `cache_creation_tokens`.
+- Captured `usage_summary` after reporter completion in the orchestrator result without changing report serialization.
+- Added `usage_summary` to the CLI JSON summary while preserving existing summary keys.
+- Added audit-store aggregation coverage, CLI summary coverage, config assertions, and orchestrator coverage that the run result includes stage usage counts.
+- Verified `python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_cli.py tests/unit/test_config.py tests/unit/test_orchestrator.py`, `make lint`, `make test`, `make smoke`, and `git diff --check`.
+- The four fixture eval reruns and live Sonnet 4.6 `medium-research-{N}` acceptance run were not run in this session.
 
 ### 2026-04-30 — Phase 23 Reconciler Input Slim
 

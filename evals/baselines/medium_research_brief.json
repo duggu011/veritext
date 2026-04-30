@@ -1,0 +1,100 @@
+{
+  "case_id": "medium_research_brief",
+  "metrics": {
+    "actual_count": 55,
+    "exact_provenance_matches": 53,
+    "expected_count": 53,
+    "f1": 0.9814814814814815,
+    "false_negatives": 0,
+    "false_positives": 2,
+    "invariant_violation_count": 0,
+    "precision": 0.9636363636363636,
+    "provenance_recall": 1.0,
+    "recall": 1.0,
+    "true_positives": 53
+  },
+  "source_run_id": "medium-research-1",
+  "total_cache_creation_tokens": 44060,
+  "total_cache_read_tokens": 37720,
+  "total_input_tokens": 29519,
+  "total_output_tokens": 30137,
+  "usage_summary": {
+    "critic": {
+      "cache_creation_tokens": 4986,
+      "cache_read_tokens": 19944,
+      "calls": 5,
+      "input_tokens": 7189,
+      "output_tokens": 5842
+    },
+    "executor.claim": {
+      "cache_creation_tokens": 4797,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 26,
+      "output_tokens": 4957
+    },
+    "executor.entity": {
+      "cache_creation_tokens": 4787,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 26,
+      "output_tokens": 638
+    },
+    "executor.event": {
+      "cache_creation_tokens": 4820,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 26,
+      "output_tokens": 4883
+    },
+    "executor.number": {
+      "cache_creation_tokens": 4896,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 26,
+      "output_tokens": 2130
+    },
+    "planner.allocate_budget": {
+      "cache_creation_tokens": 2991,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 5581,
+      "output_tokens": 107
+    },
+    "planner.classify_document": {
+      "cache_creation_tokens": 2965,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 46,
+      "output_tokens": 199
+    },
+    "planner.critique_schema": {
+      "cache_creation_tokens": 3224,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 2597,
+      "output_tokens": 3386
+    },
+    "planner.propose_schema": {
+      "cache_creation_tokens": 3234,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 188,
+      "output_tokens": 3327
+    },
+    "planner.select_strategy": {
+      "cache_creation_tokens": 2916,
+      "cache_read_tokens": 0,
+      "calls": 1,
+      "input_tokens": 5042,
+      "output_tokens": 572
+    },
+    "verifier": {
+      "cache_creation_tokens": 4444,
+      "cache_read_tokens": 17776,
+      "calls": 5,
+      "input_tokens": 8772,
+      "output_tokens": 4096
+    }
+  }
+}

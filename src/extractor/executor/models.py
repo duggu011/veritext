@@ -26,13 +26,12 @@ class ExecutorStageInput(ExecutorModel):
 
 
 class ExtractedCandidatePayload(ExecutorModel):
-    # The model returns char offset + exact source_text only. The service derives
-    # end_char and the UTF-8 byte offsets from the chunk text — LLMs are unreliable
-    # at byte arithmetic, so we never ask them to produce it.
+    # The model returns char offset + source length only. The service reconstructs
+    # source text, end_char, and UTF-8 byte offsets from the chunk text.
     category: NonEmptyStr
     field_name: NonEmptyStr
     value: NonEmptyStr
-    source_text: NonEmptyStr
+    source_length: NonNegativeInt
     # Kimi has been observed returning start_text as a typo for this integer
     # field. Keep the emitted schema strict as start_char, but accept the typo at
     # validation time so exact-span checks can still accept or reject the value.

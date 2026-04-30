@@ -19,6 +19,7 @@ from extractor.contracts import (
 )
 from extractor.contracts.models import LLMStage, LensName
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm.payloads import split_model_json_before_field
 from extractor.llm.views import chunk_view_from_chunk, schema_card_from_plan
 from extractor.executor.models import (
     ExecutionResult,
@@ -94,11 +95,13 @@ async def execute_plan(
     _validate_executor_inputs(plan, chunks)
 
     semaphore = asyncio.Semaphore(execution_config.max_chunk_concurrency)
+    prompt_cache_allowed = len(chunks) > 1
     tasks = [
         _execute_lens_chunk(
             plan=plan,
             lens=lens,
             chunk=chunk,
+            prompt_cache_allowed=prompt_cache_allowed,
             prompt_loader=prompt_loader,
             llm_client=llm_client,
             audit_store=audit_store,
@@ -125,6 +128,7 @@ async def _execute_lens_chunk(
     plan: ExtractionPlan,
     lens: LensName,
     chunk: Chunk,
+    prompt_cache_allowed: bool,
     prompt_loader: PromptLoader,
     llm_client: LLMClient,
     audit_store: AuditStore | None,
@@ -136,14 +140,19 @@ async def _execute_lens_chunk(
             schema_card=schema_card_from_plan(plan),
             lens=lens,
             chunk_view=chunk_view_from_chunk(chunk),
-        ).model_dump_json()
+        )
+        stable_user_prefix, user_content = split_model_json_before_field(
+            stage_input,
+            "chunk_view",
+        )
         result = await llm_client.complete_structured(
             StructuredLLMRequest(
                 run_id=plan.run_id,
                 stage=stage,
                 prompt=prompt_loader.load(stage),
-                user_content="",
-                stable_user_prefix=stage_input,
+                user_content=user_content,
+                stable_user_prefix=stable_user_prefix,
+                prompt_cache_allowed=prompt_cache_allowed,
                 tool_name=f"extract_{lens}_candidates",
                 tool_description=f"Extract {lens} candidates from one chunk.",
             ),
@@ -160,26 +169,17 @@ async def _execute_lens_chunk(
     for index, payload in enumerate(result.output.candidates):
         original_start_char = payload.start_char
         resolution = _resolve_source_text(payload=payload, chunk=chunk)
-        if (
-            resolution.start_char != payload.start_char
-            or resolution.source_text != payload.source_text
-        ):
-            payload = payload.model_copy(
-                update={
-                    "start_char": resolution.start_char,
-                    "source_text": resolution.source_text,
-                }
-            )
         candidate = _build_candidate(
             plan=plan,
             lens=lens,
             chunk=chunk,
             payload=payload,
+            start_char=resolution.start_char,
+            source_text=resolution.source_text,
             candidate_index=index,
             executor_call_id=result.call_log.call_id,
         )
         reasons = _candidate_rejection_reasons(
-            payload=payload,
             candidate=candidate,
             chunk=chunk,
             category_fields=category_fields,
@@ -190,7 +190,9 @@ async def _execute_lens_chunk(
             await audit_store.record_lens_candidate(candidate)
 
         corrected_from = (
-            original_start_char if payload.start_char != original_start_char else None
+            original_start_char
+            if resolution.start_char != original_start_char
+            else None
         )
         outcomes.append((candidate, tuple(reasons), corrected_from))
 
@@ -246,23 +248,25 @@ def _build_candidate(
     lens: LensName,
     chunk: Chunk,
     payload: ExtractedCandidatePayload,
+    start_char: int,
+    source_text: str,
     candidate_index: int,
     executor_call_id: str,
 ) -> LensCandidate:
-    end_char = payload.start_char + len(payload.source_text)
+    end_char = start_char + len(source_text)
     start_byte, end_byte = _derive_byte_offsets(
         chunk=chunk,
-        start_char=payload.start_char,
-        source_text=payload.source_text,
+        start_char=start_char,
+        source_text=source_text,
     )
     source_span = SourceSpan(
         doc_id=plan.doc_id,
         chunk_id=chunk.chunk_id,
-        start_char=payload.start_char,
+        start_char=start_char,
         end_char=end_char,
         start_byte=start_byte,
         end_byte=end_byte,
-        text=payload.source_text,
+        text=source_text,
     )
     return LensCandidate(
         candidate_id=_stable_candidate_id(
@@ -270,6 +274,8 @@ def _build_candidate(
             lens=lens,
             chunk=chunk,
             payload=payload,
+            start_char=start_char,
+            source_text=source_text,
             candidate_index=candidate_index,
         ),
         run_id=plan.run_id,
@@ -287,7 +293,6 @@ def _build_candidate(
 
 def _candidate_rejection_reasons(
     *,
-    payload: ExtractedCandidatePayload,
     candidate: LensCandidate,
     chunk: Chunk,
     category_fields: dict[str, frozenset[str]],
@@ -312,10 +317,6 @@ def _candidate_rejection_reasons(
             )
         )
 
-    offset_reason = _payload_offset_rejection_reason(payload=payload, chunk=chunk)
-    if offset_reason is not None:
-        reasons.append(offset_reason)
-
     if not _span_matches_chunk(candidate.source_span, chunk):
         reasons.append(
             RejectionReason(
@@ -334,59 +335,147 @@ def _resolve_source_text(
     payload: ExtractedCandidatePayload,
     chunk: Chunk,
 ) -> SourceTextResolution:
-    """Find the safest chunk-backed span for source_text.
+    """Find the safest chunk-backed span for the model's offset/length claim.
 
-    Exact unique matches are preferred. If exact text is absent, a unique
-    whitespace-normalized match is allowed, but the source span is rewritten to
-    the exact chunk substring so downstream provenance remains byte-for-byte.
+    The normal path is a direct chunk slice from start_char + source_length. If
+    that span is structurally invalid or clearly does not support the emitted
+    value, a unique value match can repair offset/length typos.
     """
     text = chunk.text
-    source = payload.source_text
-    if len(source) == 0:
-        return SourceTextResolution(
-            start_char=payload.start_char,
-            source_text=payload.source_text,
-        )
+    claimed = _slice_claimed_source_text(payload=payload, chunk=chunk)
+    value_matches = _find_value_matches(text, payload.value)
 
-    relative_claimed = payload.start_char - chunk.start_char
-    exact_matches = _find_exact_matches(text, source)
-    if relative_claimed in exact_matches:
-        rejection_reasons = (
-            (_ambiguous_source_span_reason(source, len(exact_matches)))
-            if _is_short_ambiguous_source(source, exact_matches)
-            else ()
-        )
-        return SourceTextResolution(
-            start_char=payload.start_char,
-            source_text=payload.source_text,
-            rejection_reasons=rejection_reasons,
-        )
-    if len(exact_matches) == 1:
-        return SourceTextResolution(
-            start_char=chunk.start_char + exact_matches[0],
-            source_text=source,
-        )
-
-    stripped = source.strip()
-    if stripped and stripped != source:
-        stripped_matches = _find_exact_matches(text, stripped)
-        if len(stripped_matches) == 1:
+    if claimed is None:
+        if len(value_matches) == 1:
+            start, end = value_matches[0]
             return SourceTextResolution(
-                start_char=chunk.start_char + stripped_matches[0],
-                source_text=stripped,
+                start_char=chunk.start_char + start,
+                source_text=text[start:end],
             )
 
-    normalized_matches = _find_whitespace_normalized_matches(text, source)
-    if len(normalized_matches) == 1:
-        start, end = normalized_matches[0]
+        reasons = [_invalid_source_length_reason(payload=payload, chunk=chunk)]
+        if len(value_matches) > 1:
+            reasons.extend(
+                _ambiguous_source_span_reason(payload.value, len(value_matches))
+            )
+        return _fallback_resolution(chunk=chunk, rejection_reasons=tuple(reasons))
+
+    claimed_source = claimed[2]
+    claimed_exact_matches = _find_exact_matches(text, claimed_source)
+    claimed_is_ambiguous = _is_short_ambiguous_source(
+        claimed_source,
+        claimed_exact_matches,
+    )
+    if (
+        len(value_matches) == 1
+        and (
+            not _source_supports_value(claimed_source, payload.value)
+            or claimed_source.strip() == text[value_matches[0][0] : value_matches[0][1]]
+        )
+    ):
+        start, end = value_matches[0]
         return SourceTextResolution(
             start_char=chunk.start_char + start,
             source_text=text[start:end],
         )
 
+    rejection_reasons: tuple[RejectionReason, ...] = ()
+    if claimed_is_ambiguous:
+        rejection_reasons = _ambiguous_source_span_reason(
+            claimed_source,
+            len(claimed_exact_matches),
+        )
+    elif not _source_supports_value(claimed_source, payload.value):
+        reasons = [_unsupported_value_reason(payload=payload)]
+        if len(value_matches) > 1:
+            reasons.extend(
+                _ambiguous_source_span_reason(payload.value, len(value_matches))
+            )
+        rejection_reasons = tuple(reasons)
+
     return SourceTextResolution(
         start_char=payload.start_char,
-        source_text=payload.source_text,
+        source_text=claimed_source,
+        rejection_reasons=rejection_reasons,
+    )
+
+
+def _slice_claimed_source_text(
+    *,
+    payload: ExtractedCandidatePayload,
+    chunk: Chunk,
+) -> tuple[int, int, str] | None:
+    relative_start = payload.start_char - chunk.start_char
+    relative_end = relative_start + payload.source_length
+    if (
+        relative_start < 0
+        or relative_end > len(chunk.text)
+        or payload.source_length == 0
+    ):
+        return None
+    return relative_start, relative_end, chunk.text[relative_start:relative_end]
+
+
+def _find_value_matches(text: str, value: str) -> list[tuple[int, int]]:
+    exact_matches = _find_exact_matches(text, value)
+    if exact_matches:
+        return [(start, start + len(value)) for start in exact_matches]
+
+    stripped = value.strip()
+    if stripped and stripped != value:
+        stripped_matches = _find_exact_matches(text, stripped)
+        if stripped_matches:
+            return [(start, start + len(stripped)) for start in stripped_matches]
+
+    return _find_whitespace_normalized_matches(text, value)
+
+
+def _source_supports_value(source: str, value: str) -> bool:
+    if value in source:
+        return True
+    stripped = value.strip()
+    if stripped and stripped in source:
+        return True
+    return _collapse_whitespace(value).casefold() in _collapse_whitespace(source).casefold()
+
+
+def _invalid_source_length_reason(
+    *,
+    payload: ExtractedCandidatePayload,
+    chunk: Chunk,
+) -> RejectionReason:
+    return RejectionReason(
+        code="invalid_source_offsets",
+        message=(
+            f"Candidate source_length {payload.source_length} at start_char "
+            f"{payload.start_char} does not fit chunk "
+            f"[{chunk.start_char}, {chunk.end_char})."
+        ),
+    )
+
+
+def _unsupported_value_reason(
+    *,
+    payload: ExtractedCandidatePayload,
+) -> RejectionReason:
+    return RejectionReason(
+        code="invalid_source_offsets",
+        message=(
+            "Candidate length-based source span does not contain the emitted "
+            f"value {payload.value!r}."
+        ),
+    )
+
+
+def _fallback_resolution(
+    *,
+    chunk: Chunk,
+    rejection_reasons: tuple[RejectionReason, ...],
+) -> SourceTextResolution:
+    return SourceTextResolution(
+        start_char=chunk.start_char,
+        source_text=chunk.text[:1],
+        rejection_reasons=rejection_reasons,
     )
 
 
@@ -414,8 +503,8 @@ def _ambiguous_source_span_reason(
         RejectionReason(
             code="ambiguous_source_span",
             message=(
-                f"Candidate source_text {source!r} appears {match_count} times in "
-                "the chunk; emit a wider unique source_text to preserve provenance."
+                f"Candidate span text {source!r} appears {match_count} times in "
+                "the chunk; emit a wider unique source_length to preserve provenance."
             ),
         ),
     )
@@ -468,39 +557,6 @@ def _normalize_whitespace_with_mapping(text: str) -> tuple[str, list[int]]:
     return "".join(normalized), mapping
 
 
-def _payload_offset_rejection_reason(
-    *,
-    payload: ExtractedCandidatePayload,
-    chunk: Chunk,
-) -> RejectionReason | None:
-    relative_start = payload.start_char - chunk.start_char
-    relative_end = relative_start + len(payload.source_text)
-    if (
-        relative_start < 0
-        or relative_end > len(chunk.text)
-        or len(payload.source_text) == 0
-    ):
-        return RejectionReason(
-            code="invalid_source_offsets",
-            message=(
-                f"Candidate source_text length {len(payload.source_text)} at "
-                f"start_char {payload.start_char} does not fit chunk "
-                f"[{chunk.start_char}, {chunk.end_char})."
-            ),
-        )
-    actual = chunk.text[relative_start:relative_end]
-    if actual != payload.source_text:
-        return RejectionReason(
-            code="invalid_source_offsets",
-            message=(
-                "Candidate source_text does not match chunk slice at "
-                f"start_char {payload.start_char}: expected "
-                f"{payload.source_text!r}, found {actual!r}."
-            ),
-        )
-    return None
-
-
 def _derive_byte_offsets(
     *,
     chunk: Chunk,
@@ -547,6 +603,8 @@ def _stable_candidate_id(
     lens: LensName,
     chunk: Chunk,
     payload: ExtractedCandidatePayload,
+    start_char: int,
+    source_text: str,
     candidate_index: int,
 ) -> str:
     identity = "|".join(
@@ -559,8 +617,8 @@ def _stable_candidate_id(
             payload.category,
             payload.field_name,
             payload.value,
-            str(payload.start_char),
-            payload.source_text,
+            str(start_char),
+            source_text,
         )
     )
     return f"candidate-{hashlib.sha256(identity.encode('utf-8')).hexdigest()[:32]}"

@@ -242,6 +242,11 @@ def test_create_extraction_plan_runs_planner_calls_and_persists_audit(tmp_path: 
             {"type": "tool", "name": "select_strategy"},
             {"type": "tool", "name": "allocate_budget"},
         ]
+        assert all(isinstance(call["system"], str) for call in anthropic_client.messages.calls)
+        assert all(
+            "cache_control" not in call["tools"][0]
+            for call in anthropic_client.messages.calls
+        )
         assert "Revenue increased" in call_user_text(anthropic_client.messages.calls[0])
 
     asyncio.run(run_check())

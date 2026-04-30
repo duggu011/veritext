@@ -186,6 +186,7 @@ def candidate_payload(
     category: str = "Finding",
     field_name: str = "summary",
     source_text: str = "Revenue increased",
+    source_length: int | None = None,
     start_char: int = 0,
     value: str = "Revenue increased",
 ) -> dict[str, object]:
@@ -193,7 +194,7 @@ def candidate_payload(
         "category": category,
         "field_name": field_name,
         "value": value,
-        "source_text": source_text,
+        "source_length": len(source_text) if source_length is None else source_length,
         "start_char": start_char,
         "confidence": 0.9,
     }
@@ -257,6 +258,11 @@ def test_execute_plan_persists_accepted_and_rejected_candidates(tmp_path: Path) 
             {"type": "tool", "name": "extract_claim_candidates"},
         ]
         first_payload_text = call_user_text(anthropic_client.messages.calls[0])
+        first_content = anthropic_client.messages.calls[0]["messages"][0]["content"]
+        assert isinstance(first_content, list)
+        assert first_content[0]["cache_control"] == {"type": "ephemeral"}
+        assert str(first_content[0]["text"]).endswith('"chunk_view":')
+        assert '"Revenue increased."' not in str(first_content[0]["text"])
         first_payload = json.loads(first_payload_text)
         assert first_payload["chunk_view"] == {
             "start_char": 0,
@@ -274,6 +280,27 @@ def test_execute_plan_persists_accepted_and_rejected_candidates(tmp_path: Path) 
             "domain_hints",
         ):
             assert f'"{forbidden}"' not in first_payload_text
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_does_not_cache_single_chunk_executor_prompt() -> None:
+    async def run_check() -> None:
+        anthropic_client = QueuedAnthropicClient([{"candidates": (candidate_payload(),)}])
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        await execute_plan(
+            plan=make_plan(max_calls=1),
+            chunks=(make_chunks()[0],),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        call = anthropic_client.messages.calls[0]
+        assert isinstance(call["system"], str)
+        assert isinstance(call["messages"][0]["content"], str)  # type: ignore[index]
+        assert "cache_control" not in call["tools"][0]
 
     asyncio.run(run_check())
 
@@ -310,9 +337,8 @@ def test_execute_plan_rejects_invented_span_without_silent_drop(tmp_path: Path) 
         assert result.accepted_candidates == ()
         assert len(result.rejected_candidates) == 1
         assert len(stored_candidates) == 1
-        # When the model returns only start_char + source_text, "invented span"
-        # and "internally inconsistent offsets" reduce to the same check: the
-        # chunk slice doesn't equal the claimed source_text.
+        # With start_char + source_length only, an internally inconsistent span
+        # is rejected when the reconstructed chunk slice cannot support value.
         assert result.rejections[0].reasons[0].code == "invalid_source_offsets"
 
     asyncio.run(run_check())
@@ -322,8 +348,8 @@ def test_execute_plan_auto_corrects_off_by_one_offsets(tmp_path: Path) -> None:
     async def run_check() -> None:
         # Chunk 1 starts with a leading space (" Margin declined."), so
         # "Margin declined" is one character past the chunk start. A model that
-        # points to the leading whitespace is off-by-one but its source_text is
-        # exact; the validator should locate the unique match and auto-correct.
+        # points to the leading whitespace is off-by-one; the validator should
+        # locate the unique value span and auto-correct.
         chunk = make_chunks()[1]
         true_start = chunk.start_char + chunk.text.index("Margin declined")
         off_by_one_payload = candidate_payload(
@@ -438,7 +464,7 @@ def test_execute_plan_rejects_far_off_ambiguous_offsets() -> None:
         assert len(result.rejected_candidates) == 1
         assert {reason.code for reason in result.rejections[0].reasons} == {
             "invalid_source_offsets",
-            "invented_span",
+            "ambiguous_source_span",
         }
 
     asyncio.run(run_check())
@@ -508,7 +534,10 @@ def test_execute_plan_auto_corrects_unique_whitespace_normalized_span() -> None:
                 "$2.10 to $2.25 billion."
             ),
             start_char=8,
-            value="$2.10 to $2.25 billion",
+            value=(
+                "Full-year 2026 revenue guidance reaffirmed at "
+                "$2.10 to $2.25 billion."
+            ),
         )
         llm_client = LLMClient(
             make_llm_config(),
@@ -535,13 +564,12 @@ def test_execute_plan_rejects_malformed_payload_offsets_without_aborting(
     tmp_path: Path,
 ) -> None:
     async def run_check() -> None:
-        # Model claims source_text="Revenue increased" at start_char=0, but the
-        # chunk slice at offset 0 is actually "Revenue increased." (period at end
-        # would still match a 17-char slice; instead claim a value that doesn't
-        # appear at offset 0 at all).
+        # Model claims a source_length and value for text that does not appear
+        # in the chunk; this should be logged as a rejection instead of aborting.
         malformed_payload = candidate_payload(
             source_text="Margin declined",
             start_char=0,
+            value="Margin declined",
         )
         llm_client = LLMClient(
             make_llm_config(),

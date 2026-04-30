@@ -30,10 +30,10 @@ Acceptance rules (apply per candidate):
 
 Correction rules:
 - Use decision="correct" only when a small correction can make the candidate valid.
-- correction is a compact delta over the original candidate. Only provide value, category, field_name, source_start_char, or source_text when that field must change.
+- correction is a compact delta over the original candidate. Only provide value, category, field_name, span_start_char, or span_text when that field must change.
 - A corrected candidate must still use an approved category and field_name.
-- source_start_char is an absolute document character offset. End offsets, byte offsets, and identity fields are preserved or derived server-side — do not return them.
-- The slice chunk_view.text[source_start_char - chunk_view.start_char : source_start_char - chunk_view.start_char + len(source_text)] must equal source_text. Otherwise reject instead of correcting.
+- span_start_char is an absolute document character offset. End offsets, byte offsets, and identity fields are preserved or derived server-side — do not return them.
+- The slice chunk_view.text[span_start_char - chunk_view.start_char : span_start_char - chunk_view.start_char + len(span_text)] must equal span_text. Otherwise reject instead of correcting.
 - If correction would require guessing or changing identity/provenance, reject instead of correcting.
 
 Verdict rules:

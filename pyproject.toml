@@ -27,6 +27,7 @@ dev = []
 [project.scripts]
 veritext = "extractor.cli.main:main"
 veritext-eval = "extractor.evals.cli:main"
+veritext-audit = "extractor.audit.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/extractor"]
@@ -34,3 +35,6 @@ packages = ["src/extractor"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "live_eval: runs the real LLM pipeline against a labeled fixture (set VERITEXT_RUN_LIVE_EVAL=1 to opt in)",
+]

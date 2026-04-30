@@ -306,6 +306,11 @@ def _validate_verifier_inputs(
     return chunks_by_id, accepted_reports
 
 
+_SPAN_CORRECTNESS_CODES: frozenset[RejectionReasonCode] = frozenset(
+    {"invented_span", "invalid_source_offsets", "ambiguous_source_span"}
+)
+
+
 def _build_report(
     *,
     plan: ExtractionPlan,
@@ -319,33 +324,31 @@ def _build_report(
         chunk=chunk,
         candidate=candidate,
     )
-    rejection_reasons = _merged_rejection_reasons(
-        (
-            *_llm_rejection_reasons(verdict),
-            *deterministic_reasons,
+    deterministic_span_valid = not any(
+        reason.code == "invented_span" for reason in deterministic_reasons
+    )
+    llm_reasons = _llm_rejection_reasons(verdict)
+    if deterministic_span_valid:
+        # The deterministic span check is authoritative for offsets and exact
+        # text. When the LLM rejects with a span-correctness code against a
+        # span that actually matches the chunk, the verdict is hallucinated;
+        # drop those reasons so a correct candidate isn't lost. Other LLM
+        # signals (schema_violation, verifier_rejected, etc.) stay intact.
+        llm_reasons = tuple(
+            reason for reason in llm_reasons
+            if reason.code not in _SPAN_CORRECTNESS_CODES
         )
+    rejection_reasons = _merged_rejection_reasons(
+        (*llm_reasons, *deterministic_reasons)
     )
     span_verified = not any(
-        reason.code in {"invented_span", "invalid_source_offsets", "ambiguous_source_span"}
-        for reason in rejection_reasons
+        reason.code in _SPAN_CORRECTNESS_CODES for reason in rejection_reasons
     )
     category_verified = not any(
         reason.code in {"category_not_approved", "schema_violation"}
         for reason in rejection_reasons
     )
-    accepted = (
-        verdict.decision == "accept"
-        and span_verified
-        and category_verified
-        and not rejection_reasons
-    )
-    if not accepted and not rejection_reasons:
-        rejection_reasons = (
-            RejectionReason(
-                code="verifier_rejected",
-                message="Verifier rejected candidate without a specific reason.",
-            ),
-        )
+    accepted = not rejection_reasons
     alignment_score = 1.0 if accepted else 0.0
 
     return VerifierReport(

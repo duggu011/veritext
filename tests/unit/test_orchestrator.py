@@ -92,7 +92,7 @@ class DeterministicLLMClient:
                 "category": "Finding",
                 "field_name": "summary",
                 "value": source_text,
-                "source_text": source_text,
+                "source_length": len(source_text),
                 "start_char": chunk["start_char"],
                 "confidence": 0.8,
             }
@@ -242,6 +242,9 @@ def test_run_extraction_pipeline_wires_all_stages_and_completes_manifest(tmp_pat
         critic_calls = [call for call in llm_client.calls if call.stage == "critic"]
         assert len(critic_calls) == 1
         assert len(json.loads(critic_calls[0].full_user_content)["candidates"]) == 1
+        assert result.usage_summary["critic"]["calls"] == 1
+        assert result.usage_summary["verifier"]["calls"] == 1
+        assert result.usage_summary["reconciler"]["calls"] == 1
         assert [log.stage for log in llm_logs] == [
             "planner.classify_document",
             "planner.propose_schema",

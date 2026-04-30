@@ -25,6 +25,8 @@ execution:
   max_stage_concurrency: 4
   max_chunk_concurrency: 2
   max_llm_attempts: 2
+  critic_batch_size: 20
+  verifier_batch_size: 20
 audit:
   database_path: .veritext/audit.sqlite3
 logging:

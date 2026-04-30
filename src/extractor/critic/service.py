@@ -501,33 +501,33 @@ def _materialize_correction(
     if raw is None:
         return None, []
 
-    source_start_char = (
-        raw.source_start_char
-        if raw.source_start_char is not None
+    span_start_char = (
+        raw.span_start_char
+        if raw.span_start_char is not None
         else original.source_span.start_char
     )
-    source_text = raw.source_text if raw.source_text is not None else original.source_span.text
+    span_text = raw.span_text if raw.span_text is not None else original.source_span.text
 
-    relative_start = source_start_char - chunk.start_char
-    relative_end = relative_start + len(source_text)
+    relative_start = span_start_char - chunk.start_char
+    relative_end = relative_start + len(span_text)
     if (
         relative_start < 0
         or relative_end > len(chunk.text)
-        or chunk.text[relative_start:relative_end] != source_text
+        or chunk.text[relative_start:relative_end] != span_text
     ):
         return None, [
             RejectionReason(
                 code="invented_span",
                 message=(
-                    "Corrected candidate source_text does not match the chunk "
-                    f"slice at start_char {source_start_char}."
+                    "Corrected candidate span_text does not match the chunk "
+                    f"slice at start_char {span_start_char}."
                 ),
             )
         ]
 
-    end_char = source_start_char + len(source_text)
+    end_char = span_start_char + len(span_text)
     prefix_bytes = len(chunk.text[:relative_start].encode("utf-8"))
-    text_bytes = len(source_text.encode("utf-8"))
+    text_bytes = len(span_text.encode("utf-8"))
     start_byte = chunk.start_byte + prefix_bytes
     end_byte = start_byte + text_bytes
 
@@ -541,11 +541,11 @@ def _materialize_correction(
     candidate_dict["source_span"] = {
         "doc_id": original.doc_id,
         "chunk_id": original.chunk_id,
-        "start_char": source_start_char,
+        "start_char": span_start_char,
         "end_char": end_char,
         "start_byte": start_byte,
         "end_byte": end_byte,
-        "text": source_text,
+        "text": span_text,
     }
     try:
         return LensCandidate.model_validate(candidate_dict), []

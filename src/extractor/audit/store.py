@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS candidate_rejections (
 
 
 PayloadT = TypeVar("PayloadT", bound=BaseModel)
+UsageSummary = dict[str, dict[str, int]]
 
 
 class AuditStoreError(RuntimeError):
@@ -228,6 +229,15 @@ class AuditStore:
     async def get_run_manifest(self, run_id: str) -> RunManifest | None:
         return await self._fetch_payload("run_manifests", "run_id", run_id, RunManifest)
 
+    async def list_run_manifests(self) -> tuple[RunManifest, ...]:
+        return await self._list_payloads(
+            "run_manifests",
+            RunManifest,
+            "1 = 1",
+            (),
+            "started_at DESC, run_id ASC",
+        )
+
     async def record_document(self, document: Document) -> None:
         await self._insert_payload_idempotent(
             "documents",
@@ -312,6 +322,26 @@ class AuditStore:
             "created_at ASC, call_id ASC",
         )
 
+    async def summarize_run(self, run_id: str) -> UsageSummary:
+        summary: UsageSummary = {}
+        for log in await self.list_llm_call_logs(run_id):
+            stage_summary = summary.setdefault(
+                log.stage,
+                {
+                    "calls": 0,
+                    "input_tokens": 0,
+                    "output_tokens": 0,
+                    "cache_read_tokens": 0,
+                    "cache_creation_tokens": 0,
+                },
+            )
+            stage_summary["calls"] += 1
+            stage_summary["input_tokens"] += log.input_tokens
+            stage_summary["output_tokens"] += log.output_tokens
+            stage_summary["cache_read_tokens"] += log.cache_read_tokens
+            stage_summary["cache_creation_tokens"] += log.cache_creation_tokens
+        return {stage: summary[stage] for stage in sorted(summary)}
+
     async def record_lens_candidate(self, candidate: LensCandidate) -> None:
         await self._insert_payload(
             "lens_candidates",
@@ -367,6 +397,15 @@ class AuditStore:
             "report_id ASC",
         )
 
+    async def list_critic_reports_for_run(self, run_id: str) -> tuple[CriticReport, ...]:
+        return await self._list_payloads(
+            "critic_reports",
+            CriticReport,
+            "run_id = ?",
+            (run_id,),
+            "candidate_id ASC, report_id ASC",
+        )
+
     async def record_verifier_report(self, report: VerifierReport) -> None:
         await self._insert_payload(
             "verifier_reports",
@@ -394,6 +433,15 @@ class AuditStore:
             "candidate_id = ?",
             (candidate_id,),
             "report_id ASC",
+        )
+
+    async def list_verifier_reports_for_run(self, run_id: str) -> tuple[VerifierReport, ...]:
+        return await self._list_payloads(
+            "verifier_reports",
+            VerifierReport,
+            "run_id = ?",
+            (run_id,),
+            "candidate_id ASC, report_id ASC",
         )
 
     async def record_data_point(self, data_point: DataPoint) -> None:
@@ -451,6 +499,27 @@ class AuditStore:
             (candidate_id,),
             "created_at ASC, rejection_id ASC",
         )
+
+    async def list_candidate_rejections_for_run(
+        self,
+        run_id: str,
+    ) -> tuple[CandidateRejection, ...]:
+        return await self._list_payloads(
+            "candidate_rejections",
+            CandidateRejection,
+            "run_id = ?",
+            (run_id,),
+            "stage ASC, candidate_id ASC, created_at ASC, rejection_id ASC",
+        )
+
+    async def get_schema_version(self) -> str | None:
+        row = await self._fetch_one(
+            "SELECT value FROM audit_metadata WHERE key = ?",
+            ("schema_version",),
+        )
+        if row is None:
+            return None
+        return str(row["value"])
 
     async def _ensure_schema_version(self) -> None:
         connection = self._require_connection()
@@ -588,5 +657,6 @@ __all__ = [
     "AuditSchemaError",
     "AuditStore",
     "AuditStoreError",
+    "UsageSummary",
     "open_audit_store",
 ]
