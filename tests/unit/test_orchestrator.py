@@ -130,17 +130,8 @@ class DeterministicLLMClient:
                 for candidate in json.loads(user_content)["candidates"]
             ]
             return {
-                "data_points": (
-                    {
-                        "category": "Finding",
-                        "field_name": "summary",
-                        "value": "Revenue increased",
-                        "source_candidate_id": candidate_ids[0],
-                        "contributing_candidate_ids": tuple(candidate_ids),
-                        "confidence": 0.95,
-                    },
-                ),
-                "rejected_candidates": (),
+                "groups": ((candidate_ids[0], tuple(candidate_ids)),),
+                "rejected": (),
             }
         raise AssertionError(f"Unhandled stage: {request.stage}")
 
@@ -227,7 +218,6 @@ def test_run_extraction_pipeline_wires_all_stages_and_completes_manifest(tmp_pat
         assert result.completed_manifest == stored_manifest
         assert stored_manifest.status == "completed"
         assert stored_manifest.output_data_point_ids == tuple(payload["output_data_point_ids"])
-        assert payload["data_points"][0]["value"] == "Revenue increased"
         assert len(result.reconciliation.data_points[0].contributing_candidate_ids) == 2
         dedup_rejections = [
             rejection

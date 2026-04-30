@@ -2,19 +2,23 @@
 
 from extractor.reconciler.models import (
     ReconciledDataPointPayload,
+    ReconciledGroupPayload,
     ReconciliationBatch,
     ReconciliationResult,
     ReconcilerStageInput,
+    RejectedCandidateDecision,
     RejectedCandidatePayload,
 )
 from extractor.reconciler.service import ReconcilerError, reconcile_candidates
 
 __all__ = [
     "ReconciledDataPointPayload",
+    "ReconciledGroupPayload",
     "ReconciliationBatch",
     "ReconciliationResult",
     "ReconcilerError",
     "ReconcilerStageInput",
+    "RejectedCandidateDecision",
     "RejectedCandidatePayload",
     "reconcile_candidates",
 ]

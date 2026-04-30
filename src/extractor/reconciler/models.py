@@ -10,6 +10,7 @@ from extractor.contracts import (
     DataPoint,
     RejectionReason,
 )
+from extractor.contracts.models import RejectionReasonCode
 from extractor.llm.views import LLMCandidateView, LLMSchemaCard
 
 
@@ -48,9 +49,13 @@ class RejectedCandidatePayload(ReconcilerModel):
     reasons: tuple[RejectionReason, ...] = Field(min_length=1)
 
 
+ReconciledGroupPayload = tuple[NonEmptyStr, tuple[NonEmptyStr, ...]]
+RejectedCandidateDecision = tuple[NonEmptyStr, RejectionReasonCode]
+
+
 class ReconciliationBatch(ReconcilerModel):
-    data_points: tuple[ReconciledDataPointPayload, ...]
-    rejected_candidates: tuple[RejectedCandidatePayload, ...]
+    groups: tuple[ReconciledGroupPayload, ...]
+    rejected: tuple[RejectedCandidateDecision, ...]
 
     @model_validator(mode="before")
     @classmethod
@@ -62,7 +67,7 @@ class ReconciliationBatch(ReconcilerModel):
                 return data
         if isinstance(data, dict):
             coerced = dict(data)
-            for field_name in ("data_points", "rejected_candidates"):
+            for field_name in ("groups", "rejected"):
                 value = coerced.get(field_name)
                 if isinstance(value, str):
                     try:
@@ -72,6 +77,20 @@ class ReconciliationBatch(ReconcilerModel):
             return coerced
         return data
 
+    @model_validator(mode="after")
+    def validate_groups(self) -> ReconciliationBatch:
+        for source_candidate_id, contributing_candidate_ids in self.groups:
+            if source_candidate_id not in contributing_candidate_ids:
+                raise ValueError(
+                    "group source_candidate_id must be one of contributing_candidate_ids"
+                )
+            if len(contributing_candidate_ids) != len(set(contributing_candidate_ids)):
+                raise ValueError("group contributing_candidate_ids must be unique")
+        rejected_ids = [candidate_id for candidate_id, _ in self.rejected]
+        if len(rejected_ids) != len(set(rejected_ids)):
+            raise ValueError("rejected candidate IDs must be unique")
+        return self
+
 
 class ReconciliationResult(ReconcilerModel):
     data_points: tuple[DataPoint, ...]
@@ -79,9 +98,11 @@ class ReconciliationResult(ReconcilerModel):
 
 
 __all__ = [
+    "ReconciledGroupPayload",
     "ReconciledDataPointPayload",
     "ReconciliationBatch",
     "ReconciliationResult",
     "ReconcilerStageInput",
+    "RejectedCandidateDecision",
     "RejectedCandidatePayload",
 ]

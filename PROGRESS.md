@@ -4,11 +4,21 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Output-token plan Phase 2b — compact critic/verifier verdict tuples
-- Current status: stopped after Phase 2b implementation and local verification; awaiting operator `continue`
-- Next required work: Output-token plan Phase 2c — slim reconciler output
+- Last completed phase: Output-token plan Phase 2c — slim reconciler output
+- Current status: stopped after Phase 2c implementation and local verification; awaiting operator `continue`
+- Next required work: Output-token plan Phase 2d — collapse planner propose+critique
 
 ## Session Log
+
+### 2026-05-01 — Output-token Plan Phase 2c
+
+- Replaced reconciler LLM output full `data_points` objects with compact `groups` shaped as `[source_candidate_id, [contributing_candidate_ids...]]`.
+- Replaced verbose rejected-candidate payloads with compact `rejected` tuples shaped as `[candidate_id, code]`.
+- Derived final data point category, field_name, value, source span, confidence, critic report IDs, and verifier report IDs server-side from the selected source/contributing candidates.
+- Preserved full `DataPoint` and `CandidateRejection` audit records; only the LLM boundary shape changed.
+- Updated reconciler prompt and tests, including focused validation for compact group output and orchestrator fixture coverage.
+- Verified `python3 -m pytest tests/unit/test_reconciler.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`, `python3 -m pytest tests/unit -q`, `python3 -m pytest tests/integration/test_recall_baseline.py -q`, `make lint`, `make smoke`, `python3 -m pytest -q`, and `git diff --check`.
+- The live LLM recall pipeline was not run because `VERITEXT_RUN_LIVE_EVAL=1` was not enabled.
 
 ### 2026-05-01 — Output-token Plan Phase 2b
 

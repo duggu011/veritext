@@ -28,6 +28,7 @@ from extractor.contracts import (
 from extractor.llm import LLMClient, PromptLoader
 from extractor.llm.views import short_candidate_id
 from extractor.reconciler import ReconcilerError, reconcile_candidates
+from extractor.reconciler.models import ReconciliationBatch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -268,22 +269,25 @@ async def seed_audit_store(
 
 def reconciliation_payload(
     *,
-    rejected_candidates: tuple[dict[str, object], ...] = (),
+    rejected: tuple[tuple[str, str], ...] = (),
 ) -> dict[str, object]:
     first_id = short_candidate_id("candidate-1")
     return {
-        "data_points": (
-            {
-                "category": "Finding",
-                "field_name": "summary",
-                "value": "Revenue increased",
-                "source_candidate_id": first_id,
-                "contributing_candidate_ids": (first_id,),
-                "confidence": 0.95,
-            },
-        ),
-        "rejected_candidates": rejected_candidates,
+        "groups": ((first_id, (first_id,)),),
+        "rejected": rejected,
     }
+
+
+def test_reconciliation_batch_accepts_compact_group_shape() -> None:
+    batch = ReconciliationBatch.model_validate(
+        {
+            "groups": (("abc123", ("abc123", "def456")),),
+            "rejected": (("ghi789", "reconciler_rejected"),),
+        }
+    )
+
+    assert batch.groups == (("abc123", ("abc123", "def456")),)
+    assert batch.rejected == (("ghi789", "reconciler_rejected"),)
 
 
 def test_reconcile_candidates_persists_data_points_rejections_and_logs(
@@ -296,17 +300,12 @@ def test_reconcile_candidates_persists_data_points_rejections_and_logs(
         anthropic_client = QueuedAnthropicClient(
             [
                 reconciliation_payload(
-                    rejected_candidates=(
-                        {
-                            "candidate_id": short_candidate_id("candidate-2"),
-                            "reasons": (
-                                {
-                                    "code": "reconciler_rejected",
-                                    "message": "Conflicts with a stronger verified candidate.",
-                                },
-                            ),
-                        },
-                    )
+                    rejected=(
+                        (
+                            short_candidate_id("candidate-2"),
+                            "reconciler_rejected",
+                        ),
+                    ),
                 )
             ]
         )
@@ -339,6 +338,7 @@ def test_reconcile_candidates_persists_data_points_rejections_and_logs(
         assert data_point.confidence == 0.8
         assert rejections[0].stage == "reconciler"
         assert rejections[0].reasons[0].code == "reconciler_rejected"
+        assert rejections[0].reasons[0].message == "Reconciler rejected the candidate."
         assert [log.stage for log in logs] == ["reconciler"]
         assert anthropic_client.messages.calls[0]["tool_choice"] == {
             "type": "tool",
@@ -426,17 +426,8 @@ def test_reconcile_candidates_rejects_unknown_output_candidate_id() -> None:
         anthropic_client = QueuedAnthropicClient(
             [
                 {
-                    "data_points": (
-                        {
-                            "category": "Finding",
-                            "field_name": "summary",
-                            "value": "Unknown",
-                            "source_candidate_id": "candidate-missing",
-                            "contributing_candidate_ids": ("candidate-missing",),
-                            "confidence": 0.9,
-                        },
-                    ),
-                    "rejected_candidates": (),
+                    "groups": (("candidate-missing", ("candidate-missing",)),),
+                    "rejected": (),
                 }
             ]
         )

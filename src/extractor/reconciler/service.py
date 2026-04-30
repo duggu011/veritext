@@ -12,14 +12,16 @@ from extractor.contracts import (
     RejectionReason,
     VerifierReport,
 )
+from extractor.contracts.models import RejectionReasonCode
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
 from extractor.llm.views import build_candidate_view_map, schema_card_from_plan
 from extractor.reconciler.models import (
+    ReconciledGroupPayload,
     ReconciledDataPointPayload,
     ReconciliationBatch,
     ReconciliationResult,
     ReconcilerStageInput,
-    RejectedCandidatePayload,
+    RejectedCandidateDecision,
 )
 
 
@@ -157,39 +159,30 @@ def _expand_reconciliation_batch_ids(
     batch: ReconciliationBatch,
     candidates_by_view_id: dict[str, LensCandidate],
 ) -> ReconciliationBatch:
-    data_points: list[ReconciledDataPointPayload] = []
-    for payload in batch.data_points:
-        data_points.append(
-            payload.model_copy(
-                update={
-                    "source_candidate_id": _full_candidate_id(
-                        payload.source_candidate_id,
-                        candidates_by_view_id,
-                    ),
-                    "contributing_candidate_ids": tuple(
-                        _full_candidate_id(candidate_id, candidates_by_view_id)
-                        for candidate_id in payload.contributing_candidate_ids
-                    ),
-                }
+    groups: list[ReconciledGroupPayload] = []
+    for source_candidate_id, contributing_candidate_ids in batch.groups:
+        groups.append(
+            (
+                _full_candidate_id(source_candidate_id, candidates_by_view_id),
+                tuple(
+                    _full_candidate_id(candidate_id, candidates_by_view_id)
+                    for candidate_id in contributing_candidate_ids
+                ),
             )
         )
 
-    rejected_candidates: list[RejectedCandidatePayload] = []
-    for payload in batch.rejected_candidates:
-        rejected_candidates.append(
-            payload.model_copy(
-                update={
-                    "candidate_id": _full_candidate_id(
-                        payload.candidate_id,
-                        candidates_by_view_id,
-                    )
-                }
+    rejected: list[RejectedCandidateDecision] = []
+    for candidate_id, code in batch.rejected:
+        rejected.append(
+            (
+                _full_candidate_id(candidate_id, candidates_by_view_id),
+                code,
             )
         )
 
     return ReconciliationBatch(
-        data_points=tuple(data_points),
-        rejected_candidates=tuple(rejected_candidates),
+        groups=tuple(groups),
+        rejected=tuple(rejected),
     )
 
 
@@ -215,15 +208,15 @@ def _build_reconciliation_result(
 ) -> tuple[tuple[DataPoint, ...], tuple[CandidateRejection, ...]]:
     _validate_output_candidate_ids(batch, candidates_by_id)
 
-    # The model sometimes lists merged duplicates in both contributing_candidate_ids
-    # and rejected_candidates. A candidate that contributes to a kept data point is
-    # not rejected — the per-payload rejection loop below already skips candidates
-    # already accounted as contributors, so no separate filter is needed.
+    # The model sometimes lists merged duplicates in both groups and rejected.
+    # A candidate that contributes to a kept data point is not rejected — the
+    # rejection loop below skips candidates already accounted as contributors.
     data_points: list[DataPoint] = []
     rejections_by_candidate_id: dict[str, CandidateRejection] = {}
     accounted_ids: set[str] = set()
 
-    for payload in batch.data_points:
+    for group in batch.groups:
+        payload = _payload_from_group(group=group, candidates_by_id=candidates_by_id)
         reasons = _data_point_rejection_reasons(
             plan=plan,
             payload=payload,
@@ -253,15 +246,15 @@ def _build_reconciliation_result(
         data_points.append(data_point)
         accounted_ids.update(payload.contributing_candidate_ids)
 
-    for payload in batch.rejected_candidates:
-        if payload.candidate_id in accounted_ids:
+    for candidate_id, code in batch.rejected:
+        if candidate_id in accounted_ids:
             continue
-        rejections_by_candidate_id[payload.candidate_id] = _build_rejection(
+        rejections_by_candidate_id[candidate_id] = _build_rejection(
             run_id=plan.run_id,
-            candidate_id=payload.candidate_id,
-            reasons=payload.reasons,
+            candidate_id=candidate_id,
+            reasons=(_rejection_reason_for_code(code),),
         )
-        accounted_ids.add(payload.candidate_id)
+        accounted_ids.add(candidate_id)
 
     for candidate_id in candidates_by_id:
         if candidate_id not in accounted_ids:
@@ -290,10 +283,10 @@ def _validate_output_candidate_ids(
     candidates_by_id: dict[str, LensCandidate],
 ) -> None:
     known_ids = set(candidates_by_id)
-    for payload in batch.data_points:
-        unknown_ids = set(payload.contributing_candidate_ids) - known_ids
-        if payload.source_candidate_id not in known_ids:
-            unknown_ids.add(payload.source_candidate_id)
+    for source_candidate_id, contributing_candidate_ids in batch.groups:
+        unknown_ids = set(contributing_candidate_ids) - known_ids
+        if source_candidate_id not in known_ids:
+            unknown_ids.add(source_candidate_id)
         if unknown_ids:
             raise ReconcilerError(
                 "reconciler output referenced unknown candidate IDs: "
@@ -301,15 +294,32 @@ def _validate_output_candidate_ids(
             )
 
     unknown_rejection_ids = {
-        rejection.candidate_id
-        for rejection in batch.rejected_candidates
-        if rejection.candidate_id not in known_ids
+        candidate_id
+        for candidate_id, _ in batch.rejected
+        if candidate_id not in known_ids
     }
     if unknown_rejection_ids:
         raise ReconcilerError(
             "reconciler output rejected unknown candidate IDs: "
             + ", ".join(sorted(unknown_rejection_ids))
         )
+
+
+def _payload_from_group(
+    *,
+    group: ReconciledGroupPayload,
+    candidates_by_id: dict[str, LensCandidate],
+) -> ReconciledDataPointPayload:
+    source_candidate_id, contributing_candidate_ids = group
+    source_candidate = candidates_by_id[source_candidate_id]
+    return ReconciledDataPointPayload(
+        category=source_candidate.category,
+        field_name=source_candidate.field_name,
+        value=source_candidate.value,
+        source_candidate_id=source_candidate_id,
+        contributing_candidate_ids=contributing_candidate_ids,
+        confidence=source_candidate.confidence,
+    )
 
 
 def _data_point_rejection_reasons(
@@ -424,6 +434,28 @@ def _build_rejection(
         reasons=reasons,
         created_at=datetime.now(timezone.utc),
     )
+
+
+def _rejection_reason_for_code(code: RejectionReasonCode) -> RejectionReason:
+    return RejectionReason(
+        code=code,
+        message=_default_rejection_message(code),
+    )
+
+
+def _default_rejection_message(code: RejectionReasonCode) -> str:
+    messages = {
+        "invalid_source_offsets": "Candidate source offsets are not valid for the source chunk.",
+        "invented_span": "Candidate value is not grounded in the selected source span.",
+        "category_not_approved": "Candidate category is not approved by the extraction schema.",
+        "critic_rejected": "Critic rejected the candidate.",
+        "verifier_rejected": "Verifier rejected the candidate.",
+        "reconciler_rejected": "Reconciler rejected the candidate.",
+        "schema_violation": "Candidate category or field does not match the approved schema.",
+        "ambiguous_source_span": "Candidate source span is ambiguous within the source chunk.",
+        "duplicate_candidate": "Candidate duplicates another candidate selected for review.",
+    }
+    return messages[code]
 
 
 def _approved_category_fields(plan: ExtractionPlan) -> dict[str, frozenset[str]]:
