@@ -74,6 +74,8 @@ class ReconciliationBatch(ReconcilerModel):
                         coerced[field_name] = json.loads(value)
                     except json.JSONDecodeError:
                         pass
+            coerced["groups"] = _normalize_groups(coerced.get("groups"))
+            coerced["rejected"] = _normalize_rejected(coerced.get("rejected"))
             return coerced
         return data
 
@@ -95,6 +97,32 @@ class ReconciliationBatch(ReconcilerModel):
 class ReconciliationResult(ReconcilerModel):
     data_points: tuple[DataPoint, ...]
     rejections: tuple[CandidateRejection, ...]
+
+
+def _normalize_groups(value: object) -> object:
+    if not isinstance(value, (list, tuple)):
+        return value
+    groups: list[object] = []
+    for group in value:
+        if isinstance(group, (list, tuple)) and len(group) == 2:
+            source_candidate_id, contributing_candidate_ids = group
+            if isinstance(contributing_candidate_ids, str):
+                group = (source_candidate_id, (contributing_candidate_ids,))
+        groups.append(group)
+    return tuple(groups)
+
+
+def _normalize_rejected(value: object) -> object:
+    if not isinstance(value, (list, tuple)):
+        return value
+    rejected: list[object] = []
+    for item in value:
+        if isinstance(item, str):
+            item = (item, "reconciler_rejected")
+        elif isinstance(item, (list, tuple)) and len(item) == 1:
+            item = (item[0], "reconciler_rejected")
+        rejected.append(item)
+    return tuple(rejected)
 
 
 __all__ = [

@@ -35,7 +35,8 @@ Offset rules:
 
 Candidate rules:
 - value may normalize surrounding punctuation only when the exact source span still supports it.
-- Keep the selected source span as the shortest exact span that supports the value.
+- Keep the selected source span as the shortest exact span that supports both the value and the approved field meaning.
+- A bare name is insufficient when the field meaning depends on role/title, speaker status, party type, asset role, predecessor/successor status, or other source wording around the entity.
 - Confidence should reflect both extraction certainty and schema alignment.
 - Prefer fewer high-confidence candidates over noisy exhaustive extraction.
 
@@ -44,6 +45,8 @@ Few-shot examples:
 - Valid offset arithmetic: chunk_view.start_char=5000 and the source span "Northwind Storage" begins at chunk_view.text index 20. Return start_char=5020 and source_length=17.
 - Common error to avoid: when chunk_view.text contains "...led by COO\nPriya Ramaswamy..." and the source span is "Priya Ramaswamy", start_char must point to the 'P' of 'Priya', not the '\n' before it or the space character. Whitespace and newlines are characters; counting must include them, but start_char itself must land on the first character of the span. Run the slice check mentally before emitting.
 - Valid: approved field is AcquisitionTarget.name and chunk text states "acquired Beta LLC"; select the span "Beta LLC" with start_char pointing at the B in Beta and source_length=8.
+- Valid role provenance: if approved field is guidance_speaker and source says "CEO Marcus Bell", select "CEO Marcus Bell" when the role is required by the field description; "Marcus Bell" alone does not prove CEO status.
+- Valid personnel role provenance: if approved field is PersonnelChange.role and source says "appointed Chief Sustainability Officer", select "Chief Sustainability Officer" for role and use the event lens for the appointment/change type.
 - Reject: chunk text says "sample customer Alpha LLC"; do not extract Alpha LLC as Counterparty.name unless the approved field explicitly asks for sample customers.
 - Reject: do not output "the supplier" as an entity if the source does not name the supplier and the field expects a named party.
 
@@ -52,6 +55,6 @@ Preflight checklist before returning each candidate:
 - Is field_name exactly one field in that category?
 - Did you compute start_char as chunk_view.start_char + chunk_relative_index?
 - Does chunk_view.text[start_char - chunk_view.start_char : start_char - chunk_view.start_char + source_length] exactly equal the selected source span?
-- Would a reviewer accept this entity using only the selected source span?
+- Would a reviewer accept this entity and its field role using only the selected source span?
 
 Call the required tool exactly once. Do not include prose outside the tool call.

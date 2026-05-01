@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from typing import Any
 
 from pydantic import BaseModel
@@ -39,6 +41,7 @@ def normalize_verdict_payload(
     *,
     allow_correction: bool,
     evidence_max_chars: int | None = None,
+    default_reject_code: str | None = None,
 ) -> object:
     """Normalize compact and full verdict payloads before model validation.
 
@@ -46,17 +49,24 @@ def normalize_verdict_payload(
     wire shape. Evidence is optional; if the model exceeds the cap, omit it so
     the verdict code still reaches deterministic service handling.
     """
+    verdict = parse_json_if_string(verdict)
     if isinstance(verdict, BaseModel):
         return verdict
     if isinstance(verdict, dict):
         return _drop_overlong_evidence(verdict, evidence_max_chars=evidence_max_chars)
-    if not isinstance(verdict, (list, tuple)) or len(verdict) != 5:
+    if not isinstance(verdict, (list, tuple)):
         return verdict
+    verdict = _trim_trailing_null_slots(verdict)
+    if len(verdict) < 2 or len(verdict) > 5:
+        return verdict
+    verdict = (*verdict, *((None,) * (5 - len(verdict))))
 
     short_id, decision_code, code, evidence, correction = verdict
     decision = _expand_decision_code(decision_code)
     if decision == "correct" and not allow_correction:
         raise ValueError("verifier compact verdicts cannot use decision_code 'c'")
+    if decision == "reject" and code is None and default_reject_code is not None:
+        code = default_reject_code
     if correction is not None and not allow_correction:
         raise ValueError("verifier compact verdict correction slot must be null")
 
@@ -73,10 +83,26 @@ def normalize_verdict_payload(
     return expanded
 
 
+def parse_json_if_string(value: object) -> object:
+    if not isinstance(value, str):
+        return value
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
 def _expand_decision_code(decision_code: object) -> object:
     if not isinstance(decision_code, str):
         return decision_code
     return _DECISION_CODE_MAP.get(decision_code.casefold(), decision_code)
+
+
+def _trim_trailing_null_slots(verdict: list[object] | tuple[object, ...]) -> tuple[object, ...]:
+    trimmed = tuple(verdict)
+    while len(trimmed) > 5 and trimmed[-1] is None:
+        trimmed = trimmed[:-1]
+    return trimmed
 
 
 def _drop_overlong_evidence(
@@ -100,4 +126,8 @@ def _valid_evidence(evidence: object, *, evidence_max_chars: int | None) -> bool
     return len(evidence) <= evidence_max_chars
 
 
-__all__ = ["normalize_verdict_payload", "split_model_json_before_field"]
+__all__ = [
+    "normalize_verdict_payload",
+    "parse_json_if_string",
+    "split_model_json_before_field",
+]

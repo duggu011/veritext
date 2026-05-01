@@ -284,7 +284,6 @@ def test_verifier_batch_verdicts_expand_compact_tuple_shape() -> None:
                     "r",
                     "schema_violation",
                     "Value does not align with the approved field.",
-                    None,
                 ),
             )
         }
@@ -316,6 +315,46 @@ def test_verifier_batch_verdicts_omit_overlong_compact_evidence() -> None:
     assert batch.verdicts[0].decision == "reject"
     assert batch.verdicts[0].code == "schema_violation"
     assert batch.verdicts[0].evidence is None
+
+
+def test_verifier_batch_verdicts_trim_extra_trailing_null_slots() -> None:
+    batch = VerifierBatchVerdicts.model_validate(
+        {
+            "verdicts": [
+                [
+                    "abc123",
+                    "r",
+                    "schema_violation",
+                    "Value does not align.",
+                    None,
+                    None,
+                ],
+            ]
+        }
+    )
+
+    assert batch.verdicts[0].decision == "reject"
+    assert batch.verdicts[0].code == "schema_violation"
+    assert batch.verdicts[0].evidence == "Value does not align."
+
+
+def test_verifier_batch_verdicts_normalize_stringified_short_forms() -> None:
+    batch = VerifierBatchVerdicts.model_validate(
+        {
+            "verdicts": json.dumps(
+                [
+                    ["abc123", "a"],
+                    ["def456", "r", None, "Value is not grounded."],
+                ]
+            )
+        }
+    )
+
+    assert batch.verdicts[0].decision == "accept"
+    assert batch.verdicts[0].code is None
+    assert batch.verdicts[1].decision == "reject"
+    assert batch.verdicts[1].code == "verifier_rejected"
+    assert batch.verdicts[1].evidence == "Value is not grounded."
 
 
 def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) -> None:

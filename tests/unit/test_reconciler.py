@@ -290,6 +290,21 @@ def test_reconciliation_batch_accepts_compact_group_shape() -> None:
     assert batch.rejected == (("ghi789", "reconciler_rejected"),)
 
 
+def test_reconciliation_batch_normalizes_short_compact_shapes() -> None:
+    batch = ReconciliationBatch.model_validate(
+        {
+            "groups": json.dumps([["abc123", "abc123"]]),
+            "rejected": [["def456"], "ghi789"],
+        }
+    )
+
+    assert batch.groups == (("abc123", ("abc123",)),)
+    assert batch.rejected == (
+        ("def456", "reconciler_rejected"),
+        ("ghi789", "reconciler_rejected"),
+    )
+
+
 def test_reconcile_candidates_persists_data_points_rejections_and_logs(
     tmp_path: Path,
 ) -> None:

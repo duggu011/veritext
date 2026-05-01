@@ -18,7 +18,15 @@ from extractor.contracts import (
     SourceSpan,
 )
 from extractor.contracts.models import RejectionReasonCode
-from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm import (
+    Accepted,
+    Complaints,
+    ItemComplaint,
+    LLMClient,
+    LLMRetryMergeError,
+    PromptLoader,
+    StructuredLLMRequest,
+)
 from extractor.llm.payloads import split_model_json_before_field
 from extractor.llm.views import (
     build_candidate_view_map,
@@ -63,6 +71,7 @@ async def review_candidates(
     chunks_by_id = _validate_critic_inputs(plan, chunks, candidates)
     semaphore = asyncio.Semaphore(execution_config.max_stage_concurrency)
     batches = _partition_into_batches(candidates, execution_config.critic_batch_size)
+    max_retries = max(execution_config.max_llm_attempts - 1, 0)
     cache_primed = (
         asyncio.Event()
         if len(batches) > 1
@@ -81,6 +90,7 @@ async def review_candidates(
             llm_client=llm_client,
             audit_store=audit_store,
             semaphore=semaphore,
+            max_retries=max_retries,
         )
         for batch_index, batch in enumerate(batches)
     ]
@@ -141,11 +151,13 @@ async def _review_batch(
     llm_client: LLMClient,
     audit_store: AuditStore | None,
     semaphore: asyncio.Semaphore,
+    max_retries: int,
 ) -> CriticTaskResult:
     if batch_index > 0 and cache_primed is not None:
         await cache_primed.wait()
 
-    candidate_views, _candidates_by_view_id = build_candidate_view_map(batch)
+    candidate_views, candidates_by_view_id = build_candidate_view_map(batch)
+    expected_ids = tuple(candidates_by_view_id)
     stage_input = CriticBatchStageInput(
         schema_card=schema_card_from_plan(plan),
         chunk_view=chunk_view_from_chunk(chunk),
@@ -155,9 +167,32 @@ async def _review_batch(
         stage_input,
         "candidates",
     )
+
+    def validate_batch(
+        output: CriticBatchVerdicts,
+    ) -> Accepted[CriticBatchVerdicts] | Complaints:
+        return _validate_critic_batch(
+            output=output,
+            plan=plan,
+            chunk=chunk,
+            candidates_by_view_id=candidates_by_view_id,
+        )
+
+    def merge_batch(
+        prior: CriticBatchVerdicts,
+        retry: CriticBatchVerdicts,
+        bad_ids: frozenset[str],
+    ) -> CriticBatchVerdicts:
+        return _merge_critic_batch(
+            prior=prior,
+            retry=retry,
+            bad_ids=bad_ids,
+            expected_ids=expected_ids,
+        )
+
     try:
         async with semaphore:
-            result = await llm_client.complete_structured(
+            result = await llm_client.complete_structured_with_retry(
                 StructuredLLMRequest(
                     run_id=plan.run_id,
                     stage="critic",
@@ -172,6 +207,9 @@ async def _review_batch(
                 ),
                 output_model=CriticBatchVerdicts,
                 audit_store=audit_store,
+                validate=validate_batch,
+                merge=merge_batch,
+                max_retries=max_retries,
             )
     finally:
         if batch_index == 0 and cache_primed is not None:
@@ -253,6 +291,154 @@ async def _review_batch(
         rejected_candidates=tuple(rejected_candidates),
         reports=tuple(reports),
         rejections=tuple(rejections),
+    )
+
+
+def _validate_critic_batch(
+    *,
+    output: CriticBatchVerdicts,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    candidates_by_view_id: dict[str, LensCandidate],
+) -> Accepted[CriticBatchVerdicts] | Complaints:
+    expected_ids = frozenset(candidates_by_view_id)
+    seen_ids = {verdict.id for verdict in output.verdicts}
+    complaints: list[ItemComplaint] = []
+
+    for verdict_id in sorted(seen_ids - expected_ids):
+        complaints.append(
+            ItemComplaint(
+                identifier=verdict_id,
+                message=_format_critic_unknown_id_complaint(
+                    verdict_id=verdict_id,
+                    expected_ids=expected_ids,
+                ),
+            )
+        )
+    for verdict_id in sorted(expected_ids - seen_ids):
+        complaints.append(
+            ItemComplaint(
+                identifier=verdict_id,
+                message=_format_critic_missing_verdict_complaint(verdict_id),
+            )
+        )
+
+    for verdict in output.verdicts:
+        if verdict.id not in expected_ids or verdict.decision != "correct":
+            continue
+        candidate = candidates_by_view_id[verdict.id]
+        corrected, structural_reasons = _materialize_correction(
+            raw=verdict.correction,
+            original=candidate,
+            chunk=chunk,
+        )
+        reasons: list[RejectionReason] = list(structural_reasons)
+        if corrected is not None:
+            reasons.extend(
+                _correction_rejection_reasons(
+                    plan=plan,
+                    chunk=chunk,
+                    original=candidate,
+                    corrected=corrected,
+                )
+            )
+        if reasons:
+            complaints.append(
+                ItemComplaint(
+                    identifier=verdict.id,
+                    message=_format_critic_correction_complaint(
+                        verdict=verdict,
+                        reasons=reasons,
+                    ),
+                )
+            )
+
+    if complaints:
+        return Complaints(complaints=tuple(complaints))
+    return Accepted(output=output)
+
+
+def _merge_critic_batch(
+    *,
+    prior: CriticBatchVerdicts,
+    retry: CriticBatchVerdicts,
+    bad_ids: frozenset[str],
+    expected_ids: tuple[str, ...],
+) -> CriticBatchVerdicts:
+    expected_id_set = frozenset(expected_ids)
+    expected_bad_ids = bad_ids & expected_id_set
+    fixes = {verdict.id: verdict for verdict in retry.verdicts}
+    if len(fixes) != len(retry.verdicts):
+        raise LLMRetryMergeError("critic retry returned duplicate verdict ids")
+    if set(fixes) != expected_bad_ids:
+        raise LLMRetryMergeError(
+            "critic retry id mismatch: expected "
+            f"{sorted(expected_bad_ids)}, got {sorted(fixes)}"
+        )
+
+    merged: list[CriticVerdict] = []
+    merged_ids: set[str] = set()
+    for verdict in prior.verdicts:
+        if verdict.id not in expected_id_set:
+            continue
+        fixed = fixes.get(verdict.id)
+        if fixed is not None:
+            merged.append(fixed)
+            merged_ids.add(fixed.id)
+        else:
+            merged.append(verdict)
+            merged_ids.add(verdict.id)
+
+    for verdict_id in expected_ids:
+        if verdict_id in fixes and verdict_id not in merged_ids:
+            merged.append(fixes[verdict_id])
+
+    return CriticBatchVerdicts(verdicts=tuple(merged))
+
+
+def _format_critic_unknown_id_complaint(
+    *,
+    verdict_id: str,
+    expected_ids: frozenset[str],
+) -> str:
+    expected = ", ".join(sorted(expected_ids))
+    return (
+        f"Verdict id {verdict_id!r} was rejected.\n"
+        f"You returned: id={verdict_id!r}.\n"
+        f"Constraint violated: critic verdict ids must be one of: {expected}.\n"
+        "Action: re-emit ONLY this item with a valid id from the input "
+        "candidates, or omit it if it does not correspond to an input candidate."
+    )
+
+
+def _format_critic_missing_verdict_complaint(verdict_id: str) -> str:
+    return (
+        f"Verdict id {verdict_id!r} was missing.\n"
+        "You returned: no verdict for this input candidate.\n"
+        "Constraint violated: every input candidate must have exactly one critic verdict.\n"
+        f"Action: re-emit ONLY this missing verdict using id={verdict_id!r}."
+    )
+
+
+def _format_critic_correction_complaint(
+    *,
+    verdict: CriticVerdict,
+    reasons: list[RejectionReason],
+) -> str:
+    correction = (
+        None
+        if verdict.correction is None
+        else verdict.correction.model_dump(mode="json")
+    )
+    constraint = "; ".join(reason.message for reason in reasons)
+    return (
+        f"Verdict id {verdict.id!r} was rejected.\n"
+        f"You returned: decision={verdict.decision!r}, code={verdict.code!r}, "
+        f"evidence={verdict.evidence!r}, correction={correction!r}.\n"
+        f"Constraint violated: {constraint}.\n"
+        "Action: re-emit ONLY this verdict with a valid decision/correction. "
+        "If correcting, the correction must preserve candidate identity and its "
+        "span_text must match chunk.text at span_start_char."
     )
 
 
@@ -499,7 +685,12 @@ def _materialize_correction(
     the LLM. Bytes and end_char are derived from the selected chunk text.
     """
     if raw is None:
-        return None, []
+        return None, [
+            RejectionReason(
+                code="schema_violation",
+                message="Corrected critic verdict must include a correction payload.",
+            )
+        ]
 
     span_start_char = (
         raw.span_start_char

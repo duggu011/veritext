@@ -1,8 +1,12 @@
 """LLM client and prompt loading."""
 
 from extractor.llm.client import (
+    Accepted,
+    Complaints,
+    ItemComplaint,
     LLMClient,
     LLMClientError,
+    LLMRetryMergeError,
     LLMToolUseError,
     StructuredLLMRequest,
     StructuredLLMResult,
@@ -27,12 +31,16 @@ from extractor.llm.views import (
 )
 
 __all__ = [
+    "Accepted",
+    "Complaints",
+    "ItemComplaint",
     "LLMClient",
     "LLMClientError",
     "LLMCategoryCard",
     "LLMChunkView",
     "LLMCandidateView",
     "LLMFieldCard",
+    "LLMRetryMergeError",
     "LLMSchemaCard",
     "LLMToolUseError",
     "PROMPT_STAGES",

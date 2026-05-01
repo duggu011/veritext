@@ -6,7 +6,7 @@ import sys
 import time
 import uuid
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Annotated, Any, Generic, TypeVar
@@ -101,6 +101,26 @@ class LLMToolUseError(LLMClientError):
     """Raised when the model response does not contain the required tool call."""
 
 
+class LLMRetryMergeError(LLMClientError):
+    """Raised when a retry response cannot be reconciled with the prior batch."""
+
+
+@dataclass(frozen=True)
+class ItemComplaint:
+    identifier: str
+    message: str
+
+
+@dataclass(frozen=True)
+class Accepted(Generic[OutputModelT]):
+    output: OutputModelT
+
+
+@dataclass(frozen=True)
+class Complaints:
+    complaints: tuple[ItemComplaint, ...]
+
+
 class StructuredLLMRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -192,27 +212,45 @@ class LLMClient:
         output_model: type[OutputModelT],
         audit_store: AuditStore | None = None,
     ) -> StructuredLLMResult[OutputModelT]:
+        settings = _resolve_llm_settings(self.config, request.stage)
+        cache_enabled = _anthropic_prompt_cache_enabled(self.config, request)
+        initial_user_content = _anthropic_user_content(request, cache_enabled=cache_enabled)
+        messages: list[dict[str, object]] = [
+            {"role": "user", "content": initial_user_content}
+        ]
+        output, call_log, _response = await self._run_anthropic_call(
+            request=request,
+            output_model=output_model,
+            audit_store=audit_store,
+            attempt=1,
+            messages=messages,
+            settings=settings,
+            cache_enabled=cache_enabled,
+        )
+        return StructuredLLMResult[OutputModelT](output=output, call_log=call_log)
+
+    async def _run_anthropic_call(
+        self,
+        *,
+        request: StructuredLLMRequest,
+        output_model: type[OutputModelT],
+        audit_store: AuditStore | None,
+        attempt: int,
+        messages: list[dict[str, object]],
+        settings: _ResolvedLLMSettings,
+        cache_enabled: bool,
+    ) -> tuple[OutputModelT, LLMCallLog, object]:
         anthropic_client = self._anthropic_client
         if anthropic_client is None:
             raise LLMClientError("Anthropic client is not configured")
 
-        settings = _resolve_llm_settings(self.config, request.stage)
-        cache_enabled = _anthropic_prompt_cache_enabled(self.config, request)
         start = time.perf_counter()
         response = await anthropic_client.messages.create(
             model=settings.model,
             max_tokens=settings.max_output_tokens,
             temperature=self.config.temperature,
             system=_anthropic_system(request, cache_enabled=cache_enabled),
-            messages=[
-                {
-                    "role": "user",
-                    "content": _anthropic_user_content(
-                        request,
-                        cache_enabled=cache_enabled,
-                    ),
-                }
-            ],
+            messages=messages,
             tools=[
                 _anthropic_tool_definition(
                     request,
@@ -228,6 +266,7 @@ class LLMClient:
             response=response,
             model=settings.model,
             latency_ms=latency_ms,
+            attempt=attempt,
         )
         if audit_store is not None:
             await audit_store.record_llm_call_log(call_log)
@@ -235,6 +274,99 @@ class LLMClient:
         tool_input = _extract_required_tool_input(response, request.tool_name)
         output = output_model.model_validate(tool_input)
         _print_llm_trace(request=request, output=output, call_log=call_log)
+        return output, call_log, response
+
+    async def complete_structured_with_retry(
+        self,
+        request: StructuredLLMRequest,
+        *,
+        output_model: type[OutputModelT],
+        audit_store: AuditStore | None = None,
+        validate: Callable[
+            [OutputModelT], "Accepted[OutputModelT] | Complaints"
+        ],
+        merge: Callable[
+            [OutputModelT, OutputModelT, frozenset[str]], OutputModelT
+        ],
+        max_retries: int = 1,
+    ) -> StructuredLLMResult[OutputModelT]:
+        if self.config.provider != "anthropic":
+            raise NotImplementedError(
+                "complete_structured_with_retry is only implemented for the Anthropic provider"
+            )
+
+        settings = _resolve_llm_settings(self.config, request.stage)
+        cache_enabled = _anthropic_prompt_cache_enabled(self.config, request)
+        initial_user_content = _anthropic_user_content(request, cache_enabled=cache_enabled)
+        initial_messages: list[dict[str, object]] = [
+            {"role": "user", "content": initial_user_content}
+        ]
+
+        output, call_log, response = await self._run_anthropic_call(
+            request=request,
+            output_model=output_model,
+            audit_store=audit_store,
+            attempt=1,
+            messages=initial_messages,
+            settings=settings,
+            cache_enabled=cache_enabled,
+        )
+
+        for retry_index in range(max_retries):
+            outcome = validate(output)
+            if isinstance(outcome, Accepted):
+                return StructuredLLMResult[OutputModelT](
+                    output=output, call_log=call_log
+                )
+            if not outcome.complaints:
+                return StructuredLLMResult[OutputModelT](
+                    output=output, call_log=call_log
+                )
+
+            tool_use_id = _extract_tool_use_id(response, request.tool_name)
+            assistant_blocks = _serialize_assistant_content(response)
+            complaint_text = _format_complaint_payload(outcome.complaints)
+            followup_messages: list[dict[str, object]] = [
+                {"role": "user", "content": initial_user_content},
+                {"role": "assistant", "content": assistant_blocks},
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": tool_use_id,
+                            "is_error": True,
+                            "content": complaint_text,
+                        }
+                    ],
+                },
+            ]
+
+            retry_output, retry_call_log, retry_response = await self._run_anthropic_call(
+                request=request,
+                output_model=output_model,
+                audit_store=audit_store,
+                attempt=retry_index + 2,
+                messages=followup_messages,
+                settings=settings,
+                cache_enabled=cache_enabled,
+            )
+
+            try:
+                merged = merge(
+                    output,
+                    retry_output,
+                    frozenset(c.identifier for c in outcome.complaints),
+                )
+            except LLMRetryMergeError:
+                return StructuredLLMResult[OutputModelT](
+                    output=output, call_log=call_log
+                )
+
+            output = merged
+            call_log = retry_call_log
+            response = retry_response
+
         return StructuredLLMResult[OutputModelT](output=output, call_log=call_log)
 
     async def _complete_openai(
@@ -264,6 +396,7 @@ class LLMClient:
             response=response,
             model=settings.model,
             latency_ms=latency_ms,
+            attempt=1,
         )
         if audit_store is not None:
             await audit_store.record_llm_call_log(call_log)
@@ -519,13 +652,14 @@ def _build_anthropic_call_log(
     response: object,
     model: str,
     latency_ms: int,
+    attempt: int,
 ) -> LLMCallLog:
     usage = _read_attr(response, "usage", {})
     return LLMCallLog(
         call_id=f"llm-{uuid.uuid4().hex}",
         run_id=request.run_id,
         stage=request.stage,
-        attempt=1,
+        attempt=attempt,
         model=model,
         prompt_sha256=request.prompt.sha256,
         input_tokens=_read_int(usage, "input_tokens"),
@@ -549,6 +683,7 @@ def _build_openai_call_log(
     response: object,
     model: str,
     latency_ms: int,
+    attempt: int,
 ) -> LLMCallLog:
     usage = _read_attr(response, "usage", {})
     prompt_details = _read_attr(usage, "prompt_tokens_details", {})
@@ -557,7 +692,7 @@ def _build_openai_call_log(
         call_id=f"llm-{uuid.uuid4().hex}",
         run_id=request.run_id,
         stage=request.stage,
-        attempt=1,
+        attempt=attempt,
         model=model,
         prompt_sha256=request.prompt.sha256,
         input_tokens=_read_int(usage, "prompt_tokens", "input_tokens"),
@@ -569,6 +704,62 @@ def _build_openai_call_log(
         tool_name=request.tool_name,
         created_at=datetime.now(timezone.utc),
     )
+
+
+def _extract_tool_use_id(response: object, tool_name: str) -> str:
+    content = _read_attr(response, "content", ())
+    if not isinstance(content, list | tuple):
+        raise LLMToolUseError("Anthropic response content must be a sequence")
+    for block in content:
+        if (
+            _read_attr(block, "type", None) == "tool_use"
+            and _read_attr(block, "name", None) == tool_name
+        ):
+            tool_use_id = _read_attr(block, "id", None)
+            if not isinstance(tool_use_id, str) or not tool_use_id:
+                raise LLMToolUseError(
+                    f"tool_use block for {tool_name} is missing a string id"
+                )
+            return tool_use_id
+    raise LLMToolUseError(
+        f"Anthropic response did not include a tool_use block named {tool_name}"
+    )
+
+
+def _serialize_assistant_content(response: object) -> list[dict[str, object]]:
+    content = _read_attr(response, "content", ())
+    if not isinstance(content, list | tuple):
+        return []
+    blocks: list[dict[str, object]] = []
+    for block in content:
+        block_type = _read_attr(block, "type", None)
+        if block_type == "tool_use":
+            blocks.append(
+                {
+                    "type": "tool_use",
+                    "id": _read_attr(block, "id", ""),
+                    "name": _read_attr(block, "name", ""),
+                    "input": _read_attr(block, "input", {}),
+                }
+            )
+        elif block_type == "text":
+            blocks.append(
+                {
+                    "type": "text",
+                    "text": _read_attr(block, "text", ""),
+                }
+            )
+    return blocks
+
+
+def _format_complaint_payload(complaints: tuple[ItemComplaint, ...]) -> str:
+    header = (
+        f"Some items in your previous tool call failed validation. Re-emit ONLY the "
+        f"following {len(complaints)} item(s), in this exact order, using the same "
+        f"tool schema. Do not include any other items.\n\n"
+    )
+    body = "\n\n".join(complaint.message for complaint in complaints)
+    return header + body
 
 
 def _extract_required_tool_input(response: object, tool_name: str) -> Mapping[str, Any]:
@@ -684,8 +875,12 @@ def _read_int(value: object, *names: str) -> int:
 
 
 __all__ = [
+    "Accepted",
+    "Complaints",
+    "ItemComplaint",
     "LLMClient",
     "LLMClientError",
+    "LLMRetryMergeError",
     "LLMToolUseError",
     "StructuredLLMRequest",
     "StructuredLLMResult",

@@ -65,6 +65,22 @@ class DeterministicLLMClient:
         output = output_model.model_validate(self._payload_for_request(request))
         return StructuredLLMResult(output=output, call_log=call_log)
 
+    async def complete_structured_with_retry(
+        self,
+        request: object,
+        *,
+        output_model: type[object],
+        audit_store: AuditStore | None = None,
+        validate: object = None,
+        merge: object = None,
+        max_retries: int = 1,
+    ) -> StructuredLLMResult[object]:
+        return await self.complete_structured(
+            request,
+            output_model=output_model,
+            audit_store=audit_store,
+        )
+
     def _payload_for_request(self, request: object) -> dict[str, object]:
         user_content = request.full_user_content
         if request.stage == "planner.classify_document":

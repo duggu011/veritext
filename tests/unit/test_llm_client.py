@@ -11,8 +11,12 @@ from extractor.audit import AuditStore
 from extractor.config import LLMConfig
 from extractor.contracts import RunManifest
 from extractor.llm import (
+    Accepted,
+    Complaints,
+    ItemComplaint,
     LLMClient,
     LLMClientError,
+    LLMRetryMergeError,
     LLMToolUseError,
     PROMPT_STAGES,
     PromptLoadError,
@@ -729,6 +733,265 @@ def test_llm_client_rejects_openai_malformed_tool_arguments() -> None:
 
         with pytest.raises(LLMToolUseError, match="valid JSON"):
             await client.complete_structured(make_request(), output_model=ExtractClaimOutput)
+
+    asyncio.run(run_check())
+
+
+class QueuedAnthropicMessages:
+    def __init__(self, responses: list[object]) -> None:
+        self.responses = list(responses)
+        self.calls: list[dict[str, object]] = []
+
+    async def create(self, **kwargs: object) -> object:
+        self.calls.append(kwargs)
+        if not self.responses:
+            raise AssertionError("unexpected extra Anthropic call")
+        return self.responses.pop(0)
+
+
+class QueuedAnthropicClient:
+    def __init__(self, responses: list[object]) -> None:
+        self.messages = QueuedAnthropicMessages(responses)
+
+
+def make_tool_response(
+    *,
+    tool_name: str,
+    tool_input: dict[str, object],
+    block_id: str,
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        content=[
+            SimpleNamespace(
+                type="tool_use",
+                id=block_id,
+                name=tool_name,
+                input=tool_input,
+            )
+        ],
+        stop_reason="tool_use",
+        usage=SimpleNamespace(
+            input_tokens=10,
+            output_tokens=5,
+            cache_read_input_tokens=0,
+            cache_creation_input_tokens=0,
+        ),
+    )
+
+
+def test_complete_structured_with_retry_returns_first_when_validator_accepts(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        response = make_tool_response(
+            tool_name="extract_claim",
+            tool_input={"value": "hello", "confidence": 0.9},
+            block_id="toolu_a1",
+        )
+        anthropic_client = QueuedAnthropicClient([response])
+        client = LLMClient(
+            make_config(prompt_cache_enabled=False),
+            anthropic_client=anthropic_client,
+        )
+
+        def validator(_: ExtractClaimOutput) -> Accepted[ExtractClaimOutput] | Complaints:
+            return Accepted(output=_)
+
+        def merger(*_: object) -> ExtractClaimOutput:
+            raise AssertionError("merger should not be invoked")
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await audit_store.record_run_manifest(make_manifest())
+            result = await client.complete_structured_with_retry(
+                make_request(),
+                output_model=ExtractClaimOutput,
+                audit_store=audit_store,
+                validate=validator,
+                merge=merger,
+                max_retries=1,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+
+        assert len(anthropic_client.messages.calls) == 1
+        assert [log.attempt for log in logs] == [1]
+        assert result.output == ExtractClaimOutput(value="hello", confidence=0.9)
+        assert result.call_log == logs[0]
+
+    asyncio.run(run_check())
+
+
+def test_complete_structured_with_retry_sends_tool_result_complaint_and_merges(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        first = make_tool_response(
+            tool_name="extract_claim",
+            tool_input={"value": "wrong", "confidence": 0.9},
+            block_id="toolu_first",
+        )
+        second = make_tool_response(
+            tool_name="extract_claim",
+            tool_input={"value": "fixed", "confidence": 0.95},
+            block_id="toolu_second",
+        )
+        anthropic_client = QueuedAnthropicClient([first, second])
+        client = LLMClient(
+            make_config(prompt_cache_enabled=False),
+            anthropic_client=anthropic_client,
+        )
+
+        def validator(
+            output: ExtractClaimOutput,
+        ) -> Accepted[ExtractClaimOutput] | Complaints:
+            if output.value == "wrong":
+                return Complaints(
+                    complaints=(
+                        ItemComplaint(
+                            identifier="0",
+                            message="value 'wrong' must be 'fixed'.",
+                        ),
+                    )
+                )
+            return Accepted(output=output)
+
+        merge_calls: list[frozenset[str]] = []
+
+        def merger(
+            prior: ExtractClaimOutput,
+            retry: ExtractClaimOutput,
+            ids: frozenset[str],
+        ) -> ExtractClaimOutput:
+            merge_calls.append(ids)
+            return retry
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await audit_store.record_run_manifest(make_manifest())
+            result = await client.complete_structured_with_retry(
+                make_request(),
+                output_model=ExtractClaimOutput,
+                audit_store=audit_store,
+                validate=validator,
+                merge=merger,
+                max_retries=1,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+
+        assert len(anthropic_client.messages.calls) == 2
+        assert [log.attempt for log in logs] == [1, 2]
+        assert result.output == ExtractClaimOutput(value="fixed", confidence=0.95)
+        assert merge_calls == [frozenset({"0"})]
+
+        retry_messages = anthropic_client.messages.calls[1]["messages"]
+        assert len(retry_messages) == 3
+        assert retry_messages[0]["role"] == "user"
+        assert retry_messages[1]["role"] == "assistant"
+        assistant_blocks = retry_messages[1]["content"]
+        assert assistant_blocks[0]["type"] == "tool_use"
+        assert assistant_blocks[0]["id"] == "toolu_first"
+        assert assistant_blocks[0]["name"] == "extract_claim"
+        assert assistant_blocks[0]["input"] == {"value": "wrong", "confidence": 0.9}
+        assert retry_messages[2]["role"] == "user"
+        tool_result = retry_messages[2]["content"][0]
+        assert tool_result["type"] == "tool_result"
+        assert tool_result["tool_use_id"] == "toolu_first"
+        assert tool_result["is_error"] is True
+        assert "value 'wrong' must be 'fixed'." in tool_result["content"]
+
+    asyncio.run(run_check())
+
+
+def test_complete_structured_with_retry_returns_prior_when_merge_raises(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        first = make_tool_response(
+            tool_name="extract_claim",
+            tool_input={"value": "wrong", "confidence": 0.9},
+            block_id="toolu_first",
+        )
+        second = make_tool_response(
+            tool_name="extract_claim",
+            tool_input={"value": "still wrong", "confidence": 0.9},
+            block_id="toolu_second",
+        )
+        anthropic_client = QueuedAnthropicClient([first, second])
+        client = LLMClient(
+            make_config(prompt_cache_enabled=False),
+            anthropic_client=anthropic_client,
+        )
+
+        def validator(
+            output: ExtractClaimOutput,
+        ) -> Accepted[ExtractClaimOutput] | Complaints:
+            return Complaints(
+                complaints=(ItemComplaint(identifier="0", message="bad"),)
+            )
+
+        def merger(*_: object) -> ExtractClaimOutput:
+            raise LLMRetryMergeError("count mismatch")
+
+        result = await client.complete_structured_with_retry(
+            make_request(),
+            output_model=ExtractClaimOutput,
+            validate=validator,
+            merge=merger,
+            max_retries=1,
+        )
+
+        assert len(anthropic_client.messages.calls) == 2
+        assert result.output == ExtractClaimOutput(value="wrong", confidence=0.9)
+
+    asyncio.run(run_check())
+
+
+def test_complete_structured_with_retry_skips_retry_when_max_is_zero() -> None:
+    async def run_check() -> None:
+        first = make_tool_response(
+            tool_name="extract_claim",
+            tool_input={"value": "wrong", "confidence": 0.9},
+            block_id="toolu_first",
+        )
+        anthropic_client = QueuedAnthropicClient([first])
+        client = LLMClient(
+            make_config(prompt_cache_enabled=False),
+            anthropic_client=anthropic_client,
+        )
+
+        def validator(
+            output: ExtractClaimOutput,
+        ) -> Accepted[ExtractClaimOutput] | Complaints:
+            return Complaints(
+                complaints=(ItemComplaint(identifier="0", message="bad"),)
+            )
+
+        result = await client.complete_structured_with_retry(
+            make_request(),
+            output_model=ExtractClaimOutput,
+            validate=validator,
+            merge=lambda p, r, i: r,
+            max_retries=0,
+        )
+
+        assert len(anthropic_client.messages.calls) == 1
+        assert result.output == ExtractClaimOutput(value="wrong", confidence=0.9)
+
+    asyncio.run(run_check())
+
+
+def test_complete_structured_with_retry_rejects_openai_provider() -> None:
+    async def run_check() -> None:
+        client = LLMClient(
+            make_openai_config(),
+            openai_client=FakeOpenAIClient(SimpleNamespace()),
+        )
+        with pytest.raises(NotImplementedError):
+            await client.complete_structured_with_retry(
+                make_request(),
+                output_model=ExtractClaimOutput,
+                validate=lambda o: Accepted(output=o),
+                merge=lambda p, r, i: r,
+                max_retries=1,
+            )
 
     asyncio.run(run_check())
 

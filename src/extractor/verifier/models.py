@@ -10,7 +10,7 @@ from extractor.contracts import (
     VerifierReport,
 )
 from extractor.contracts.models import RejectionReasonCode
-from extractor.llm.payloads import normalize_verdict_payload
+from extractor.llm.payloads import normalize_verdict_payload, parse_json_if_string
 from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
@@ -71,6 +71,7 @@ class VerifierBatchVerdicts(VerifierModel):
         cls,
         verdicts: object,
     ) -> object:
+        verdicts = parse_json_if_string(verdicts)
         if not isinstance(verdicts, (list, tuple)):
             return verdicts
         return tuple(
@@ -78,6 +79,7 @@ class VerifierBatchVerdicts(VerifierModel):
                 verdict,
                 allow_correction=False,
                 evidence_max_chars=EVIDENCE_MAX_CHARS,
+                default_reject_code="verifier_rejected",
             )
             for verdict in verdicts
         )

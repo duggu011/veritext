@@ -33,7 +33,8 @@ Offset rules:
 - Source text, end offsets, and byte offsets are derived server-side from start_char and source_length — do not return them.
 - The slice chunk_view.text[start_char - chunk_view.start_char : start_char - chunk_view.start_char + source_length] must exactly be the evidence span. If you cannot guarantee that, omit the candidate.
 - Never output source_text, start_text, start, offset, start_offset, end_char, start_byte, or end_byte.
-- Choose the shortest exact source span that supports the event value, including date text only when needed for the field.
+- Choose the shortest exact source span that supports both the event value and the approved field meaning, including date, action/type, party, asset, condition, or change wording when needed for the field.
+- A bare action word is insufficient when the field meaning depends on role-specific context such as expected close date, event_type, change_type, appointment, acquisition target, or regulatory action.
 
 Candidate rules:
 - Do not combine separate events into one candidate unless the approved field requires that combined event.
@@ -45,13 +46,16 @@ Few-shot examples:
 - Valid offset arithmetic: chunk_view.start_char=5000 and the source span "Northwind Storage" begins at chunk_view.text index 20. Return start_char=5020 and source_length=17.
 - Common error to avoid: when chunk_view.text contains "...refinancing of\nthe Series-2022 notes..." and the source span is "the Series-2022 notes", start_char must point to the 't' of 'the', not the '\n' before it or the 'f' at the end of 'of'. Whitespace and newlines are characters; counting must include them, but start_char itself must land on the first character of the span. Run the slice check mentally before emitting.
 - Valid: approved field is TerminationEvent.summary and source states "The agreement terminates on December 31, 2026"; extract that exact event phrase.
+- Valid event_type provenance: if approved field is CorporateEvent.event_type and source says "announced the acquisition of Delta Co", select a span that includes "announced the acquisition" so the event type is source-backed.
+- Valid personnel/change provenance: if approved field is PersonnelChange.change_type and source says "appointed Chief Sustainability Officer", select that phrase rather than bare "appointed".
+- Valid date-role provenance: if approved field is expected_close_date and source says "expected to close on September 30, 2026", include "expected to close on" with the date when needed to distinguish it from another date.
 - Reject: "A previous deadline was superseded" should not be extracted as the current deadline unless the approved field asks for historical superseded terms.
 - Reject: "Alpha LLC is a sample customer" is not an acquisition, counterparty, or policy event unless the schema explicitly targets examples.
 
 Preflight checklist before returning each candidate:
 - Is the event explicitly stated, not inferred?
-- Are all included date/participant words necessary for the approved field?
-- Does the exact source span support the value without neighboring sentences?
+- Are all included date/action/participant words necessary for the approved field?
+- Does the exact source span support both the value and the field meaning without neighboring sentences?
 - Did you compute start_char as chunk_view.start_char + chunk_relative_index?
 - Does chunk_view.text[start_char - chunk_view.start_char : start_char - chunk_view.start_char + source_length] exactly equal the selected source span?
 

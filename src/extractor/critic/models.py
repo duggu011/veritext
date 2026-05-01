@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from extractor.audit import CandidateRejection
 from extractor.contracts import CriticReport, LensCandidate
 from extractor.contracts.models import RejectionReasonCode
-from extractor.llm.payloads import normalize_verdict_payload
+from extractor.llm.payloads import normalize_verdict_payload, parse_json_if_string
 from extractor.llm.views import LLMChunkView, LLMCandidateView, LLMSchemaCard
 
 
@@ -51,8 +51,6 @@ class CriticVerdict(CriticModel):
             raise ValueError("accepted critic verdicts must not include code")
         if self.decision != "accept" and self.code is None:
             raise ValueError("non-accepted critic verdicts must include code")
-        if self.decision == "correct" and self.correction is None:
-            raise ValueError("corrected critic verdicts must include correction")
         if self.decision != "correct" and self.correction is not None:
             raise ValueError("only corrected critic verdicts may include correction")
         return self
@@ -76,6 +74,7 @@ class CriticBatchVerdicts(CriticModel):
         cls,
         verdicts: object,
     ) -> object:
+        verdicts = parse_json_if_string(verdicts)
         if not isinstance(verdicts, (list, tuple)):
             return verdicts
         return tuple(
@@ -83,6 +82,7 @@ class CriticBatchVerdicts(CriticModel):
                 verdict,
                 allow_correction=True,
                 evidence_max_chars=EVIDENCE_MAX_CHARS,
+                default_reject_code="critic_rejected",
             )
             for verdict in verdicts
         )

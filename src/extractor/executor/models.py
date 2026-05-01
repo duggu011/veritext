@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from extractor.audit import CandidateRejection
 from extractor.contracts import LensCandidate
@@ -39,6 +39,13 @@ class ExtractedCandidatePayload(ExecutorModel):
         validation_alias=AliasChoices("start_char", "start_text")
     )
     confidence: Confidence
+
+    @field_validator("source_length", "start_char", mode="before")
+    @classmethod
+    def coerce_integer_string(cls, value: object) -> object:
+        if isinstance(value, str) and value.strip().isdigit():
+            return int(value)
+        return value
 
 
 class ExecutorCandidateBatch(ExecutorModel):

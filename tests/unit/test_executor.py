@@ -40,6 +40,7 @@ class QueuedMessages:
             content=[
                 SimpleNamespace(
                     type="tool_use",
+                    id=f"toolu_{len(self.calls)}",
                     name=kwargs["tool_choice"]["name"],
                     input=self.payloads.pop(0),
                 )
@@ -628,6 +629,35 @@ def test_execute_plan_accepts_start_text_typo_as_start_char(
     asyncio.run(run_check())
 
 
+def test_execute_plan_accepts_numeric_string_offsets(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        payload = candidate_payload()
+        payload["start_char"] = str(payload["start_char"])
+        payload["source_length"] = str(payload["source_length"])
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": (payload,)}]),
+        )
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store)
+            result = await execute_plan(
+                plan=make_plan(max_calls=1),
+                chunks=(make_chunks()[0],),
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=make_execution_config(),
+                audit_store=audit_store,
+            )
+
+        assert len(result.accepted_candidates) == 1
+        assert result.accepted_candidates[0].source_span.start_char == 0
+        assert result.accepted_candidates[0].source_span.text == "Revenue increased"
+        assert result.rejected_candidates == ()
+
+    asyncio.run(run_check())
+
+
 def test_execute_plan_rejects_insufficient_lens_budget_before_llm_calls() -> None:
     async def run_check() -> None:
         anthropic_client = QueuedAnthropicClient([])
@@ -643,6 +673,126 @@ def test_execute_plan_rejects_insufficient_lens_budget_before_llm_calls() -> Non
             )
 
         assert anthropic_client.messages.calls == []
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_retries_executor_on_invalid_offsets(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        bad_payload = {
+            "category": "Finding",
+            "field_name": "summary",
+            "value": "Synthetic missing value",
+            "source_length": 4,
+            "start_char": 100,
+            "confidence": 0.9,
+        }
+        good_payload = candidate_payload(
+            source_text="Revenue increased.",
+            value="Revenue increased.",
+            start_char=0,
+        )
+        payloads: list[dict[str, object]] = [
+            {"candidates": (bad_payload,)},
+            {"candidates": (good_payload,)},
+        ]
+        anthropic_client = QueuedAnthropicClient(payloads)
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        execution_config = ExecutionConfig(
+            max_stage_concurrency=1,
+            max_chunk_concurrency=1,
+            max_llm_attempts=2,
+        )
+        chunks = (make_chunks()[0],)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store)
+            result = await execute_plan(
+                plan=make_plan(),
+                chunks=chunks,
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=execution_config,
+                audit_store=audit_store,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+
+        assert len(anthropic_client.messages.calls) == 2
+        assert [log.attempt for log in logs] == [1, 2]
+        assert len(result.accepted_candidates) == 1
+        assert result.rejected_candidates == ()
+        accepted = result.accepted_candidates[0]
+        assert accepted.value == "Revenue increased."
+        assert accepted.source_span.text == "Revenue increased."
+        assert accepted.source_span.start_char == 0
+
+        retry_messages = anthropic_client.messages.calls[1]["messages"]
+        assert len(retry_messages) == 3
+        assert retry_messages[1]["role"] == "assistant"
+        assistant_blocks = retry_messages[1]["content"]
+        assert assistant_blocks[0]["type"] == "tool_use"
+        assert assistant_blocks[0]["id"] == "toolu_1"
+        tool_result = retry_messages[2]["content"][0]
+        assert tool_result["type"] == "tool_result"
+        assert tool_result["tool_use_id"] == "toolu_1"
+        assert tool_result["is_error"] is True
+        assert "Item 0" in tool_result["content"]
+        assert "Synthetic missing value" in tool_result["content"]
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_records_residual_rejection_when_retry_still_invalid(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        bad_payload = {
+            "category": "Finding",
+            "field_name": "summary",
+            "value": "Synthetic missing value",
+            "source_length": 4,
+            "start_char": 100,
+            "confidence": 0.9,
+        }
+        still_bad_payload = {
+            "category": "Finding",
+            "field_name": "summary",
+            "value": "Still synthetic value",
+            "source_length": 9,
+            "start_char": 200,
+            "confidence": 0.9,
+        }
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {"candidates": (bad_payload,)},
+                {"candidates": (still_bad_payload,)},
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        execution_config = ExecutionConfig(
+            max_stage_concurrency=1,
+            max_chunk_concurrency=1,
+            max_llm_attempts=2,
+        )
+        chunks = (make_chunks()[0],)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store)
+            result = await execute_plan(
+                plan=make_plan(),
+                chunks=chunks,
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=execution_config,
+                audit_store=audit_store,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+
+        assert len(anthropic_client.messages.calls) == 2
+        assert [log.attempt for log in logs] == [1, 2]
+        assert result.accepted_candidates == ()
+        assert len(result.rejected_candidates) == 1
+        assert result.rejections[0].reasons[0].code == "invalid_source_offsets"
 
     asyncio.run(run_check())
 
