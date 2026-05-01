@@ -7,6 +7,7 @@ Running log for repository sessions and accepted phase gates.
 - Last completed phase: Prompt-hardening live rerun review
 - Current status: Resumed run `medium-research-prompt-hardening-20260502-1` completed with improved quality: precision `0.765`, recall `0.736`, F1 `0.750`, provenance recall `0.717`, and zero invariant violations
 - Next required work: operator approval for the next local repair phase, likely targeted executor normalization/offset fixes plus one fixture punctuation audit for `RegulatoryRisk.summary`
+- Next-phase context: start from the triage of `medium-research-prompt-hardening-20260502-1`. Do not run live LLM calls. The highest-leverage local targets are executor-side value/span normalization, not another broad prompt rewrite: (1) generate noun-form labels for source phrases such as `commenced operation` -> `Facility commencement`, `approved acquiring` -> `Acquisition approval`, and `appointed` -> `appointment`; (2) preserve period wording in prior-period values such as `$410.8 million in Q1 2025` and `6,581 in Q1 2025`; (3) trim guidance near-misses to expected role values, especially `condition` without a leading `with` and bare `speaker` names when the approved field is `speaker`; (4) improve retry/repair for repeated or header-adjacent offsets such as `Revenue` and `Q1 2026`; (5) audit `exp-052`, where the actual full-sentence `RegulatoryRisk.summary` includes the closing period and appears more consistent with `docs/annotation-conventions.md` than the current fixture span.
 
 ## Session Log
 
