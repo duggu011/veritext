@@ -4,11 +4,119 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Planner naming-stability prompt hardening
-- Current status: Prompt-only planner naming discipline fix implemented locally with focused prompt, planner, unit, lint, smoke, and diff checks green
-- Next required work: operator-approved live `medium-research-1` or `medium-research-schema-quality` rerun only if explicitly requested
+- Last completed phase: Prompt-hardening live rerun review
+- Current status: Resumed run `medium-research-prompt-hardening-20260502-1` completed with improved quality: precision `0.765`, recall `0.736`, F1 `0.750`, provenance recall `0.717`, and zero invariant violations
+- Next required work: operator approval for the next local repair phase, likely targeted executor normalization/offset fixes plus one fixture punctuation audit for `RegulatoryRisk.summary`
 
 ## Session Log
+
+### 2026-05-02 — Prompt-hardening live rerun review
+
+- Operator resumed `medium-research-prompt-hardening-20260502-1` after the critic boundary repair; the run completed with 51 data points and zero invariant violations.
+- Scored `outputs/medium-research-prompt-hardening-20260502-1.json` against `evals/fixtures/medium_research_brief/case.json`: precision `0.765`, recall `0.736`, F1 `0.750`, provenance recall `0.717`, TP `39`, FP `12`, FN `14`, exact-provenance matches `38`.
+- Compared with the prior completed run `medium-research-debug-20260502-003044`: precision improved `0.614 -> 0.765`, recall improved `0.660 -> 0.736`, F1 improved `0.636 -> 0.750`, false positives dropped `22 -> 12`, false negatives dropped `18 -> 14`, and exact-provenance matches improved `35 -> 38`.
+- Audit summary: 152 executor candidates, 74 canonical candidates after dedup, 148 critic reports, 132 verifier reports, 51 final data points. Critic batch count stayed within the existing check (`5 <= 6`), verifier used 7 batches and exceeded the older acceptance check limit of 5.
+- Triage bucket counts for the 14 misses: 10 no-candidate, 1 executor-rejected bad-offset/ambiguous-span candidate, 1 critic-rejected bad-offset metric-name candidate, 1 verifier-rejected value/span mismatch, and 1 surfaced output not matched by eval.
+- Remaining local-quality targets are now narrower:
+  - event/label normalization still misses `CorporateEvent.event_type` for facility commencement and acquisition approval, plus `PersonnelChange.change_type = appointment`;
+  - prior-period values still drop period wording for `FinancialMetric.prior_period_value` and `OperationalMetric.prior_period_value`;
+  - `ForwardGuidance.condition` and `speaker` candidates exist only as near-misses (`with at least...` / `at least 60%` and `CEO Marcus Bell` vs expected bare `Marcus Bell`);
+  - bad offset retries still fail simple repeated/header-adjacent fields like `FinancialMetric.metric_name = Revenue` and `period = Q1 2026`;
+  - `exp-052` appears to conflict with the Type D annotation convention because the actual `RegulatoryRisk.summary` includes sentence-closing punctuation while the fixture expected span omits the period.
+
+### 2026-05-02 — Critic boundary repair for contradictory correction payloads
+
+- Investigated failed live run `medium-research-prompt-hardening-20260502-1`, which aborted in critic parsing after Anthropic returned a non-`correct` verdict with a non-null `correction` payload.
+- Hardened `src/extractor/llm/payloads.py` so dict-form verdicts expand compact decision codes (`a`/`r`/`c`) before validation, default missing reject codes when a stage default exists, and drop contradictory correction payloads from non-correct critic verdicts.
+- Added a `CriticVerdict` pre-validation normalizer in `src/extractor/critic/models.py` so the same boundary repair applies even when Pydantic validates a single verdict directly through the union branch.
+- Added critic regression coverage for the live failure shape: direct reject verdict with correction payload, batch reject verdict with correction payload, accept verdict with correction payload, and dict-form short decision code with null reject code.
+- Ran `python3 scripts/prepare_failed_run_resume.py --run-id medium-research-prompt-hardening-20260502-1` in dry-run mode. It found partial state to clear before resume: 40 critic reports, 4 critic-or-later rejections, 4 critic-or-later LLM call logs, and no verifier/data-point rows.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_llm_client.py -q`, `make lint`, `make smoke`, and `git diff --check`.
+- No paid/live LLM calls were run during this repair phase.
+
+### 2026-05-02 — Local all-test sweep and static validation
+
+- Ran `make test`: 170 tests passed and 2 integration tests were skipped by existing test gating.
+- Ran `make lint`, `make smoke`, and `git diff --check`; all passed.
+- Re-scored existing output `outputs/medium-research-debug-20260502-003044.json` against `evals/fixtures/medium_research_brief/case.json` without running the pipeline or making LLM calls.
+- Local re-score remained the known failed baseline because the report predates the new prompt changes: precision `0.614`, recall `0.660`, F1 `0.636`, provenance recall `0.660`, true positives `35`, false positives `22`, false negatives `18`, invariant violations `0`.
+- No paid/live LLM calls were run and no commit was made.
+
+### 2026-05-02 — Executor label/atomic/statement prompt/test phase
+
+- Added focused local prompt regression coverage in `tests/unit/test_prompt_schema_quality.py` for three executor failure classes from the extraction-quality audit:
+  - Atomic numeric/entity boundaries: `forecast_value`, `target_value`, `margin`, `prior_rate`, `new_rate`, and bare entity fields should not absorb role labels, periods, values, locations, or descriptors already carried by the field name.
+  - Source-traced label normalization: label fields such as `event_type`, `change_type`, `exposure_type`, `risk_type`, and `metric_name` may use concise noun-form values when every content word traces to the selected source phrase.
+  - Statement-like fields: `summary`, `statement`, `description`, `condition`, `notable_qualifier`, and `asset_detail` should preserve full source sentences or standalone clauses with closing punctuation and verbatim values.
+- Updated `prompts/executor/number.md` to reject role-label contamination such as returning a value plus `forecast` or `target` for fields whose names already encode that role, while still preserving meaningful numeric qualifiers such as `approximately`, `at least`, `up`, and `down`.
+- Updated `prompts/executor/entity.md` to require bare named entities for fields like `facility`, `party`, `person`, `organization`, `asset`, and `issuing_authority` unless the approved field explicitly bundles a qualifier.
+- Updated `prompts/executor/claim.md` and `prompts/executor/event.md` to document source-traced noun-form label normalization and full sentence/clause spans for statement-like fields.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_prompt_schema_quality.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_prompt_schema_quality.py -q`, `make lint`, `make smoke`, and `git diff --check`.
+- No paid/live LLM calls were run.
+
+### 2026-05-02 — Planner role-naming prompt/test phase
+
+- Added focused local prompt regression coverage in `tests/unit/test_prompt_schema_quality.py` for relation-specific naming without live LLM calls:
+  - `ForwardGuidance.speaker` for the person or organization stating, reaffirming, or updating guidance, not generic `person`, `party`, or `role`.
+  - `ForwardGuidance.target_date` for guidance by-dates/deadlines/target-achievement dates, not generic `period`.
+  - Singular `ForwardGuidance.condition` for one stated contingency, caveat, threshold, or dependency; plural `conditions` only for multiple independent conditions.
+  - `FinancialMetric.notable_qualifier` for source-stated metric qualifiers such as first-time, record, threshold, or one-time wording, not catch-all `summary`.
+- Updated `prompts/planner/propose_schema.md` and `prompts/planner/critique_schema.md` in general terms only: role names are framed as source-relation rules, generic names remain allowed when no stronger relation exists, and no document/company/person/asset names were added.
+- Strengthened planner critique guidance to reject `ForwardGuidance.person` / `role`, `ForwardGuidance.period`, plural `conditions` for a single condition, and `FinancialMetric.summary` as the only home for a separable metric qualifier.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_prompt_schema_quality.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_planner.py tests/unit/test_prompt_schema_quality.py -q`, `make lint`, `make smoke`, and `git diff --check`.
+- No paid/live LLM calls were run.
+
+### 2026-05-02 — Output-scope policy and correction guardrails
+
+- Documented default output policy in `docs/output-scope-policy.md`: Veritext currently defaults to comprehensive source-backed extraction, while task-scoped extraction and hybrid core/supporting/contextual reporting remain future modes. This means source-backed facts outside a fixture's expected set are not automatically product defects.
+- Updated `docs/extraction-quality-generalization-audit.md` to reference the scope policy and preserve the distinction between eval false positives and general-app quality defects.
+- Added deterministic critic correction validation so a corrected candidate cannot drop source qualifiers such as `approximately`, `at least`, `up`, `down`, or `subject to` while keeping those words in the source span.
+- Added critic regression coverage for the live failure class: `Approximately 18%` corrected to `18%` is rejected as an invalid correction instead of flowing to reconciler output.
+- Added reconciler regression coverage proving reconciler data points use the accepted corrected candidate exactly and do not independently rewrite values.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py::test_review_candidates_rejects_correction_that_drops_source_qualifier tests/unit/test_reconciler.py::test_reconcile_candidates_uses_accepted_corrected_candidate_without_rewriting -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py tests/unit/test_reconciler.py -q`, `make lint`, `make smoke`, `python3 -m py_compile scripts/check_critic_boundary_preflight.py scripts/prepare_failed_run_resume.py`, and `git diff --check`.
+
+### 2026-05-02 — Offline extraction-quality generalization audit
+
+- Added `docs/extraction-quality-generalization-audit.md`, treating `medium-research-debug-20260502-003044` as a diagnostic specimen rather than a fixture-specific target.
+- Classified the 18 false negatives and 22 false positives into general failure classes: planner semantic-role mismatch, executor role-qualifier contamination, label normalization gaps, statement/clause coverage gaps, critic correction qualifier loss, and one caught-but-unrecovered executor offset failure.
+- Confirmed the planner did not approve four expected semantic roles at all: `FinancialMetric.notable_qualifier`, `ForwardGuidance.condition`, `ForwardGuidance.speaker`, and `ForwardGuidance.target_date`. Also confirmed several unexpected outputs are source-backed but outside the fixture scope, so precision work needs an explicit product policy for comprehensive vs task-scoped extraction.
+- Traced the `Approximately 18%` -> `18%` mismatch to the critic correction path, not the reconciler: the accepted critic report contained a corrected candidate with value `18%` and the same `Approximately 18%` source span.
+- Recommended next phases: first decide output scope and add deterministic guardrail tests for correction/value preservation; then planner role-naming tests and prompt edits; then executor label/atomic/statement tests and prompt edits; then local test sweep before one paid live rerun.
+
+### 2026-05-02 — Medium re-annotated live baseline report
+
+- Resumed failed live run `medium-research-debug-20260502-003044` after clearing partial critic-and-later audit rows with `scripts/prepare_failed_run_resume.py --apply`; run completed with 57 final data points and zero invariant violations.
+- Scored `outputs/medium-research-debug-20260502-003044.json` against the re-annotated `evals/fixtures/medium_research_brief/case.json`: precision `0.614`, recall `0.660`, F1 `0.636`, provenance recall `0.660`, TP `35`, FP `22`, FN `18`, exact-provenance matches `35`.
+- Compared with the re-scored 5/01 baseline from the annotation session (F1 `0.648`, provenance recall `0.642`, recall `0.660`): recall held flat, exact-provenance/provenance recall improved by one match, and F1 declined by `0.012` because this run emitted more false positives.
+- Wrote `.veritext/debug/medium-research-debug-20260502-003044/triage.md`. Missing bucket counts: 16 no-candidate, 1 executor-rejected bad-offset candidate (`exp-018`), and 1 surfaced candidate whose reconciled data point value no longer matched eval (`exp-048`, candidate value `Approximately 18%` became data-point value `18%`).
+- Residual misses line up with the predicted real extractor gaps: missing planner/executor fields for `ForwardGuidance` (`condition`, `speaker`, `target_date`) and `FinancialMetric.notable_qualifier`; normalized label failures for `CorporateEvent.event_type` and `PersonnelChange.change_type`; full-sentence/clause coverage gaps for `CorporateEvent.summary`, `CorporateEvent.asset_detail`, and `RegulatoryRisk.summary`; plus tight-span/role qualifier misses such as `$88.0 million forecast`, `Q1 2026 revenue`, `Atacama-1 in Chile`, and `29.0% target`.
+- Provenance mismatches among true positives are now `0`, so the remaining quality work is recall/normalization and false-positive control rather than span-width inconsistency.
+- Local-only verification: `python3 scripts/check_critic_boundary_preflight.py`, `python3 -m py_compile scripts/check_critic_boundary_preflight.py scripts/prepare_failed_run_resume.py`, `PYTHONPATH=src python3 -m extractor.evals ...`, and `PYTHONPATH=src python3 scripts/triage_missing_and_spans.py ...`.
+
+### 2026-05-02 — Critic boundary preflight script
+
+- Added `scripts/check_critic_boundary_preflight.py`, a local-only preflight for the live critic boundary failure shape where a non-`correct` verdict includes a contradictory `correction` payload.
+- Verified the script imports repo-local `src/extractor/llm/payloads.py` and passes without making API calls via `python3 scripts/check_critic_boundary_preflight.py`.
+- Added `scripts/prepare_failed_run_resume.py`, a dry-run-by-default helper that backs up the audit DB and removes only partial critic/verifier/reconciler/reporter artifacts for one failed run when `--apply` is supplied.
+- Dry-run against `medium-research-debug-20260502-003044` showed 55 partial critic reports, 4 critic-or-later rejections, and 5 critic-or-later LLM call logs to clear before resume.
+
+### 2026-05-02 — Annotation conventions and medium-fixture re-annotation
+
+- Diagnosed root cause of the medium fixture's stuck provenance gate: the case file's spans were per-instance and not field-rule-driven (same `(category, field_name)` annotated as bare value in some entries and full sentence in others; identical sentence had `metric_name`/`period` annotated as full-sentence spans while `value`/`change_pct` in the same sentence were tight). No prompt or model can satisfy `min_provenance_recall: 1.0` against an inconsistent ground truth.
+- Wrote `docs/annotation-conventions.md`: domain-agnostic rules for span widths in any future fixture. Four field types — atomic value, label/category term, entity/role/title, sentence/statement/clause — with one mechanical span rule each. Rules align with the executor's existing "shortest exact span supporting field meaning" prompt without weakening the byte-exact provenance bar.
+- Re-annotated `evals/fixtures/medium_research_brief/case.json` to match the conventions: 26 of 53 entries had span widths or values rewritten. All byte offsets recomputed from the source text and verified slice-by-slice. Pipeline standard, eval gate threshold, and audit chain all unchanged.
+- Ran the prior 5/01 executor-span-edit attempt (`prompts/executor/{claim,event,number,entity}.md`); F1 +0.013 / provenance recall -0.019 — net wash with new cross-section critic rejections. Reverted those four prompt edits since the convention fix is the durable solution and the prompt edits were tuned against the inconsistent ground truth. Kept `scripts/triage_missing_and_spans.py` (diagnostic-only, no behavior).
+- Re-scored existing pipeline outputs against the new ground truth without rerunning the pipeline:
+  - 5/01 baseline (original prompts): provenance recall 0.434 → **0.642** (+0.208), F1 0.667 → 0.648 (precision dropped because false-positive list is unchanged), exact-prov matches 23 → **34**.
+  - 5/02 modified-prompt run: provenance recall 0.415 → **0.604** (+0.189), F1 0.680 → 0.680, exact-prov matches 22 → 32.
+  - Both runs still fail the gate (recall ~0.66, precision ~0.64–0.70), but provenance recall is now in a defensible range and the misses are real pipeline gaps (no `notable_qualifier`/`condition`/`speaker`/`target_date` candidates from planner/executor for ForwardGuidance, normalized-label fields like `event_type="Facility commencement"` not matched).
+- `make lint` and `python3 -m pytest tests/unit -q` (160 tests) pass.
+
+### 2026-05-01 - Medium Fixture Stage Debug Artifact
+
+- Added `docs/medium-research-stage-debug-plan.md` as a source-derived manual debugging checklist for the medium research fixture.
+- Documented expected classification, planner schema, strategy/lens choices, executor target data points, critic/verifier checks, reconciler expectations, and a proposed one-stage-at-a-time debug artifact workflow.
+- Kept the artifact diagnostic only; no production schema registry, matcher relaxation, or live pipeline run was added.
 
 ### 2026-05-01 - Planner Naming Stability Prompt Hardening
 

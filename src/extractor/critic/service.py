@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import re
 from datetime import datetime, timezone
 
 from pydantic import ValidationError
@@ -46,6 +47,23 @@ from extractor.critic.models import (
 
 class CriticError(RuntimeError):
     """Raised when critic inputs cannot be reviewed without violating provenance."""
+
+
+_MEANINGFUL_VALUE_QUALIFIER_PHRASES = (
+    ("approximately",),
+    ("approx",),
+    ("about",),
+    ("around",),
+    ("at", "least"),
+    ("at", "most"),
+    ("no", "more", "than"),
+    ("no", "less", "than"),
+    ("more", "than"),
+    ("less", "than"),
+    ("up",),
+    ("down",),
+    ("subject", "to"),
+)
 
 
 async def review_candidates(
@@ -822,7 +840,50 @@ def _correction_rejection_reasons(
                 message="Corrected candidate source span must match the chunk text at its offsets.",
             )
         )
+    lost_qualifier = _lost_source_qualifier(original=original, corrected=corrected)
+    if lost_qualifier is not None:
+        reasons.append(
+            RejectionReason(
+                code="schema_violation",
+                message=(
+                    "Corrected candidate value drops source qualifier "
+                    f"{lost_qualifier!r} while keeping it in the source span."
+                ),
+            )
+        )
     return reasons
+
+
+def _lost_source_qualifier(
+    *,
+    original: LensCandidate,
+    corrected: LensCandidate,
+) -> str | None:
+    if corrected.value == original.value:
+        return None
+
+    span_tokens = _qualifier_tokens(corrected.source_span.text)
+    value_tokens = _qualifier_tokens(corrected.value)
+    for phrase in _MEANINGFUL_VALUE_QUALIFIER_PHRASES:
+        if _contains_phrase(span_tokens, phrase) and not _contains_phrase(
+            value_tokens,
+            phrase,
+        ):
+            return " ".join(phrase)
+    return None
+
+
+def _qualifier_tokens(text: str) -> tuple[str, ...]:
+    return tuple(re.findall(r"[a-z0-9]+", text.casefold()))
+
+
+def _contains_phrase(tokens: tuple[str, ...], phrase: tuple[str, ...]) -> bool:
+    if len(phrase) > len(tokens):
+        return False
+    return any(
+        tokens[index : index + len(phrase)] == phrase
+        for index in range(len(tokens) - len(phrase) + 1)
+    )
 
 
 def _critic_rejection_reasons(report: CriticReport) -> list[RejectionReason]:

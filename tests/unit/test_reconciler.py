@@ -206,7 +206,11 @@ def make_candidate(
     )
 
 
-def make_critic_report(candidate: LensCandidate) -> CriticReport:
+def make_critic_report(
+    candidate: LensCandidate,
+    *,
+    corrected_candidate: LensCandidate | None = None,
+) -> CriticReport:
     return CriticReport(
         report_id=f"critic-{candidate.candidate_id}",
         run_id="run-1",
@@ -215,6 +219,7 @@ def make_critic_report(candidate: LensCandidate) -> CriticReport:
         plausibility_score=0.9,
         accepted=True,
         issues=(),
+        corrected_candidate=corrected_candidate,
     )
 
 
@@ -369,6 +374,45 @@ def test_reconcile_candidates_persists_data_points_rejections_and_logs(
         assert len(user_payload["candidates"]) == 2
         assert user_payload["candidates"][0]["id"] == short_candidate_id("candidate-1")
         assert "candidate_id" not in user_payload["candidates"][0]
+
+    asyncio.run(run_check())
+
+
+def test_reconcile_candidates_uses_accepted_corrected_candidate_without_rewriting(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        original = make_candidate(value="18%")
+        corrected = original.model_copy(update={"value": "Approximately 18%"})
+        critic_reports = (
+            make_critic_report(original, corrected_candidate=corrected),
+        )
+        verifier_reports = (make_verifier_report(corrected),)
+        anthropic_client = QueuedAnthropicClient([reconciliation_payload()])
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(
+                audit_store,
+                (corrected,),
+                critic_reports,
+                verifier_reports,
+            )
+            result = await reconcile_candidates(
+                plan=make_plan(),
+                candidates=(corrected,),
+                critic_reports=critic_reports,
+                verifier_reports=verifier_reports,
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                audit_store=audit_store,
+            )
+
+        assert len(result.data_points) == 1
+        data_point = result.data_points[0]
+        assert data_point.value == corrected.value
+        assert data_point.source_span == corrected.source_span
+        assert data_point.contributing_candidate_ids == (corrected.candidate_id,)
 
     asyncio.run(run_check())
 

@@ -35,9 +35,13 @@ Offset rules:
 - Never output source_text, start_text, start, offset, start_offset, end_char, start_byte, or end_byte.
 - Choose the shortest exact span that supports both the claim value and the approved field meaning.
 - A bare value or label is insufficient when the field meaning depends on qualifiers, role words, target/forecast status, comparison wording, speaker attribution, or risk/exposure context.
+- For statement-like fields such as summary, statement, description, condition, notable_qualifier, or asset_detail, choose the full source sentence or standalone clause with closing punctuation and set value equal to that span verbatim.
+- Do not trim leading dates, prices, values, conditions, or sentence punctuation from statement-like fields.
 
 Candidate rules:
 - value should be concise but must not add meaning beyond the selected source span.
+- For label fields such as event_type, change_type, exposure_type, risk_type, or metric_name, value may use a concise noun-form label when every content word traces to the selected source phrase; keep the source span over the source words, not the normalized label.
+- Noun-form normalization such as appointed to appointment is valid when the source phrase supports the label; do not invent a label from outside knowledge.
 - Multiple candidates may point to the same source span only when they populate distinct approved fields.
 - Confidence should reflect source clarity, not importance.
 - Prefer no candidate over a guessed candidate.
@@ -47,6 +51,8 @@ Few-shot examples:
 - Valid offset arithmetic: chunk_view.start_char=5000 and the source span "Northwind Storage" begins at chunk_view.text index 20. Return start_char=5020 and source_length=17.
 - Common error to avoid: when chunk_view.text contains "...consolidated revenue of\n$482.3 million, a 17.4% year-over-year increase..." and the source span is "a 17.4% year-over-year increase", start_char must point to the 'a' of 'a 17.4%', not the comma or space before it. Whitespace and newlines are characters; counting must include them, but start_char itself must land on the first character of the span. Run the slice check mentally before emitting.
 - Valid: approved field is PolicyRequirement.summary and source states "Remote employees must complete security training every quarter"; extract that exact requirement.
+- Valid statement-like span: if approved field is RiskSummary.summary and source states "On May 3, the regulator raised the required reserve ratio to 12.0%.", extract the full sentence including date, value, and closing punctuation.
+- Valid label normalization: if approved field is PersonnelChange.change_type and source says "appointed Chief Operating Officer", value may be "appointment" with the source span over "appointed" or the phrase required by field meaning.
 - Valid speaker-role provenance: if approved field is guidance_speaker and source says "CEO Marcus Bell said", select "CEO Marcus Bell" when the speaker role is part of the field meaning.
 - Valid semantic-label provenance: if approved field is RiskExposure.exposure_type and source says "foreign-exchange exposure increased", select the phrase that includes "foreign-exchange exposure" rather than a bare generic label.
 - Reject: "prior target was 15%, but it was superseded" should not be extracted as current guidance.

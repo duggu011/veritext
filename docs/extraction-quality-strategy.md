@@ -121,9 +121,3 @@ The current batching groups by `chunk_id` — so the maximum batch size is bound
 - Cross-chunk critic/verifier batching — sacrifices grounding accuracy.
 - Switching providers mid-run for cost — operational complexity, marginal savings at current scale.
 - Document-level caching of planner output across re-runs — useful for evals, premature for production.
-
-
-  PYTHONPATH=src python3 -m extractor.cli.main \
-    evals/fixtures/medium_research_brief/source.md \
-    --run-id medium-research-2 \
-    --output outputs/medium-research-2.json

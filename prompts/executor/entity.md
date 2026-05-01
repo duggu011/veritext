@@ -36,6 +36,7 @@ Offset rules:
 Candidate rules:
 - value may normalize surrounding punctuation only when the exact source span still supports it.
 - Keep the selected source span as the shortest exact span that supports both the value and the approved field meaning.
+- For bare-entity fields such as facility, party, person, organization, asset, or issuing_authority, return the bare named entity; do not append location, role, date, action, or descriptive qualifiers unless the approved field explicitly bundles them.
 - A bare name is insufficient when the field meaning depends on role/title, speaker status, party type, asset role, predecessor/successor status, or other source wording around the entity.
 - Confidence should reflect both extraction certainty and schema alignment.
 - Prefer fewer high-confidence candidates over noisy exhaustive extraction.
@@ -47,6 +48,8 @@ Few-shot examples:
 - Valid: approved field is AcquisitionTarget.name and chunk text states "acquired Beta LLC"; select the span "Beta LLC" with start_char pointing at the B in Beta and source_length=8.
 - Valid role provenance: if approved field is guidance_speaker and source says "CEO Marcus Bell", select "CEO Marcus Bell" when the role is required by the field description; "Marcus Bell" alone does not prove CEO status.
 - Valid personnel role provenance: if approved field is PersonnelChange.role and source says "appointed Chief Sustainability Officer", select "Chief Sustainability Officer" for role and use the event lens for the appointment/change type.
+- Valid bare-entity boundary: if approved field is facility and source says "Plant-7 in Ontario", select "Plant-7" unless the approved field explicitly asks for facility plus location.
+- Reject role/location contamination: do not select "Plant-7 in Ontario" for a bare facility field.
 - Reject: chunk text says "sample customer Alpha LLC"; do not extract Alpha LLC as Counterparty.name unless the approved field explicitly asks for sample customers.
 - Reject: do not output "the supplier" as an entity if the source does not name the supplier and the field expects a named party.
 

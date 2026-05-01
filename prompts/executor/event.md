@@ -22,7 +22,7 @@ Extraction rules:
 - Use only category names and field_name values that appear in schema_card.categories.
 - Event evidence includes dated actions, transactions, changes, deadlines, filings, commitments, incidents, decisions, acquisitions, appointments, launches, terminations, or milestones.
 - Do not infer unstated dates, participants, causes, or outcomes.
-- If an approved field asks for a summary, value may be a concise source-grounded event phrase.
+- If an approved field asks for a statement-like value such as summary, statement, description, condition, notable_qualifier, or asset_detail, use the source sentence or standalone clause rather than a paraphrase.
 - If no approved category/field can be supported by event evidence in the chunk, return candidates=[].
 
 Offset rules:
@@ -35,19 +35,25 @@ Offset rules:
 - Never output source_text, start_text, start, offset, start_offset, end_char, start_byte, or end_byte.
 - Choose the shortest exact source span that supports both the event value and the approved field meaning, including date, action/type, party, asset, condition, or change wording when needed for the field.
 - A bare action word is insufficient when the field meaning depends on role-specific context such as expected close date, event_type, change_type, appointment, acquisition target, or regulatory action.
+- For statement-like fields such as summary, statement, description, condition, notable_qualifier, or asset_detail, choose the full source sentence or standalone clause with closing punctuation and set value equal to that span verbatim.
+- Do not trim leading dates, prices, values, conditions, or sentence punctuation from statement-like fields.
 
 Candidate rules:
+- For label fields such as event_type, change_type, exposure_type, risk_type, or metric_name, value may use a concise noun-form label when every content word traces to the selected source phrase; keep the source span over the source words, not the normalized label.
+- Noun-form normalization such as appointed to appointment is valid when the source phrase supports the label; do not invent a label from outside knowledge.
 - Do not combine separate events into one candidate unless the approved field requires that combined event.
 - Do not extract background context as an event.
 - Confidence should be high only when the event and schema field are both clear.
 
 Few-shot examples:
-- Valid: chunk_view.start_char=200, chunk_view.text begins with "The board approved acquisition of Delta Co on July 14, 2026." Approved field is CorporateEvent.summary. Use the span "The board approved acquisition of Delta Co on July 14, 2026.", start_char=200, and source_length=60, or the shortest event phrase required by the field.
+- Valid: chunk_view.start_char=200, chunk_view.text begins with "The board approved acquisition of Delta Co on July 14, 2026." Approved field is CorporateEvent.summary. Use the full sentence span "The board approved acquisition of Delta Co on July 14, 2026.", start_char=200, and source_length=60.
 - Valid offset arithmetic: chunk_view.start_char=5000 and the source span "Northwind Storage" begins at chunk_view.text index 20. Return start_char=5020 and source_length=17.
 - Common error to avoid: when chunk_view.text contains "...refinancing of\nthe Series-2022 notes..." and the source span is "the Series-2022 notes", start_char must point to the 't' of 'the', not the '\n' before it or the 'f' at the end of 'of'. Whitespace and newlines are characters; counting must include them, but start_char itself must land on the first character of the span. Run the slice check mentally before emitting.
 - Valid: approved field is TerminationEvent.summary and source states "The agreement terminates on December 31, 2026"; extract that exact event phrase.
 - Valid event_type provenance: if approved field is CorporateEvent.event_type and source says "announced the acquisition of Delta Co", select a span that includes "announced the acquisition" so the event type is source-backed.
 - Valid personnel/change provenance: if approved field is PersonnelChange.change_type and source says "appointed Chief Sustainability Officer", select that phrase rather than bare "appointed".
+- Valid label normalization: if approved field is PersonnelChange.change_type and source says "appointed Chief Sustainability Officer", value may be "appointment" while the source span stays on "appointed" or the phrase required by field meaning.
+- Valid statement-like span: if approved field is CorporateEvent.asset_detail and source states "The company opened Line 4 after completing safety certification.", extract the full sentence or the standalone clause that exactly matches the approved field, including closing punctuation.
 - Valid date-role provenance: if approved field is expected_close_date and source says "expected to close on September 30, 2026", include "expected to close on" with the date when needed to distinguish it from another date.
 - Reject: "A previous deadline was superseded" should not be extracted as the current deadline unless the approved field asks for historical superseded terms.
 - Reject: "Alpha LLC is a sample customer" is not an acquisition, counterparty, or policy event unless the schema explicitly targets examples.

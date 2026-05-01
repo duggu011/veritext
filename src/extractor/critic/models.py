@@ -45,6 +45,16 @@ class CriticVerdict(CriticModel):
     evidence: Evidence | None = None
     correction: CompactCorrection | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_verdict_payload_shape(cls, data: object) -> object:
+        return normalize_verdict_payload(
+            data,
+            allow_correction=True,
+            evidence_max_chars=EVIDENCE_MAX_CHARS,
+            default_reject_code="critic_rejected",
+        )
+
     @model_validator(mode="after")
     def validate_decision_fields(self) -> CriticVerdict:
         if self.decision == "accept" and self.code is not None:

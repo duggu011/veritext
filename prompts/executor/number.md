@@ -21,7 +21,7 @@ Extraction rules:
 - Extract only numeric values explicitly present in chunk_view.text.
 - Use only category names and field_name values that appear in schema_card.categories.
 - Numeric evidence includes amounts, percentages, rates, counts, dates when the approved field is numeric/date-like, durations, measurements, scores, ranges, and quantities.
-- Preserve units, currency symbols, percent signs, multipliers, and qualifiers when they are part of the source-backed value.
+- Preserve units, currency symbols, percent signs, multipliers, ranges, signs, comparison words, and source qualifiers such as approximately, at least, up, down, or no more than when they are part of the source-backed value.
 - Do not calculate derived values unless the exact derived value is stated in the chunk.
 - Do not normalize numbers in a way that loses source meaning. For example, if the source span is "$1.2 million", value may be "$1.2 million" but not "1200000" unless stated.
 - If no approved category/field can be supported by numeric evidence in the chunk, return candidates=[].
@@ -36,9 +36,11 @@ Offset rules:
 - Never output source_text, start_text, start, offset, start_offset, end_char, start_byte, or end_byte.
 - Select the shortest exact span that supports both the numeric value and the approved field meaning.
 - A bare number is insufficient when qualifier, comparison, period, target/forecast/prior/new status, or semantic role creates the field meaning.
+- For atomic numeric fields such as forecast_value, target_value, margin, amount, rate, prior_rate, or new_rate, return the numeric expression with its unit, sign, currency, percent, range, comparison, or approximation words; do not include role labels such as forecast, target, margin, value, amount, rate, prior, or new when the field name already carries that role.
 
 Candidate rules:
 - Match numeric values to approved fields by semantic context, not by number alone.
+- For metric_name and other label fields, select the source words that name the metric or label, not surrounding period or value words.
 - Do not extract every number if the approved schema does not need it.
 - Confidence should be high only when the number, unit, and field alignment are clear.
 
@@ -47,9 +49,11 @@ Few-shot examples:
 - Valid offset arithmetic: chunk_view.start_char=5000 and the source span "Northwind Storage" begins at chunk_view.text index 20. Return start_char=5020 and source_length=17.
 - Common error to avoid: when chunk_view.text contains "...exceeded the internal forecast of\n$88.0 million..." and the source span is "$88.0 million", start_char must point to the '$' of '$88.0', not the '\n' before it or the 'f' at the end of 'of'. Whitespace and newlines are characters; counting must include them, but start_char itself must land on the first character of the span. Run the slice check mentally before emitting.
 - Valid: approved field is FinancialMetric.statement and the span "revenue grew 9%" supports value "revenue grew 9%" or "9%" depending on the field description.
-- Valid provenance qualifier: if approved field is forecast_value and source says "$88.0 million forecast", select "$88.0 million forecast" rather than bare "$88.0 million".
-- Valid provenance qualifier: if approved field is margin and source says "19.5% margin", select "19.5% margin" rather than bare "19.5%".
-- Valid rate-change provenance: if approved fields are prior_rate and new_rate and source says "from 15.0% to 26.5%", select "from 15.0%" for prior_rate and "to 26.5%" for new_rate.
+- Valid atomic field boundary: if approved field is forecast_value and source says "$88.0 million forecast", select "$88.0 million" because forecast is the role label already carried by the field name.
+- Valid atomic field boundary: if approved field is margin and source says "19.5% margin", select "19.5%" because margin is the role label already carried by the field name.
+- Valid rate-change boundary: if approved fields are prior_rate and new_rate and source says "from 15.0% to 26.5%", select "15.0%" for prior_rate and "26.5%" for new_rate unless the field description explicitly requires the preposition.
+- Reject role-label contamination such as selecting "$88.0 million forecast" for forecast_value when the field name already carries the forecast role.
+- Reject role-label contamination such as selecting "29.0% target" for target_value when the field name already carries the target role.
 - Reject: "prior target was 15%, but it was superseded" should not be extracted as current guidance or current metric.
 - Reject: do not compute annual totals, convert "$1.2 million" to "1200000", or infer a date range unless source states it.
 

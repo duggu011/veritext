@@ -23,7 +23,7 @@ from extractor.contracts import (
     SourceSpan,
 )
 from extractor.critic import CriticError, review_candidates
-from extractor.critic.models import CriticBatchVerdicts
+from extractor.critic.models import CriticBatchVerdicts, CriticVerdict
 from extractor.llm import LLMClient, PromptLoader, short_candidate_id
 
 
@@ -222,11 +222,12 @@ def make_candidate(
 async def seed_audit_store(
     audit_store: AuditStore,
     candidates: tuple[LensCandidate, ...],
+    chunks: tuple[Chunk, ...] | None = None,
 ) -> None:
     await audit_store.record_run_manifest(make_run_manifest())
     document = make_document()
     await audit_store.record_document(document)
-    for chunk in make_chunks():
+    for chunk in chunks or make_chunks():
         await audit_store.record_chunk(chunk)
     await audit_store.record_extraction_plan(make_plan())
     for candidate in candidates:
@@ -355,6 +356,86 @@ def test_critic_batch_verdicts_allow_missing_correction_for_retry_validation() -
     )
 
     assert batch.verdicts[0].decision == "correct"
+    assert batch.verdicts[0].correction is None
+
+
+def test_critic_batch_verdicts_drop_contradictory_correction_on_accept() -> None:
+    # Live-run failure shape: dict-form verdict with decision='accept' and a
+    # non-null correction payload. The strict CriticVerdict validator would
+    # abort the whole batch; the normalizer drops the contradictory correction
+    # so the accept decision still reaches deterministic handling.
+    batch = CriticBatchVerdicts.model_validate(
+        {
+            "verdicts": [
+                {
+                    "id": "5d0fcede9ffc",
+                    "decision": "accept",
+                    "correction": {"value": "appointed"},
+                },
+            ]
+        }
+    )
+
+    assert batch.verdicts[0].decision == "accept"
+    assert batch.verdicts[0].code is None
+    assert batch.verdicts[0].correction is None
+
+
+def test_critic_batch_verdicts_drop_contradictory_correction_on_reject() -> None:
+    batch = CriticBatchVerdicts.model_validate(
+        {
+            "verdicts": [
+                {
+                    "id": "abc123",
+                    "decision": "reject",
+                    "code": "critic_rejected",
+                    "evidence": "Value overstates the source.",
+                    "correction": {"value": "appointed"},
+                },
+            ]
+        }
+    )
+
+    assert batch.verdicts[0].decision == "reject"
+    assert batch.verdicts[0].code == "critic_rejected"
+    assert batch.verdicts[0].correction is None
+
+
+def test_critic_verdict_drops_contradictory_correction_when_validated_directly() -> None:
+    verdict = CriticVerdict.model_validate(
+        {
+            "id": "35a7053bb72a",
+            "decision": "reject",
+            "code": "critic_rejected",
+            "evidence": "Value is outside the extraction scope.",
+            "correction": {
+                "value": "86 operating sites across seven U.S. states",
+            },
+        }
+    )
+
+    assert verdict.decision == "reject"
+    assert verdict.code == "critic_rejected"
+    assert verdict.correction is None
+
+
+def test_critic_batch_verdicts_expand_dict_decision_codes_before_correction_check() -> None:
+    batch = CriticBatchVerdicts.model_validate(
+        {
+            "verdicts": [
+                {
+                    "id": "abc123",
+                    "decision": "r",
+                    "code": None,
+                    "evidence": "Value is not supported.",
+                    "correction": {"value": "appointed"},
+                },
+            ]
+        }
+    )
+
+    assert batch.verdicts[0].decision == "reject"
+    assert batch.verdicts[0].code == "critic_rejected"
     assert batch.verdicts[0].correction is None
 
 
@@ -503,6 +584,67 @@ def test_review_candidates_accepts_valid_correction(tmp_path: Path) -> None:
         assert result.rejected_candidates == ()
         assert reports[0].accepted is True
         assert reports[0].corrected_candidate == corrected
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_rejects_correction_that_drops_source_qualifier(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        span_text = "Approximately 18%"
+        chunk = Chunk(
+            chunk_id="chunk-qualifier",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=span_text,
+            start_char=0,
+            end_char=len(span_text),
+            start_byte=0,
+            end_byte=len(span_text.encode("utf-8")),
+            start_token=0,
+            end_token=3,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=span_text,
+            value=span_text,
+        )
+        corrected = candidate.model_copy(update={"value": "18%"})
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(
+                    accepted_payload(
+                        candidate_id=candidate.candidate_id,
+                        corrected_candidate=corrected,
+                    )
+                )
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, (candidate,), chunks=(chunk,))
+            result = await review_candidates(
+                plan=make_plan(),
+                chunks=(chunk,),
+                candidates=(candidate,),
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=make_execution_config(),
+                audit_store=audit_store,
+            )
+            reports = await audit_store.list_critic_reports(candidate.candidate_id)
+            rejections = await audit_store.list_candidate_rejections(candidate.candidate_id)
+
+        assert result.accepted_candidates == ()
+        assert result.rejected_candidates == (candidate,)
+        assert reports[0].accepted is False
+        assert reports[0].corrected_candidate is None
+        assert reports[0].issues[-1].code == "invalid_correction"
+        assert rejections[0].stage == "critic"
+        assert rejections[0].reasons[0].code == "schema_violation"
+        assert "drops source qualifier 'approximately'" in rejections[0].reasons[0].message
 
     asyncio.run(run_check())
 

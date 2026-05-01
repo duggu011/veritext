@@ -6,7 +6,7 @@
       "expected_id": "exp-000",
       "category": "CorporateEvent",
       "field_name": "asset_detail",
-      "value": "Atacama-1 in Chile, contributing 312 gigawatt-hours",
+      "value": "Atacama-1 in Chile commenced operation January 22, 2026, contributing 312 gigawatt-hours.",
       "source_text": "Atacama-1 in Chile commenced operation January 22, 2026, contributing 312 gigawatt-hours.",
       "start_char": 549,
       "end_char": 638,
@@ -51,22 +51,22 @@
       "category": "CorporateEvent",
       "field_name": "event_type",
       "value": "Facility commencement",
-      "source_text": "Atacama-1 in Chile commenced operation January 22, 2026, contributing 312 gigawatt-hours.",
-      "start_char": 549,
-      "end_char": 638,
-      "start_byte": 551,
-      "end_byte": 640
+      "source_text": "commenced operation",
+      "start_char": 568,
+      "end_char": 587,
+      "start_byte": 570,
+      "end_byte": 589
     },
     {
       "expected_id": "exp-005",
       "category": "CorporateEvent",
       "field_name": "event_type",
       "value": "Acquisition approval",
-      "source_text": "On March 28, 2026, the board approved acquiring Northwind Storage, a Reno, Nevada battery operator, for $1.24 billion.",
-      "start_char": 659,
-      "end_char": 777,
-      "start_byte": 661,
-      "end_byte": 779
+      "source_text": "approved acquiring",
+      "start_char": 688,
+      "end_char": 706,
+      "start_byte": 690,
+      "end_byte": 708
     },
     {
       "expected_id": "exp-006",
@@ -105,11 +105,11 @@
       "expected_id": "exp-009",
       "category": "CorporateEvent",
       "field_name": "summary",
-      "value": "Board approved acquiring Northwind Storage, a Reno, Nevada battery operator, for $1.24 billion",
-      "source_text": "the board approved acquiring Northwind Storage, a Reno, Nevada battery operator, for $1.24 billion.",
-      "start_char": 678,
+      "value": "On March 28, 2026, the board approved acquiring Northwind Storage, a Reno, Nevada battery operator, for $1.24 billion.",
+      "source_text": "On March 28, 2026, the board approved acquiring Northwind Storage, a Reno, Nevada battery operator, for $1.24 billion.",
+      "start_char": 659,
       "end_char": 777,
-      "start_byte": 680,
+      "start_byte": 661,
       "end_byte": 779
     },
     {
@@ -139,55 +139,55 @@
       "category": "FinancialMetric",
       "field_name": "forecast_value",
       "value": "$88.0 million",
-      "source_text": "$88.0 million forecast",
+      "source_text": "$88.0 million",
       "start_char": 307,
-      "end_char": 329,
+      "end_char": 320,
       "start_byte": 309,
-      "end_byte": 331
+      "end_byte": 322
     },
     {
       "expected_id": "exp-013",
       "category": "FinancialMetric",
       "field_name": "margin",
       "value": "19.5%",
-      "source_text": "19.5% margin",
+      "source_text": "19.5%",
       "start_char": 281,
-      "end_char": 293,
+      "end_char": 286,
       "start_byte": 283,
-      "end_byte": 295
+      "end_byte": 288
     },
     {
       "expected_id": "exp-014",
       "category": "FinancialMetric",
       "field_name": "metric_name",
       "value": "Revenue",
-      "source_text": "Q1 2026 revenue $482.3 million, up 17.4% versus $410.8 million in Q1 2025.",
-      "start_char": 173,
-      "end_char": 247,
-      "start_byte": 175,
-      "end_byte": 249
+      "source_text": "revenue",
+      "start_char": 181,
+      "end_char": 188,
+      "start_byte": 183,
+      "end_byte": 190
     },
     {
       "expected_id": "exp-015",
       "category": "FinancialMetric",
       "field_name": "metric_name",
       "value": "Adjusted EBITDA",
-      "source_text": "Adjusted EBITDA $94.1 million at 19.5% margin, beating the $88.0 million forecast.",
+      "source_text": "Adjusted EBITDA",
       "start_char": 248,
-      "end_char": 330,
+      "end_char": 263,
       "start_byte": 250,
-      "end_byte": 332
+      "end_byte": 265
     },
     {
       "expected_id": "exp-016",
       "category": "FinancialMetric",
       "field_name": "metric_name",
       "value": "Free cash flow",
-      "source_text": "Free cash flow positive at $12.6 million for the first time in eight quarters.",
+      "source_text": "Free cash flow",
       "start_char": 331,
-      "end_char": 409,
+      "end_char": 345,
       "start_byte": 333,
-      "end_byte": 411
+      "end_byte": 347
     },
     {
       "expected_id": "exp-017",
@@ -205,11 +205,11 @@
       "category": "FinancialMetric",
       "field_name": "period",
       "value": "Q1 2026",
-      "source_text": "Q1 2026 revenue $482.3 million, up 17.4% versus $410.8 million in Q1 2025.",
+      "source_text": "Q1 2026",
       "start_char": 173,
-      "end_char": 247,
+      "end_char": 180,
       "start_byte": 175,
-      "end_byte": 249
+      "end_byte": 182
     },
     {
       "expected_id": "exp-019",
@@ -271,22 +271,22 @@
       "category": "ForwardGuidance",
       "field_name": "guidance_date",
       "value": "April 9, 2026",
-      "source_text": "April 9, 2026 earnings call",
+      "source_text": "April 9, 2026",
       "start_char": 941,
-      "end_char": 968,
+      "end_char": 954,
       "start_byte": 943,
-      "end_byte": 970
+      "end_byte": 956
     },
     {
       "expected_id": "exp-025",
       "category": "ForwardGuidance",
       "field_name": "guidance_value",
       "value": "at least 4.2 gigawatts",
-      "source_text": "at least 4.2 gigawatts of new solar capacity",
+      "source_text": "at least 4.2 gigawatts",
       "start_char": 999,
-      "end_char": 1043,
+      "end_char": 1021,
       "start_byte": 1001,
-      "end_byte": 1045
+      "end_byte": 1023
     },
     {
       "expected_id": "exp-026",
@@ -315,10 +315,10 @@
       "category": "ForwardGuidance",
       "field_name": "speaker",
       "value": "Marcus Bell",
-      "source_text": "CEO Marcus Bell",
-      "start_char": 970,
+      "source_text": "Marcus Bell",
+      "start_char": 974,
       "end_char": 985,
-      "start_byte": 972,
+      "start_byte": 976,
       "end_byte": 987
     },
     {
@@ -359,22 +359,22 @@
       "category": "OperationalMetric",
       "field_name": "metric_name",
       "value": "Fleet generation",
-      "source_text": "Fleet generation 7,318 gigawatt-hours, up 11.2% from 6,581 in Q1 2025.",
+      "source_text": "Fleet generation",
       "start_char": 429,
-      "end_char": 499,
+      "end_char": 445,
       "start_byte": 431,
-      "end_byte": 501
+      "end_byte": 447
     },
     {
       "expected_id": "exp-033",
       "category": "OperationalMetric",
       "field_name": "metric_name",
       "value": "Solar capacity factor",
-      "source_text": "Solar capacity factor 28.4% versus 29.0% target.",
+      "source_text": "Solar capacity factor",
       "start_char": 500,
-      "end_char": 548,
+      "end_char": 521,
       "start_byte": 502,
-      "end_byte": 550
+      "end_byte": 523
     },
     {
       "expected_id": "exp-034",
@@ -391,12 +391,12 @@
       "expected_id": "exp-035",
       "category": "OperationalMetric",
       "field_name": "target_value",
-      "value": "29.0% target",
-      "source_text": "29.0% target",
+      "value": "29.0%",
+      "source_text": "29.0%",
       "start_char": 535,
-      "end_char": 547,
+      "end_char": 540,
       "start_byte": 537,
-      "end_byte": 549
+      "end_byte": 542
     },
     {
       "expected_id": "exp-036",
@@ -414,11 +414,11 @@
       "category": "OperationalMetric",
       "field_name": "value",
       "value": "28.4%",
-      "source_text": "Solar capacity factor 28.4% versus 29.0% target.",
-      "start_char": 500,
-      "end_char": 548,
-      "start_byte": 502,
-      "end_byte": 550
+      "source_text": "28.4%",
+      "start_char": 522,
+      "end_char": 527,
+      "start_byte": 524,
+      "end_byte": 529
     },
     {
       "expected_id": "exp-038",
@@ -436,22 +436,22 @@
       "category": "PersonnelChange",
       "field_name": "change_type",
       "value": "appointment",
-      "source_text": "Dr. Anya Kowalski appointed Chief Sustainability Officer on February 2, 2026.",
-      "start_char": 1385,
-      "end_char": 1462,
-      "start_byte": 1387,
-      "end_byte": 1464
+      "source_text": "appointed",
+      "start_char": 1403,
+      "end_char": 1412,
+      "start_byte": 1405,
+      "end_byte": 1414
     },
     {
       "expected_id": "exp-040",
       "category": "PersonnelChange",
       "field_name": "change_type",
       "value": "retirement",
-      "source_text": "announced retirement effective at the June 18, 2026 Annual Meeting.",
-      "start_char": 1487,
-      "end_char": 1554,
-      "start_byte": 1489,
-      "end_byte": 1556
+      "source_text": "retirement",
+      "start_char": 1497,
+      "end_char": 1507,
+      "start_byte": 1499,
+      "end_byte": 1509
     },
     {
       "expected_id": "exp-041",
@@ -480,11 +480,11 @@
       "category": "PersonnelChange",
       "field_name": "person",
       "value": "Dr. Anya Kowalski",
-      "source_text": "Dr. Anya Kowalski appointed Chief Sustainability Officer on February 2, 2026.",
+      "source_text": "Dr. Anya Kowalski",
       "start_char": 1385,
-      "end_char": 1462,
+      "end_char": 1402,
       "start_byte": 1387,
-      "end_byte": 1464
+      "end_byte": 1404
     },
     {
       "expected_id": "exp-044",
@@ -502,10 +502,10 @@
       "category": "PersonnelChange",
       "field_name": "role",
       "value": "Chief Sustainability Officer",
-      "source_text": "appointed Chief Sustainability Officer",
-      "start_char": 1403,
+      "source_text": "Chief Sustainability Officer",
+      "start_char": 1413,
       "end_char": 1441,
-      "start_byte": 1405,
+      "start_byte": 1415,
       "end_byte": 1443
     },
     {
@@ -513,11 +513,11 @@
       "category": "PersonnelChange",
       "field_name": "role",
       "value": "Director",
-      "source_text": "Director Hiroshi Tanaka",
+      "source_text": "Director",
       "start_char": 1463,
-      "end_char": 1486,
+      "end_char": 1471,
       "start_byte": 1465,
-      "end_byte": 1488
+      "end_byte": 1473
     },
     {
       "expected_id": "exp-047",
@@ -534,12 +534,12 @@
       "expected_id": "exp-048",
       "category": "RegulatoryRisk",
       "field_name": "exposure_pct",
-      "value": "approximately 18%",
-      "source_text": "Approximately 18% of the 2026 module pipeline is exposed.",
+      "value": "Approximately 18%",
+      "source_text": "Approximately 18%",
       "start_char": 1309,
-      "end_char": 1366,
+      "end_char": 1326,
       "start_byte": 1311,
-      "end_byte": 1368
+      "end_byte": 1328
     },
     {
       "expected_id": "exp-049",
@@ -557,10 +557,10 @@
       "category": "RegulatoryRisk",
       "field_name": "new_rate",
       "value": "26.5%",
-      "source_text": "to 26.5%",
-      "start_char": 1282,
+      "source_text": "26.5%",
+      "start_char": 1285,
       "end_char": 1290,
-      "start_byte": 1284,
+      "start_byte": 1287,
       "end_byte": 1292
     },
     {
@@ -568,21 +568,21 @@
       "category": "RegulatoryRisk",
       "field_name": "prior_rate",
       "value": "15.0%",
-      "source_text": "from 15.0%",
-      "start_char": 1271,
+      "source_text": "15.0%",
+      "start_char": 1276,
       "end_char": 1281,
-      "start_byte": 1273,
+      "start_byte": 1278,
       "end_byte": 1283
     },
     {
       "expected_id": "exp-052",
       "category": "RegulatoryRisk",
       "field_name": "summary",
-      "value": "U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026",
-      "source_text": "U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026",
-      "start_char": 1207,
+      "value": "The U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026.",
+      "source_text": "The U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026",
+      "start_char": 1203,
       "end_char": 1307,
-      "start_byte": 1209,
+      "start_byte": 1205,
       "end_byte": 1309
     }
   ],

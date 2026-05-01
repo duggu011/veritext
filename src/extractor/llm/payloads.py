@@ -53,7 +53,15 @@ def normalize_verdict_payload(
     if isinstance(verdict, BaseModel):
         return verdict
     if isinstance(verdict, dict):
-        return _drop_overlong_evidence(verdict, evidence_max_chars=evidence_max_chars)
+        sanitized = _drop_overlong_evidence(verdict, evidence_max_chars=evidence_max_chars)
+        sanitized = _expand_dict_decision_code(sanitized)
+        sanitized = _default_dict_reject_code(
+            sanitized,
+            default_reject_code=default_reject_code,
+        )
+        if allow_correction:
+            sanitized = _drop_contradictory_correction(sanitized)
+        return sanitized
     if not isinstance(verdict, (list, tuple)):
         return verdict
     verdict = _trim_trailing_null_slots(verdict)
@@ -98,6 +106,32 @@ def _expand_decision_code(decision_code: object) -> object:
     return _DECISION_CODE_MAP.get(decision_code.casefold(), decision_code)
 
 
+def _expand_dict_decision_code(verdict: dict[str, object]) -> dict[str, object]:
+    decision = verdict.get("decision")
+    expanded = _expand_decision_code(decision)
+    if expanded == decision:
+        return verdict
+    sanitized = dict(verdict)
+    sanitized["decision"] = expanded
+    return sanitized
+
+
+def _default_dict_reject_code(
+    verdict: dict[str, object],
+    *,
+    default_reject_code: str | None,
+) -> dict[str, object]:
+    if (
+        verdict.get("decision") != "reject"
+        or verdict.get("code") is not None
+        or default_reject_code is None
+    ):
+        return verdict
+    sanitized = dict(verdict)
+    sanitized["code"] = default_reject_code
+    return sanitized
+
+
 def _trim_trailing_null_slots(verdict: list[object] | tuple[object, ...]) -> tuple[object, ...]:
     trimmed = tuple(verdict)
     while len(trimmed) > 5 and trimmed[-1] is None:
@@ -115,6 +149,23 @@ def _drop_overlong_evidence(
         return verdict
     sanitized = dict(verdict)
     sanitized.pop("evidence", None)
+    return sanitized
+
+
+def _drop_contradictory_correction(verdict: dict[str, object]) -> dict[str, object]:
+    # A correction payload is meaningful only on `decision="correct"`. Models
+    # occasionally hedge by attaching a correction to an accept/reject verdict;
+    # the strict CriticVerdict validator would otherwise abort the whole batch.
+    # Drop the contradictory correction so the verdict's primary decision still
+    # reaches deterministic critic handling.
+    correction = verdict.get("correction")
+    if correction is None:
+        return verdict
+    decision = verdict.get("decision")
+    if decision == "correct":
+        return verdict
+    sanitized = dict(verdict)
+    sanitized.pop("correction", None)
     return sanitized
 
 
