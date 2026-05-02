@@ -38,6 +38,9 @@ Optimize for extraction accuracy, auditability, and invariant enforcement. Speed
 - Prefer small, typed, async functions with explicit inputs and outputs.
 - Use Pydantic models at stage boundaries; do not pass loose dictionaries between stages.
 - Keep stage functions independently testable with no hidden global state.
+- Do not create new files over 400 lines. If a change would exceed that size, split it into focused modules or subpackages before committing.
+- Avoid growing existing oversized files further. When working in a large `service.py`, prefer moving cohesive helper logic into a named sibling module or subpackage such as `validation.py`, `materialization.py`, `routing.py`, or `policies.py`, while preserving public stage interfaces.
+- Keep modules cohesive and single-purpose: orchestration, validation, normalization, model materialization, and persistence should not be mixed into one catch-all file when a clean folder/subfolder service structure would make the code easier to test and audit.
 - Add concise comments for non-obvious logic, invariant enforcement, audit-chain decisions, and accuracy tradeoffs.
 - Do not add comments that merely restate obvious code.
 - Keep errors explicit and specific; do not catch broad exceptions to continue past invariant failures.

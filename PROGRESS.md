@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Local eval scratch ignore cleanup
-- Current status: Added local eval scratch output directories to `.gitignore` while keeping tracked `evals/` fixtures, baselines, and scoring code in the pipeline. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Last completed phase: AGENTS maintainability convention update
+- Current status: Added AGENTS.md guidance to avoid new files over 400 lines, avoid growing oversized service files, and split cohesive logic into focused modules/subpackages. No source-code changes, live LLM calls, or audit DB mutations were made.
 - Next required work: decide whether to keep using Haiku 4.5 for experiments, run a targeted per-stage comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: `evals/` is tracked project infrastructure; only local scratch dirs such as `eval/`, `eval-results/`, and `eval-runs/` should be ignored.
+- Next-phase context: future implementation phases should prefer clean module boundaries and service subpackages over monolithic files.
 
 ## Session Log
+
+### 2026-05-03 — AGENTS maintainability convention update
+
+- Added coding-convention guidance to `AGENTS.md`:
+  - do not create new files over 400 lines;
+  - split work into focused modules/subpackages before committing when a new file would exceed that size;
+  - avoid growing existing oversized `service.py` files further;
+  - move cohesive helper logic into named sibling modules or subpackages such as `validation.py`, `materialization.py`, `routing.py`, or `policies.py`;
+  - keep orchestration, validation, normalization, model materialization, and persistence separated when that improves testability and auditability.
+- Scope stayed limited to `AGENTS.md` and `PROGRESS.md`.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-03 — Local eval scratch ignore cleanup
 
