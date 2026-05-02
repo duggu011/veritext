@@ -4,12 +4,32 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: AGENTS maintainability convention update
-- Current status: Added AGENTS.md guidance to avoid new files over 400 lines, avoid growing oversized service files, and split cohesive logic into focused modules/subpackages. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: decide whether to keep using Haiku 4.5 for experiments, run a targeted per-stage comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: future implementation phases should prefer clean module boundaries and service subpackages over monolithic files.
+- Last completed phase: Verifier structural decomposition
+- Current status: Split verifier validation, deterministic policy, and error definitions out of the verifier orchestration service without changing public verifier behavior. No live LLM calls or audit DB mutations were made.
+- Next required work: choose the next pipeline structure target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: future implementation phases should keep new files under 400 lines, avoid growing oversized service files, and preserve invariant/audit behavior while splitting cohesive modules.
 
 ## Session Log
+
+### 2026-05-03 — Verifier structural decomposition
+
+- Chose `src/extractor/verifier/service.py` as the first source-code structure cleanup target because it exceeded the new maintainability convention while having a clear validation/policy/orchestration split.
+- Moved verifier input preflight checks into `src/extractor/verifier/validation.py`.
+- Moved deterministic verifier report construction, rejection policy, span/schema/source-support checks, and stable verifier/rejection ID generation into `src/extractor/verifier/policies.py`.
+- Moved `VerifierError` into `src/extractor/verifier/errors.py` and kept the public verifier package export intact through `src/extractor/verifier/__init__.py`.
+- Reduced `src/extractor/verifier/service.py` from a monolithic service to orchestration around LLM calls, audit writes, and policy delegation.
+- Confirmed the touched verifier files are under the 400-line limit after the split:
+  - `src/extractor/verifier/errors.py`: 8 lines
+  - `src/extractor/verifier/validation.py`: 53 lines
+  - `src/extractor/verifier/policies.py`: 301 lines
+  - `src/extractor/verifier/service.py`: 267 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/verifier/service.py src/extractor/verifier/policies.py src/extractor/verifier/validation.py src/extractor/verifier/errors.py src/extractor/verifier/__init__.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_verifier.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_verifier.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or audit DB mutations were made.
 
 ### 2026-05-03 — AGENTS maintainability convention update
 

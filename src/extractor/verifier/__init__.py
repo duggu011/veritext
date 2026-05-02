@@ -8,7 +8,8 @@ from extractor.verifier.models import (
     VerifierTaskResult,
     VerifierVerdict,
 )
-from extractor.verifier.service import VerifierError, verify_candidates
+from extractor.verifier.errors import VerifierError
+from extractor.verifier.service import verify_candidates
 
 __all__ = [
     "VerificationResult",
