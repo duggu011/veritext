@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Local critic correction authority guardrail
-- Current status: Added a deterministic critic correction authority rule so a mechanically valid, schema-approved, exact-span, source-supported original candidate is preserved when a critic correction tries to change its category or field. No live LLM calls were run and the audit DB was not modified.
-- Next required work: stop at this phase gate and wait for explicit operator `continue` before rerun cleanup or live resume.
-- Next-phase context: the next rerun should clean from `critic` again, preserving ingestion/chunker/planner/executor/dedup. This targets the remaining `exp-000` miss where the exact `CorporateEvent.asset_detail` candidate was previously corrected into `CorporateEvent.summary`.
+- Last completed phase: Cleanup-only documentation Phase 1 — Hygiene and Staleness
+- Current status: Cleaned stale overview claims and preserved the existing removal of stray resume commands from the end of `docs/PROJECT_OVERVIEW.md`. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 2, Domain-General Positioning.
+- Next-phase context: Phase 2 should clarify that the first domain pack is a proving ground for one domain-neutral extraction kernel, not a specialization of the system.
 
 ## Session Log
+
+### 2026-05-02 — Cleanup-only documentation Phase 1: Hygiene and Staleness
+
+- Preserved the existing local cleanup that removed stray `prepare_failed_run_resume.py` and `extractor.cli --resume` commands from the end of `docs/PROJECT_OVERVIEW.md`.
+- Updated stale overview facts using already recorded repo/session evidence:
+  - source size is now documented as ~10.7 KLOC, with 772 prompt lines and 21 unit test files;
+  - latest completed scored `medium_research_brief` run is documented as precision `0.867`, recall `0.981`, F1 `0.920`;
+  - latest full `make test` report is documented as `206 passed`, `2 skipped`.
+- Reworded the current accuracy-risk text so it reflects the recent downstream guardrail work: the latest scored miss was a correction-authority failure, and the local guardrail for that class still awaits a live rerun.
+- Scope stayed limited to `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Local critic correction authority guardrail
 

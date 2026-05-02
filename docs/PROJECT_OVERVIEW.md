@@ -8,7 +8,7 @@ A self-contained brief for handing to another engineer or LLM for review. Honest
 
 A research-grade document extraction engine that turns one source document into a list of typed `DataPoint` records, where every value is locked to a byte-and-character span in the original text. Optimized for **provenance, auditability, and invariant enforcement**, not speed or cost.
 
-Stack: Python 3.11+, Pydantic v2, `asyncio`, `aiosqlite`, direct Anthropic / OpenAI SDK calls. No LangChain, no vector DB, no embeddings, no agent framework. ~10.2 KLOC source + ~770 lines of prompts + 21 unit test files.
+Stack: Python 3.11+, Pydantic v2, `asyncio`, `aiosqlite`, direct Anthropic / OpenAI SDK calls. No LangChain, no vector DB, no embeddings, no agent framework. ~10.7 KLOC source + 772 lines of prompts + 21 unit test files.
 
 ---
 
@@ -114,8 +114,8 @@ These are real. Skipping them would not be useful for a review.
 
 1. **Cost is high.** A single ~30-line document run consumes roughly: planner 5 calls + executor 4 calls + critic 8 batches + verifier 2 batches + reconciler 1 ≈ **~20 LLM calls**. Multiply by chunk count for longer documents. The system explicitly says "speed/cost are secondary," but anyone deploying needs to budget 10-50× a naive structured-output baseline.
 2. **The default `min_request_interval_seconds: 60` (config/default.yaml:7) serializes LLM starts.** This is a workaround for Anthropic TPM rate limits, but at the default it makes a 20-call run take 20 minutes of wallclock just from throttling. Real deployments will need a higher tier or a different default.
-3. **Recall ceiling is not "research-grade" yet.** The latest scored run on `medium_research_brief` is precision 0.842 / recall 0.906 / F1 0.873 (per `PROGRESS.md`). After many iterations of prompt hardening and code guardrails, the system clears 0.87 F1 — good, but not the 0.99+ that "research-grade" connotes. The remaining misses are normalization edge cases (e.g. `"appointment"` vs `"appointed"`).
-4. **Risk of fixture overfitting.** `src/extractor/planner/service.py:240-313` has hardcoded post-critique rewrites for `CorporateEvent`, `facility`, and `_type` fields, plus `src/extractor/source_support.py:99-117` has a canonical-token table for `acquir/acquis/commenc/operat/appoint/retir`. These improve scores on the medium fixture but are exactly the kind of patches that don't generalize. A new domain may need a new patch table — that's a smell, not a clean abstraction.
+3. **Recall ceiling is not "research-grade" yet.** The latest completed scored run on `medium_research_brief` is precision 0.867 / recall 0.981 / F1 0.920 (per `PROGRESS.md`). After many iterations of prompt hardening and code guardrails, the system clears 0.92 F1 on the one heavily iterated fixture — good, but not the 0.99+ that "research-grade" connotes. The remaining scored miss was a downstream correction-authority failure, and the current local guardrail for that class has not yet been validated by a live rerun.
+4. **Risk of fixture overfitting.** `src/extractor/planner/service.py` still has hardcoded post-critique generalization helpers for `CorporateEvent`, `facility`, and `_type` fields, plus `src/extractor/source_support.py` has canonical-token support for a small set of label/value forms. Some of this is now expressed as general guardrails, but it was driven by repeated work on the medium fixture. A new domain needing a new patch table would be a smell, not a clean abstraction.
 5. **Single-document architecture.** The orchestrator processes one document per CLI run. No batch processing, no cross-document entity reconciliation, no streaming. Scaling to 10K documents requires external orchestration plus probably a different audit store.
 6. **PDF support is shallow.** `DocumentFormat = Literal["plain_text", "markdown", "pdf"]` is declared but the rule "no embeddings, no vector DBs" implies no layout-aware OCR — scanned PDFs, multi-column layouts, and tables will fail or extract poorly. The fixtures are all `.md`.
 7. **Dedup is exact-string only.** `(chunk_id, category, field_name, span_text, value)` won't merge `"Acme Inc."` and `"Acme Inc"` and `"ACME, Inc."` across chunks. Real-world entity coreference is left to the reconciler LLM.
@@ -136,13 +136,13 @@ None of these are dealbreakers; they're the actual surface a reviewer should foc
 - **Resume tooling.** `scripts/prepare_failed_run_resume.py` with `--from-stage` and `--allow-completed` is engineering, not a hack — it has its own test file.
 - **Forced tool use everywhere.** `src/extractor/llm/client.py:269` — `tool_choice={"type": "tool", "name": ...}`. No JSON.loads disasters.
 - **Multi-provider abstraction without leaks.** Anthropic / OpenAI / OpenAI-compatible (Moonshot Kimi) all flow through the same `complete_structured`. Provider-specific quirks (Moonshot rejecting `tool_choice` when thinking is on) are handled centrally.
-- **Test density.** 196 unit tests + smoke + integration. The PR-quality-gate culture in `PROGRESS.md` (every session ends with `make test`, `make lint`, `make smoke`, `git diff --check`) is rare in research code.
+- **Test density.** The latest full `make test` report in `PROGRESS.md` records 206 passing tests and 2 skipped tests, plus `make lint`, `make smoke`, and `git diff --check`. That quality-gate culture is rare in research code.
 
 ---
 
 ## One-paragraph elevator summary (for an LLM review prompt)
 
-> Veritext is a stage-pipelined document extraction engine where an LLM proposes a per-document schema and candidate facts, but every candidate's source span is mechanically verified by string slicing against the original document, and a separate verifier LLM re-grounds each surviving candidate before a reconciler groups them into final data points. Every LLM call, every rejection, every stage transition is persisted to a SQLite audit DB, and the run can resume from any stage. The system trades 10–50× the LLM cost of a naive structured-output workflow for byte-level provenance and explicit rejection trails — a trade that pays off only in regulated, audited, or legal-discovery contexts. Current accuracy on the only iterated fixture is precision 0.84 / recall 0.91 / F1 0.87, with visible signs of fixture-specific patching in the planner generalization helpers and source-support token table that would need to be redesigned for a new domain.
+> Veritext is a stage-pipelined document extraction engine where an LLM proposes a per-document schema and candidate facts, but every candidate's source span is mechanically verified by string slicing against the original document, and a separate verifier LLM re-grounds each surviving candidate before a reconciler groups them into final data points. Every LLM call, every rejection, every stage transition is persisted to a SQLite audit DB, and the run can resume from any stage. The system trades 10–50× the LLM cost of a naive structured-output workflow for byte-level provenance and explicit rejection trails — a trade that pays off only in regulated, audited, or legal-discovery contexts. Current accuracy on the only iterated fixture is precision 0.87 / recall 0.98 / F1 0.92, with visible signs of fixture-driven planner generalization helpers and source-support label heuristics that would need to be redesigned if they become domain-specific patch tables.
 
 ---
 
@@ -703,12 +703,3 @@ None of the above is real without measurement. Required additions:
 3. **Aggressive chunk-view truncation** in critic and verifier prompts. Currently both pass full chunk text; both only need a 200-char window around the candidate span. ~30–40% reduction on the two highest-volume stages.
 
 Combined first-three-only: **~3–4× cost reduction** with about a week of engineering, no accuracy regression, no architectural change.
-
-
-
-
-
-PYTHONPATH=src python3 scripts/prepare_failed_run_resume.py --run-id medium-research-executor-check-20260502-044644 --from-stage critic --allow-completed --apply
-
-PYTHONPATH=src python3 -m extractor.cli evals/fixtures/medium_research_brief/source.md --run-id medium-research-executor-check-20260502-044644
-  --resume -o outputs/medium-research-executor-check-20260502-044644.json
