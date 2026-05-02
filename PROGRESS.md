@@ -4,12 +4,24 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Cleanup-only documentation Phase 1 — Hygiene and Staleness
-- Current status: Cleaned stale overview claims and preserved the existing removal of stray resume commands from the end of `docs/PROJECT_OVERVIEW.md`. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 2, Domain-General Positioning.
-- Next-phase context: Phase 2 should clarify that the first domain pack is a proving ground for one domain-neutral extraction kernel, not a specialization of the system.
+- Last completed phase: Cleanup-only documentation Phase 2 — Domain-General Positioning
+- Current status: Clarified that Veritext should use one domain-neutral extraction kernel with many configurable domain packs, and that legal contracts are a first proving ground rather than a system specialization. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 3, Configurability Boundary.
+- Next-phase context: Phase 3 should define what belongs in configuration/domain packs versus what must remain non-configurable invariants.
 
 ## Session Log
+
+### 2026-05-02 — Cleanup-only documentation Phase 2: Domain-General Positioning
+
+- Reworded the planner roadmap so domain packs are configurable starting schemas over one domain-neutral extraction kernel.
+- Added the shared target-domain primitive set: entities, events, metrics, obligations, conditions, exceptions, temporal facts, relations, citations, and definitions.
+- Clarified that adapting to a new target domain should require pack/config/fixture additions, not source-code rewrites.
+- Reframed legal contracts as the first domain-pack proving ground rather than a contract-specific specialization of Veritext.
+- Kept the existing target-domain list intact.
+- Scope stayed limited to `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Cleanup-only documentation Phase 1: Hygiene and Staleness
 

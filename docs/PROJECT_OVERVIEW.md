@@ -191,7 +191,7 @@ Currently a fixed 1200/120 token sliding window. Fine for short prose, wrong for
 The strongest stage architecturally; the weakest in terms of generalization.
 
 - **Schema cache by `(document_class, domain_hints)`.** First doc of class X pays the planner cost; subsequent docs of class X reuse the approved schema. This alone removes 5 LLM calls × 99% of runs in any production deployment.
-- **Domain packs.** Pluggable starting schemas for the 6–10 real domains: SEC filings, contracts, clinical trial protocols, drug labels, regulatory rulings, policy documents, scientific papers. The planner *refines* a domain pack instead of inventing from scratch. Reduces fixture-overfitting and drives recall up.
+- **Domain packs.** Configurable starting schemas for the real target domains: SEC filings, contracts, clinical trial protocols, drug labels, regulatory rulings, policy documents, scientific papers, standards, patents, insurance, procurement, and audit evidence. The extraction kernel stays domain-neutral; the planner refines the selected pack instead of inventing from scratch. Adding a domain should mean adding pack/config/fixture coverage, not rewriting source code.
 - **Few-shot from prior approved schemas.** Feed the planner 2–3 previously approved schemas for similar documents as positive examples. Cleaner than the current accumulating prompt anti-pattern lists.
 - **Explicit "no fitting schema" path.** Currently the planner always proposes something. Add a refusal with a reason code (`document_out_of_scope`, `coverage_below_threshold`) so silent mis-extraction is impossible. This is the unacknowledged failure mode.
 - **Coverage estimation** — planner should estimate, per category, what fraction of the document supports it, and refuse to enable categories with <X% coverage. Cuts false positives.
@@ -329,7 +329,7 @@ Combined: a ~5–10× cost reduction with no accuracy loss on regulated workflow
 If only five things get done:
 
 1. **Real PDF + DOCX + table support at ingestion.** Without this, the system can't run on the documents that justify it.
-2. **Domain packs and schema caching at the planner.** Removes fixture overfitting, cuts cost dramatically, scales to new domains without code changes.
+2. **Domain packs and schema caching at the planner.** Keeps one domain-neutral extraction kernel while pack/config/fixture additions adapt it to new domains without source-code rewrites.
 3. **HTML provenance viewer in the reporter.** The single feature that makes auditors trust the system. Adoption blocker today.
 4. **Cross-document reconciliation.** The unique capability that makes Veritext valuable for due diligence and litigation; nothing else on the market does this with byte-level provenance.
 5. **Human-in-the-loop schema approval and marginal-candidate review.** The only path from "research project" to "regulated deployment."
@@ -347,6 +347,8 @@ The improvement roadmap above only matters if it serves a real market. This sect
 ## Target domains (ranked by fit)
 
 Fit pattern across all of them: **high stakes**, **regulated audience**, **existing manual workflow**, **stable document genres**, **provenance is mandatory not nice-to-have**.
+
+Domain strategy: Veritext should have **one domain-neutral extraction kernel** and many configurable domain packs. The shared kernel extracts auditable primitives that recur across domains: entities, events, metrics, obligations, conditions, exceptions, temporal facts, relations, citations, and definitions. A domain pack should specialize vocabulary, schema templates, lenses, normalization policy, fixtures, and reporting expectations without changing the provenance, offset, audit, or invariant machinery.
 
 ### Tier 1 — where Veritext is genuinely differentiated
 
@@ -394,9 +396,9 @@ Fit pattern across all of them: **high stakes**, **regulated audience**, **exist
 
 Tax (IRS rulings, tax-court opinions), real estate (titles, leases, easements), banking compliance (loan docs, KYC, sanctions), energy/utility filings (FERC tariffs, NERC), HIPAA medical records (chart abstraction), environmental (NEPA EISs, permits), building codes.
 
-### First-domain-pack pick
+### First-domain-pack proving ground
 
-**Legal contracts.** Strongest combination of clear buyer (BigLaw + CLM vendors), well-defined extraction targets, existing competitors that lack byte-provenance, and a market that already pays $50K–$500K per seat for inferior tools. SEC filings is the alternative if you have finance-domain access — deeper pockets but a more crowded market.
+**Legal contracts** are the strongest first proving ground: clear buyer (BigLaw + CLM vendors), well-defined extraction targets, existing competitors that lack byte-provenance, and a market that already pays $50K–$500K per seat for inferior tools. This should validate the domain-neutral kernel and the domain-pack mechanism, not turn Veritext into a contract-specific system. SEC filings are the alternative proving ground if you have finance-domain access — deeper pockets but a more crowded market.
 
 ---
 
