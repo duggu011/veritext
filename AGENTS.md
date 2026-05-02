@@ -6,6 +6,14 @@ Project conventions for autonomous coding agents working on this repository.
 
 Optimize for extraction accuracy, auditability, and invariant enforcement. Speed, elegance, token cost, and convenience are secondary.
 
+## Domain Scope and Generalization
+
+- Before changing extraction behavior, review `docs/PROJECT_OVERVIEW.md`, especially `# Target Domains, Non-Targets, and Market Sizing`, to keep the work aligned with the intended domains.
+- Target domains are high-stakes, audit-heavy document workflows where exact provenance is mandatory: legal contracts, SEC filings, e-discovery/litigation review, clinical trial documents, FDA labels, regulatory rulings, insurance policies, standards documents, SOC 2/ISO evidence, patents, scientific review papers, and government procurement.
+- Do not optimize behavior for a single fixture, source document, company, proper noun, sentence, market sector, or evaluation answer. A fix must be expressed as a reusable extraction, provenance, schema, or reconciliation rule that would make sense across the target domains.
+- If a proposed guardrail depends on document-specific tokens, named entities, industry nouns, or one-off phrasing from the current source, stop and redesign it around source role, schema semantics, typed contracts, offsets, or auditable invariants.
+- Non-targets include chatbot RAG, generic summarization, sentiment/opinion extraction, predictive synthesis, search/indexing, low-stakes high-volume content, real-time user-facing pipelines, primary image/audio/video extraction, already-structured data, and open-web crawling.
+
 ## Phase Discipline
 
 - Follow the project phases in order.
@@ -13,6 +21,7 @@ Optimize for extraction accuracy, auditability, and invariant enforcement. Speed
 - Do not begin the next phase without an explicit `continue` from the operator.
 - Do not merge phases, even when a phase looks small.
 - Keep `PROGRESS.md` current after each working session or accepted phase.
+- After completing an accepted phase or task, commit the scoped changes with a clear, descriptive message unless the operator explicitly says not to. Prefer multiple logical commits over one mixed commit when the work spans distinct phases or concerns.
 
 ## Architecture Rules
 
@@ -40,6 +49,7 @@ Optimize for extraction accuracy, auditability, and invariant enforcement. Speed
 - Do not modify files outside the active phase or explicit user request.
 - Do not refactor unrelated code while implementing a phase.
 - Do not change existing behavior unless the phase requires it or a test exposes a defect.
+- Do not add document-specific patches to make one run or fixture pass. Tests may reproduce a failing example, but the implementation must use generalizable rules grounded in the project domain scope.
 - If unrelated local changes exist, leave them intact and work around them.
 - If a requested change is unclear and could affect an invariant, ask before editing.
 
