@@ -4,12 +4,34 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Orchestrator structural decomposition
-- Current status: Split orchestrator error, trace, run lifecycle, and audit/resume materialization helpers out of `src/extractor/orchestrator/service.py` without changing public orchestration behavior. No live LLM calls or non-test audit DB mutations were made.
+- Last completed phase: Reconciler structural decomposition
+- Current status: Split reconciler error, validation, retry/batch handling, and result materialization helpers out of `src/extractor/reconciler/service.py` without changing public reconciliation behavior. No live LLM calls or non-test audit DB mutations were made.
 - Next required work: choose the next oversized pipeline target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: orchestrator modules now satisfy the 400-line convention; likely remaining oversized cleanup candidates include `src/extractor/reconciler/service.py`, `src/extractor/llm/client.py`, and `src/extractor/audit/store.py`. Preserve the new orchestrator service/lifecycle/state/trace/error boundaries.
+- Next-phase context: reconciler and orchestrator modules now satisfy the 400-line convention; likely remaining oversized cleanup candidates include `src/extractor/llm/client.py` and `src/extractor/audit/store.py`. Preserve the new reconciler service/validation/batching/materialization/error boundaries.
 
 ## Session Log
+
+### 2026-05-03 — Reconciler structural decomposition
+
+- Chose `src/extractor/reconciler/service.py` as the next cleanup target because it was still 632 lines and contained reconciliation orchestration, input validation, compact candidate-ID retry handling, output validation, data point materialization, rejection materialization, and stable ID generation in one module.
+- Moved `ReconcilerError` into `src/extractor/reconciler/errors.py` while preserving the public `extractor.reconciler.ReconcilerError` and `extractor.reconciler.service.ReconcilerError` imports.
+- Moved reconciler preflight checks and accepted critic/verifier report lookup into `src/extractor/reconciler/validation.py`.
+- Moved compact candidate-ID expansion, retry validation complaints, and retry replacement behavior into `src/extractor/reconciler/batching.py`.
+- Moved reconciled data point/rejection construction, output candidate-ID checks, best source candidate selection, rejection reason materialization, and stable reconciler/data-point/rejection ID generation into `src/extractor/reconciler/materialization.py`.
+- Kept `src/extractor/reconciler/service.py` focused on reconciliation orchestration, prompt request construction, LLM calls, audit writes, and result assembly.
+- Confirmed touched reconciler files are under the 400-line limit after the split:
+  - `src/extractor/reconciler/errors.py`: 8 lines
+  - `src/extractor/reconciler/validation.py`: 87 lines
+  - `src/extractor/reconciler/batching.py`: 112 lines
+  - `src/extractor/reconciler/materialization.py`: 382 lines
+  - `src/extractor/reconciler/service.py`: 109 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/reconciler/__init__.py src/extractor/reconciler/batching.py src/extractor/reconciler/errors.py src/extractor/reconciler/materialization.py src/extractor/reconciler/models.py src/extractor/reconciler/service.py src/extractor/reconciler/validation.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_reconciler.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_reconciler.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or non-test audit DB mutations were made.
 
 ### 2026-05-03 — Orchestrator structural decomposition
 

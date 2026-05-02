@@ -1,5 +1,6 @@
 """Cross-chunk reconciliation."""
 
+from extractor.reconciler.errors import ReconcilerError
 from extractor.reconciler.models import (
     ReconciledDataPointPayload,
     ReconciledGroupPayload,
@@ -9,7 +10,7 @@ from extractor.reconciler.models import (
     RejectedCandidateDecision,
     RejectedCandidatePayload,
 )
-from extractor.reconciler.service import ReconcilerError, reconcile_candidates
+from extractor.reconciler.service import reconcile_candidates
 
 __all__ = [
     "ReconciledDataPointPayload",
