@@ -4,12 +4,34 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Executor structural decomposition slice 5
-- Current status: Moved executor batch retry validation/merge logic and candidate rejection policy out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
+- Last completed phase: Orchestrator structural decomposition
+- Current status: Split orchestrator error, trace, run lifecycle, and audit/resume materialization helpers out of `src/extractor/orchestrator/service.py` without changing public orchestration behavior. No live LLM calls or non-test audit DB mutations were made.
 - Next required work: choose the next oversized pipeline target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: executor modules now satisfy the 400-line convention; future cleanup should preserve the focused executor module boundaries and avoid re-growing `service.py`.
+- Next-phase context: orchestrator modules now satisfy the 400-line convention; likely remaining oversized cleanup candidates include `src/extractor/reconciler/service.py`, `src/extractor/llm/client.py`, and `src/extractor/audit/store.py`. Preserve the new orchestrator service/lifecycle/state/trace/error boundaries.
 
 ## Session Log
+
+### 2026-05-03 — Orchestrator structural decomposition
+
+- Chose `src/extractor/orchestrator/service.py` as the next cleanup target because it was still 785 lines and contained orchestration, run lifecycle, stage tracing, resume validation, audit-stage completion, and audit-result materialization in one module.
+- Moved `OrchestratorError` into `src/extractor/orchestrator/errors.py` while preserving the public `extractor.orchestrator.OrchestratorError` and `extractor.orchestrator.service.OrchestratorError` imports.
+- Moved stage banner/trace output into `src/extractor/orchestrator/trace.py`.
+- Moved run start/resume manifest lifecycle and failed-manifest update handling into `src/extractor/orchestrator/lifecycle.py`.
+- Moved resume document/chunk/plan validation, stage-completion persistence, audited execution/critic/verifier/reconciler result materialization, partial-output checks, and manifest transition materialization into `src/extractor/orchestrator/state.py`.
+- Kept `src/extractor/orchestrator/service.py` focused on stage orchestration, stage service calls, dedup orchestration, audit reads/writes between stages, report writing, and result assembly.
+- Confirmed touched orchestrator files are under the 400-line limit after the split:
+  - `src/extractor/orchestrator/errors.py`: 8 lines
+  - `src/extractor/orchestrator/trace.py`: 26 lines
+  - `src/extractor/orchestrator/lifecycle.py`: 93 lines
+  - `src/extractor/orchestrator/state.py`: 368 lines
+  - `src/extractor/orchestrator/service.py`: 389 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/orchestrator/__init__.py src/extractor/orchestrator/errors.py src/extractor/orchestrator/lifecycle.py src/extractor/orchestrator/models.py src/extractor/orchestrator/service.py src/extractor/orchestrator/state.py src/extractor/orchestrator/trace.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_orchestrator.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or non-test audit DB mutations were made.
 
 ### 2026-05-03 — Executor structural decomposition slice 5
 
