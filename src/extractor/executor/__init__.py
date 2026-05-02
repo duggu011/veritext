@@ -8,7 +8,8 @@ from extractor.executor.models import (
     ExtractedCandidatePayload,
 )
 from extractor.executor.dedup import build_dedup_rejections, deduplicate_candidates
-from extractor.executor.service import ExecutorError, execute_plan
+from extractor.executor.errors import ExecutorError
+from extractor.executor.service import execute_plan
 
 __all__ = [
     "build_dedup_rejections",

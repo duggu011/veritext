@@ -4,12 +4,29 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Critic structural decomposition
-- Current status: Split critic batching, invariant checks, correction policy, report materialization, stable IDs, mirroring, validation, and errors out of the critic orchestration service without changing public critic behavior. No live LLM calls or audit DB mutations were made.
-- Next required work: choose the next pipeline structure target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: executor and orchestrator remain oversized; future cleanup should continue preserving invariant/audit behavior while splitting cohesive modules under the 400-line convention.
+- Last completed phase: Executor structural decomposition slice 1
+- Current status: Moved executor error and stable ID helpers out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
+- Next required work: continue executor cleanup with input/budget validation, candidate materialization, normalization, and rejection policy slices; run a targeted per-stage model comparison; or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: `src/extractor/executor/service.py` remains oversized; future executor slices should keep behavior unchanged and split cohesive modules under the 400-line convention.
 
 ## Session Log
+
+### 2026-05-03 — Executor structural decomposition slice 1
+
+- Started executor cleanup with the smallest low-risk slice.
+- Moved `ExecutorError` into `src/extractor/executor/errors.py` while preserving the public `extractor.executor.ExecutorError` export.
+- Moved stable executor candidate and rejection ID generation into `src/extractor/executor/ids.py`.
+- Updated `src/extractor/executor/service.py` to import the moved error and ID helpers without changing execution, payload normalization, audit writes, or rejection behavior.
+- Confirmed the new executor files are under the 400-line limit:
+  - `src/extractor/executor/errors.py`: 8 lines
+  - `src/extractor/executor/ids.py`: 46 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/executor/__init__.py src/extractor/executor/dedup.py src/extractor/executor/errors.py src/extractor/executor/ids.py src/extractor/executor/models.py src/extractor/executor/service.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or audit DB mutations were made.
 
 ### 2026-05-03 — Critic structural decomposition
 

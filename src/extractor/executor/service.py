@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import os
 import re
 import sys
@@ -30,6 +29,8 @@ from extractor.llm import (
 )
 from extractor.llm.payloads import split_model_json_before_field
 from extractor.llm.views import chunk_view_from_chunk, schema_card_from_plan
+from extractor.executor.errors import ExecutorError
+from extractor.executor.ids import stable_candidate_id, stable_rejection_id
 from extractor.executor.models import (
     ExecutionResult,
     ExecutorCandidateBatch,
@@ -37,10 +38,6 @@ from extractor.executor.models import (
     ExecutorTaskResult,
     ExtractedCandidatePayload,
 )
-
-
-class ExecutorError(RuntimeError):
-    """Raised when executor inputs or budgets prevent auditable extraction."""
 
 
 @dataclass(frozen=True)
@@ -232,7 +229,7 @@ async def _execute_lens_chunk(
 
         if reasons:
             rejection = CandidateRejection(
-                rejection_id=_stable_rejection_id(candidate, reasons),
+                rejection_id=stable_rejection_id(candidate, reasons),
                 run_id=plan.run_id,
                 candidate_id=candidate.candidate_id,
                 stage="executor",
@@ -411,7 +408,7 @@ def _build_candidate(
         text=source_text,
     )
     return LensCandidate(
-        candidate_id=_stable_candidate_id(
+        candidate_id=stable_candidate_id(
             plan=plan,
             lens=lens,
             chunk=chunk,
@@ -1372,42 +1369,6 @@ def _approved_category_fields(plan: ExtractionPlan) -> dict[str, frozenset[str]]
         category.name: frozenset(field.name for field in category.fields)
         for category in plan.approved_categories
     }
-
-
-def _stable_candidate_id(
-    *,
-    plan: ExtractionPlan,
-    lens: LensName,
-    chunk: Chunk,
-    payload: ExtractedCandidatePayload,
-    start_char: int,
-    source_text: str,
-    candidate_index: int,
-) -> str:
-    identity = "|".join(
-        (
-            plan.run_id,
-            plan.doc_id,
-            chunk.chunk_id,
-            lens,
-            str(candidate_index),
-            payload.category,
-            payload.field_name,
-            payload.value,
-            str(start_char),
-            source_text,
-        )
-    )
-    return f"candidate-{hashlib.sha256(identity.encode('utf-8')).hexdigest()[:32]}"
-
-
-def _stable_rejection_id(
-    candidate: LensCandidate,
-    reasons: list[RejectionReason],
-) -> str:
-    reason_identity = "|".join(f"{reason.code}:{reason.message}" for reason in reasons)
-    identity = f"{candidate.candidate_id}|{reason_identity}"
-    return f"rejection-{hashlib.sha256(identity.encode('utf-8')).hexdigest()[:32]}"
 
 
 __all__ = ["ExecutorError", "execute_plan"]
