@@ -4,12 +4,36 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: LLM client structural decomposition
-- Current status: Split LLM public contracts, errors, trace formatting, provider request-shaping helpers, and response parsing helpers out of `src/extractor/llm/client.py` while keeping all SDK calls routed through the client. No live LLM calls or non-test audit DB mutations were made.
-- Next required work: choose the next oversized pipeline target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: LLM client, reconciler, and orchestrator modules now satisfy the 400-line convention; likely remaining oversized cleanup candidate is `src/extractor/audit/store.py`. Preserve the new LLM client/errors/models/providers/responses/trace boundaries and keep direct SDK calls inside `src/extractor/llm/client.py`.
+- Last completed phase: Audit store structural decomposition
+- Current status: Split audit schema, errors, SQLite connection/helpers, core record persistence, and review/provenance record persistence out of `src/extractor/audit/store.py` while preserving `AuditStore`, `open_audit_store`, schema compatibility, and existing public imports. No live LLM calls or non-test audit DB mutations were made.
+- Next required work: choose the next cleanup target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: Source modules touched in the structural cleanup sequence now satisfy the 400-line convention; `tests/unit/test_audit_store.py` remains 412 lines if test-file cleanup is desired. Preserve the new audit `schema`/`errors`/`base`/`core_records`/`review_records` boundaries and keep audit DB writes routed through `AuditStore`.
 
 ## Session Log
+
+### 2026-05-03 — Audit store structural decomposition
+
+- Chose `src/extractor/audit/store.py` as the next cleanup target because it was still 705 lines and contained schema DDL, storage exceptions, connection lifecycle, schema-version checks, generic SQLite helpers, core run/document/chunk/LLM persistence, and candidate/report/rejection persistence in one module.
+- Moved audit storage exceptions into `src/extractor/audit/errors.py` while preserving the public `extractor.audit.store` and `extractor.audit` imports.
+- Moved schema version and table DDL into `src/extractor/audit/schema.py` without changing table definitions or schema version.
+- Moved connection lifecycle, schema initialization/version checks, generic insert/update/fetch/list helpers, and `UsageSummary` into `src/extractor/audit/base.py`.
+- Moved run manifests, run stage states, documents, chunks, extraction plans, LLM call logs, and usage summarization into `src/extractor/audit/core_records.py`.
+- Moved lens candidates, critic reports, verifier reports, data points, and candidate rejections into `src/extractor/audit/review_records.py`.
+- Kept `src/extractor/audit/store.py` as the public `AuditStore` composition point and `open_audit_store` entrypoint.
+- Confirmed touched audit files are under the 400-line limit after the split:
+  - `src/extractor/audit/store.py`: 35 lines
+  - `src/extractor/audit/base.py`: 205 lines
+  - `src/extractor/audit/core_records.py`: 191 lines
+  - `src/extractor/audit/review_records.py`: 182 lines
+  - `src/extractor/audit/schema.py`: 128 lines
+  - `src/extractor/audit/errors.py`: 25 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/audit/__init__.py src/extractor/audit/base.py src/extractor/audit/core_records.py src/extractor/audit/errors.py src/extractor/audit/inspection.py src/extractor/audit/models.py src/extractor/audit/review_records.py src/extractor/audit/schema.py src/extractor/audit/store.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_client.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or non-test audit DB mutations were made.
 
 ### 2026-05-03 — LLM client structural decomposition
 
