@@ -4,12 +4,22 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Cleanup-only documentation Phase 2 — Domain-General Positioning
-- Current status: Clarified that Veritext should use one domain-neutral extraction kernel with many configurable domain packs, and that legal contracts are a first proving ground rather than a system specialization. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 3, Configurability Boundary.
-- Next-phase context: Phase 3 should define what belongs in configuration/domain packs versus what must remain non-configurable invariants.
+- Last completed phase: Cleanup-only documentation Phase 3 — Configurability Boundary
+- Current status: Defined the configurable domain-pack surface and the non-configurable provenance/audit/invariant core in `docs/PROJECT_OVERVIEW.md`. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 4, Roadmap Rebalance.
+- Next-phase context: Phase 4 should keep the per-stage roadmap but rebalance it around accuracy, generalization, and provenance while separating cost and deferring human-review emphasis.
 
 ## Session Log
+
+### 2026-05-02 — Cleanup-only documentation Phase 3: Configurability Boundary
+
+- Added a `Configurable surface` section to `docs/PROJECT_OVERVIEW.md` covering domain packs, schema templates, field roles, lenses, normalization policy, model routing, output formats, and reporting options.
+- Added a matching `Non-configurable core` section covering exact span matching, byte/character offsets, source hashes, audit logging, forced tool use, Pydantic contracts, invariant enforcement, and no-silent-drop rejection accounting.
+- Stated that configs and domain packs should be typed, versioned, hashed, and auditable so each run can prove which domain assumptions were active.
+- Scope stayed limited to `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Cleanup-only documentation Phase 2: Domain-General Positioning
 

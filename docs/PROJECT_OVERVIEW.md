@@ -350,6 +350,14 @@ Fit pattern across all of them: **high stakes**, **regulated audience**, **exist
 
 Domain strategy: Veritext should have **one domain-neutral extraction kernel** and many configurable domain packs. The shared kernel extracts auditable primitives that recur across domains: entities, events, metrics, obligations, conditions, exceptions, temporal facts, relations, citations, and definitions. A domain pack should specialize vocabulary, schema templates, lenses, normalization policy, fixtures, and reporting expectations without changing the provenance, offset, audit, or invariant machinery.
 
+### Configurable surface
+
+The parts that should vary by domain are domain packs, schema templates, field roles, lens selection, normalization policy, model routing, output formats, and reporting options. These settings should live in typed, versioned, hashed, auditable config artifacts so each run can prove exactly which domain assumptions were active.
+
+### Non-configurable core
+
+The parts that must not vary by domain are exact span matching, byte/character offsets, source hashes, audit logging, forced tool use, Pydantic stage contracts, invariant enforcement, and no-silent-drop rejection accounting. A domain pack can change what the system looks for; it cannot loosen how the system proves source support.
+
 ### Tier 1 — where Veritext is genuinely differentiated
 
 **1. Legal contracts (M&A, credit agreements, leases, ISDA, MSA, SaaS, employment)**
