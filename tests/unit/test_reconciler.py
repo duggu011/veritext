@@ -482,6 +482,332 @@ def test_reconcile_candidates_prefers_tighter_source_candidate_in_group() -> Non
     asyncio.run(run_check())
 
 
+def test_reconcile_candidates_prefers_source_traced_normalized_label_in_group() -> None:
+    async def run_check() -> None:
+        chunk_text = "Dr. Anya Kowalski appointed Chief Sustainability Officer."
+        chunk = Chunk(
+            chunk_id="chunk-personnel",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=8,
+        )
+        start_char = chunk_text.index("appointed")
+        verbatim = make_candidate(
+            candidate_id="candidate-verbatim-label",
+            chunk=chunk,
+            source_text="appointed",
+            start_char=start_char,
+            value="appointed",
+        ).model_copy(update={"category": "PersonnelChange", "field_name": "change_type"})
+        normalized = make_candidate(
+            candidate_id="candidate-normalized-label",
+            chunk=chunk,
+            source_text="appointed",
+            start_char=start_char,
+            value="appointment",
+        ).model_copy(update={"category": "PersonnelChange", "field_name": "change_type"})
+        candidates = (verbatim, normalized)
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+        verifier_reports = tuple(make_verifier_report(candidate) for candidate in candidates)
+        verbatim_id = short_candidate_id(verbatim.candidate_id)
+        normalized_id = short_candidate_id(normalized.candidate_id)
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {
+                    "groups": ((verbatim_id, (verbatim_id, normalized_id)),),
+                    "rejected": (),
+                }
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        plan = make_plan().model_copy(
+            update={
+                "approved_categories": (
+                    CategoryDefinition(
+                        name="PersonnelChange",
+                        description="Personnel changes.",
+                        fields=(
+                            FieldDefinition(
+                                name="change_type",
+                                description="The source-traced type of personnel change.",
+                                value_type="text",
+                                required=True,
+                            ),
+                        ),
+                    ),
+                ),
+                "enabled_lenses": ("event",),
+                "budget": ExtractionBudget(
+                    per_chunk_concurrency=1,
+                    lens_budgets=(LensBudget(lens="event", max_calls=2),),
+                ),
+            }
+        )
+
+        result = await reconcile_candidates(
+            plan=plan,
+            candidates=candidates,
+            critic_reports=critic_reports,
+            verifier_reports=verifier_reports,
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        assert len(result.data_points) == 1
+        data_point = result.data_points[0]
+        assert data_point.value == "appointment"
+        assert data_point.source_span == normalized.source_span
+        assert data_point.contributing_candidate_ids == (
+            "candidate-verbatim-label",
+            "candidate-normalized-label",
+        )
+
+    asyncio.run(run_check())
+
+
+def test_reconcile_candidates_prefers_qualified_percentage_in_group() -> None:
+    async def run_check() -> None:
+        chunk_text = "Approximately 18% of the 2026 module pipeline is exposed."
+        chunk = Chunk(
+            chunk_id="chunk-risk",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=9,
+        )
+        qualified = make_candidate(
+            candidate_id="candidate-qualified-pct",
+            chunk=chunk,
+            source_text="Approximately 18%",
+            start_char=0,
+            value="Approximately 18%",
+        ).model_copy(update={"category": "RegulatoryRisk", "field_name": "exposure_pct"})
+        narrow = make_candidate(
+            candidate_id="candidate-narrow-pct",
+            chunk=chunk,
+            source_text="18%",
+            start_char=chunk_text.index("18%"),
+            value="18%",
+        ).model_copy(update={"category": "RegulatoryRisk", "field_name": "exposure_pct"})
+        candidates = (narrow, qualified)
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+        verifier_reports = tuple(make_verifier_report(candidate) for candidate in candidates)
+        narrow_id = short_candidate_id(narrow.candidate_id)
+        qualified_id = short_candidate_id(qualified.candidate_id)
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {
+                    "groups": ((narrow_id, (narrow_id, qualified_id)),),
+                    "rejected": (),
+                }
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        plan = make_plan().model_copy(
+            update={
+                "approved_categories": (
+                    CategoryDefinition(
+                        name="RegulatoryRisk",
+                        description="Regulatory exposure facts.",
+                        fields=(
+                            FieldDefinition(
+                                name="exposure_pct",
+                                description="The source-stated exposure percentage.",
+                                value_type="percentage",
+                                required=False,
+                            ),
+                        ),
+                    ),
+                ),
+            }
+        )
+
+        result = await reconcile_candidates(
+            plan=plan,
+            candidates=candidates,
+            critic_reports=critic_reports,
+            verifier_reports=verifier_reports,
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        assert len(result.data_points) == 1
+        data_point = result.data_points[0]
+        assert data_point.value == "Approximately 18%"
+        assert data_point.source_span == qualified.source_span
+
+    asyncio.run(run_check())
+
+
+def test_reconcile_candidates_prefers_scoped_forward_guidance_metric_name() -> None:
+    async def run_check() -> None:
+        chunk_text = "Full-year 2026 revenue guidance reaffirmed at $2.10 to $2.25 billion."
+        chunk = Chunk(
+            chunk_id="chunk-guidance",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=10,
+        )
+        scoped = make_candidate(
+            candidate_id="candidate-scoped-metric",
+            chunk=chunk,
+            source_text="Full-year 2026 revenue",
+            start_char=0,
+            value="Full-year 2026 revenue",
+        ).model_copy(update={"category": "ForwardGuidance", "field_name": "metric_name"})
+        generic = make_candidate(
+            candidate_id="candidate-generic-metric",
+            chunk=chunk,
+            source_text="revenue guidance",
+            start_char=chunk_text.index("revenue"),
+            value="Revenue guidance",
+        ).model_copy(update={"category": "ForwardGuidance", "field_name": "metric_name"})
+        candidates = (generic, scoped)
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+        verifier_reports = tuple(make_verifier_report(candidate) for candidate in candidates)
+        generic_id = short_candidate_id(generic.candidate_id)
+        scoped_id = short_candidate_id(scoped.candidate_id)
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {
+                    "groups": ((generic_id, (generic_id, scoped_id)),),
+                    "rejected": (),
+                }
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        plan = make_plan().model_copy(
+            update={
+                "approved_categories": (
+                    CategoryDefinition(
+                        name="ForwardGuidance",
+                        description="Forward-looking guidance facts.",
+                        fields=(
+                            FieldDefinition(
+                                name="metric_name",
+                                description="The metric or quantity being guided.",
+                                value_type="text",
+                                required=True,
+                            ),
+                        ),
+                    ),
+                ),
+            }
+        )
+
+        result = await reconcile_candidates(
+            plan=plan,
+            candidates=candidates,
+            critic_reports=critic_reports,
+            verifier_reports=verifier_reports,
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        assert len(result.data_points) == 1
+        data_point = result.data_points[0]
+        assert data_point.value == "Full-year 2026 revenue"
+        assert data_point.source_span == scoped.source_span
+
+    asyncio.run(run_check())
+
+
+def test_reconcile_candidates_prefers_tight_label_source_span_in_group() -> None:
+    async def run_check() -> None:
+        chunk_text = "announced retirement effective at the Annual Meeting"
+        chunk = Chunk(
+            chunk_id="chunk-retirement",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=7,
+        )
+        wide = make_candidate(
+            candidate_id="candidate-wide-change",
+            chunk=chunk,
+            source_text="announced retirement",
+            start_char=0,
+            value="retirement",
+        ).model_copy(update={"category": "PersonnelChange", "field_name": "change_type"})
+        tight = make_candidate(
+            candidate_id="candidate-tight-change",
+            chunk=chunk,
+            source_text="retirement",
+            start_char=chunk_text.index("retirement"),
+            value="retirement",
+        ).model_copy(update={"category": "PersonnelChange", "field_name": "change_type"})
+        candidates = (wide, tight)
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+        verifier_reports = tuple(make_verifier_report(candidate) for candidate in candidates)
+        wide_id = short_candidate_id(wide.candidate_id)
+        tight_id = short_candidate_id(tight.candidate_id)
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {
+                    "groups": ((wide_id, (wide_id, tight_id)),),
+                    "rejected": (),
+                }
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+        plan = make_plan().model_copy(
+            update={
+                "approved_categories": (
+                    CategoryDefinition(
+                        name="PersonnelChange",
+                        description="Personnel changes.",
+                        fields=(
+                            FieldDefinition(
+                                name="change_type",
+                                description="The source-traced type of personnel change.",
+                                value_type="text",
+                                required=True,
+                            ),
+                        ),
+                    ),
+                ),
+            }
+        )
+
+        result = await reconcile_candidates(
+            plan=plan,
+            candidates=candidates,
+            critic_reports=critic_reports,
+            verifier_reports=verifier_reports,
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        assert len(result.data_points) == 1
+        data_point = result.data_points[0]
+        assert data_point.value == "retirement"
+        assert data_point.source_span == tight.source_span
+
+    asyncio.run(run_check())
+
+
 def test_reconcile_candidates_logs_omitted_verified_candidates(
     tmp_path: Path,
 ) -> None:

@@ -156,6 +156,55 @@ def make_plan() -> ExtractionPlan:
     )
 
 
+def make_financial_metric_period_plan() -> ExtractionPlan:
+    return make_plan().model_copy(
+        update={
+            "approved_categories": (
+                CategoryDefinition(
+                    name="FinancialMetric",
+                    description="Source-backed financial metrics from regulated filings.",
+                    fields=(
+                        FieldDefinition(
+                            name="period",
+                            description="Source-stated reporting period for the metric.",
+                            value_type="text",
+                            required=False,
+                        ),
+                    ),
+                ),
+            ),
+        }
+    )
+
+
+def make_insurance_policy_plan() -> ExtractionPlan:
+    return make_plan().model_copy(
+        update={
+            "domain_hints": ("insurance",),
+            "approved_categories": (
+                CategoryDefinition(
+                    name="InsurancePolicy",
+                    description="Source-backed policy terms from insurance records.",
+                    fields=(
+                        FieldDefinition(
+                            name="coverage_limit",
+                            description="Source-stated monetary coverage limit.",
+                            value_type="text",
+                            required=False,
+                        ),
+                        FieldDefinition(
+                            name="summary",
+                            description="Source-stated summary of the policy term.",
+                            value_type="text",
+                            required=False,
+                        ),
+                    ),
+                ),
+            ),
+        }
+    )
+
+
 def make_run_manifest() -> RunManifest:
     return RunManifest(
         run_id="run-1",
@@ -592,7 +641,7 @@ def test_review_candidates_rejects_correction_that_drops_source_qualifier(
     tmp_path: Path,
 ) -> None:
     async def run_check() -> None:
-        span_text = "Approximately 18%"
+        span_text = "About 18%"
         chunk = Chunk(
             chunk_id="chunk-qualifier",
             doc_id="doc-1",
@@ -644,7 +693,7 @@ def test_review_candidates_rejects_correction_that_drops_source_qualifier(
         assert reports[0].issues[-1].code == "invalid_correction"
         assert rejections[0].stage == "critic"
         assert rejections[0].reasons[0].code == "schema_violation"
-        assert "drops source qualifier 'approximately'" in rejections[0].reasons[0].message
+        assert "drops source qualifier 'about'" in rejections[0].reasons[0].message
 
     asyncio.run(run_check())
 
@@ -672,7 +721,7 @@ def test_review_candidates_rejects_correction_that_adds_ungrounded_tokens(
             value=span_text,
         )
         corrected = candidate.model_copy(
-            update={"value": "6,581 gigawatt-hours in Q1 2025"}
+            update={"value": "6,581 units in Q1 2025"}
         )
         anthropic_client = QueuedAnthropicClient(
             [
@@ -707,11 +756,11 @@ def test_review_candidates_rejects_correction_that_adds_ungrounded_tokens(
     asyncio.run(run_check())
 
 
-def test_review_candidates_retries_correction_that_expands_source_span(
+def test_review_candidates_preserves_original_when_correction_expands_source_span(
     tmp_path: Path,
 ) -> None:
     async def run_check() -> None:
-        chunk_text = "CEO Marcus Bell"
+        chunk_text = "CEO Riley Chen"
         chunk = Chunk(
             chunk_id="chunk-speaker",
             doc_id="doc-1",
@@ -726,9 +775,9 @@ def test_review_candidates_retries_correction_that_expands_source_span(
         )
         candidate = make_candidate(
             chunk=chunk,
-            source_text="Marcus Bell",
+            source_text="Riley Chen",
             start_char=4,
-            value="Marcus Bell",
+            value="Riley Chen",
         )
         corrected = candidate.model_copy(
             update={
@@ -752,7 +801,6 @@ def test_review_candidates_retries_correction_that_expands_source_span(
                         corrected_candidate=corrected,
                     )
                 ),
-                batch_payload(accepted_payload(candidate_id=candidate.candidate_id)),
             ]
         )
         llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
@@ -774,19 +822,338 @@ def test_review_candidates_retries_correction_that_expands_source_span(
         assert result.accepted_candidates == (candidate,)
         assert result.rejected_candidates == ()
         assert rejections == ()
-        assert [log.attempt for log in logs] == [1, 2]
-        retry_messages = anthropic_client.messages.calls[1]["messages"]
-        tool_result = retry_messages[2]["content"][0]
-        assert "must not expand beyond it" in tool_result["content"]
+        assert [log.attempt for log in logs] == [1]
+        assert len(anthropic_client.messages.calls) == 1
 
     asyncio.run(run_check())
 
 
-def test_review_candidates_rejects_invalid_correction_without_silent_drop(
+def test_review_candidates_preserves_valid_original_when_correction_relabels_field() -> None:
+    async def run_check() -> None:
+        chunk_text = "The policy limit is $5,000,000 per claim."
+        source_text = "$5,000,000 per claim"
+        start_char = chunk_text.index(source_text)
+        chunk = Chunk(
+            chunk_id="chunk-policy-limit",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=8,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=source_text,
+            start_char=start_char,
+            value=source_text,
+        ).model_copy(
+            update={
+                "category": "InsurancePolicy",
+                "field_name": "coverage_limit",
+            }
+        )
+        corrected = candidate.model_copy(update={"field_name": "summary"})
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(
+                    accepted_payload(
+                        candidate_id=candidate.candidate_id,
+                        corrected_candidate=corrected,
+                    )
+                )
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await review_candidates(
+            plan=make_insurance_policy_plan(),
+            chunks=(chunk,),
+            candidates=(candidate,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(max_llm_attempts=2),
+        )
+
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert result.rejections == ()
+        assert result.reports[0].accepted is True
+        assert result.reports[0].corrected_candidate is None
+        assert result.reports[0].issues == ()
+        assert len(anthropic_client.messages.calls) == 1
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_allows_field_correction_when_original_value_is_unsupported() -> None:
+    async def run_check() -> None:
+        chunk_text = "The policy limit is $5,000,000 per claim."
+        source_text = "$5,000,000 per claim"
+        start_char = chunk_text.index(source_text)
+        chunk = Chunk(
+            chunk_id="chunk-policy-limit",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=8,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=source_text,
+            start_char=start_char,
+            value="$5,000,000 per occurrence",
+        ).model_copy(
+            update={
+                "category": "InsurancePolicy",
+                "field_name": "coverage_limit",
+            }
+        )
+        corrected = candidate.model_copy(
+            update={
+                "field_name": "summary",
+                "value": source_text,
+            }
+        )
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(
+                    accepted_payload(
+                        candidate_id=candidate.candidate_id,
+                        corrected_candidate=corrected,
+                    )
+                )
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await review_candidates(
+            plan=make_insurance_policy_plan(),
+            chunks=(chunk,),
+            candidates=(candidate,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(max_llm_attempts=2),
+        )
+
+        assert result.accepted_candidates == (corrected,)
+        assert result.rejected_candidates == ()
+        assert result.rejections == ()
+        assert result.reports[0].accepted is True
+        assert result.reports[0].corrected_candidate == corrected
+        assert result.reports[0].issues == ()
+        assert len(anthropic_client.messages.calls) == 1
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_accepts_source_backed_corporate_asset_detail_span() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "The acquired portfolio includes 14 leased clinics in three states."
+        )
+        chunk = Chunk(
+            chunk_id="chunk-asset-detail",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=12,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=chunk_text,
+            value=chunk_text,
+        ).model_copy(
+            update={
+                "category": "CorporateEvent",
+                "field_name": "asset_detail",
+            }
+        )
+        plan = make_plan().model_copy(
+            update={
+                "approved_categories": (
+                    CategoryDefinition(
+                        name="CorporateEvent",
+                        description=(
+                            "Source-backed significant corporate or business "
+                            "events, including acquisitions and restructurings."
+                        ),
+                        fields=(
+                            FieldDefinition(
+                                name="asset_detail",
+                                description=(
+                                    "Source-stated details about the asset "
+                                    "involved in the event."
+                                ),
+                                value_type="text",
+                                required=False,
+                            ),
+                        ),
+                    ),
+                ),
+                "enabled_lenses": ("event",),
+                "budget": ExtractionBudget(
+                    per_chunk_concurrency=1,
+                    lens_budgets=(LensBudget(lens="event", max_calls=1),),
+                ),
+            }
+        )
+        anthropic_client = QueuedAnthropicClient(
+            [batch_payload(rejected_payload(candidate_id=candidate.candidate_id))]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await review_candidates(
+            plan=plan,
+            chunks=(chunk,),
+            candidates=(candidate,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert result.rejections == ()
+        assert len(result.reports) == 1
+        assert result.reports[0].accepted is True
+        assert result.reports[0].issues == ()
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_accepts_source_supported_atomic_period_without_companion_context() -> None:
+    async def run_check() -> None:
+        chunk_text = "In fiscal Q2 2027, net revenue was $12.4 million."
+        source_text = "fiscal Q2 2027"
+        start_char = chunk_text.index(source_text)
+        chunk = Chunk(
+            chunk_id="chunk-period",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=10,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=source_text,
+            start_char=start_char,
+            value=source_text,
+        ).model_copy(
+            update={
+                "category": "FinancialMetric",
+                "field_name": "period",
+            }
+        )
+        reject_item = {
+            "id": short_candidate_id(candidate.candidate_id),
+            "decision": "reject",
+            "code": "critic_rejected",
+            "evidence": (
+                "period field requires metric context; this span alone is too "
+                "vague without a companion metric_name field to anchor the record."
+            ),
+        }
+        anthropic_client = QueuedAnthropicClient([batch_payload(reject_item)])
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await review_candidates(
+            plan=make_financial_metric_period_plan(),
+            chunks=(chunk,),
+            candidates=(candidate,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert result.reports[0].accepted is True
+        assert result.reports[0].issues == ()
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_keeps_atomic_context_rejection_when_value_is_unsupported() -> None:
+    async def run_check() -> None:
+        chunk_text = "In fiscal Q2 2027, net revenue was $12.4 million."
+        source_text = "fiscal Q2 2027"
+        start_char = chunk_text.index(source_text)
+        chunk = Chunk(
+            chunk_id="chunk-period",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=10,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=source_text,
+            start_char=start_char,
+            value="fiscal Q2 2027 revenue period",
+        ).model_copy(
+            update={
+                "category": "FinancialMetric",
+                "field_name": "period",
+            }
+        )
+        reject_item = {
+            "id": short_candidate_id(candidate.candidate_id),
+            "decision": "reject",
+            "code": "critic_rejected",
+            "evidence": (
+                "period field requires metric context; this span alone is too "
+                "vague without a companion metric_name field to anchor the record."
+            ),
+        }
+        anthropic_client = QueuedAnthropicClient([batch_payload(reject_item)])
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await review_candidates(
+            plan=make_financial_metric_period_plan(),
+            chunks=(chunk,),
+            candidates=(candidate,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == ()
+        assert result.rejected_candidates == (candidate,)
+        assert result.reports[0].accepted is False
+        assert result.reports[0].issues[0].code == "critic_rejected"
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_rejects_invalid_correction_when_original_is_unsupported(
     tmp_path: Path,
 ) -> None:
     async def run_check() -> None:
-        candidate = make_candidate()
+        candidate = make_candidate(value="Revenue increased materially")
         bad_start = make_document().text.index("Margin")
         bad_span = SourceSpan(
             doc_id="doc-1",
@@ -835,7 +1202,9 @@ def test_review_candidates_rejects_invalid_correction_without_silent_drop(
     asyncio.run(run_check())
 
 
-def test_review_candidates_survives_malformed_correction_offsets(tmp_path: Path) -> None:
+def test_review_candidates_preserves_valid_original_for_malformed_correction(
+    tmp_path: Path,
+) -> None:
     async def run_check() -> None:
         candidate = make_candidate()
         # The critic claims span_text is "Margin declined" at the original
@@ -869,18 +1238,12 @@ def test_review_candidates_survives_malformed_correction_offsets(tmp_path: Path)
             reports = await audit_store.list_critic_reports(candidate.candidate_id)
             rejections = await audit_store.list_candidate_rejections(candidate.candidate_id)
 
-        assert result.accepted_candidates == ()
-        assert result.rejected_candidates == (candidate,)
-        assert reports[0].accepted is False
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert reports[0].accepted is True
         assert reports[0].corrected_candidate is None
-        assert reports[0].issues[-1].code == "invalid_correction"
-        assert rejections[0].reasons[0].code == "invented_span"
-        # Either the chunk-slice pre-check or the strict re-validation may fire,
-        # depending on the failure shape. Both indicate a rejected correction.
-        assert (
-            "does not match the chunk slice" in rejections[0].reasons[0].message
-            or "violated invariants" in rejections[0].reasons[0].message
-        )
+        assert reports[0].issues == ()
+        assert rejections == ()
 
     asyncio.run(run_check())
 
@@ -944,7 +1307,8 @@ def test_review_candidates_retries_missing_verdict_id(tmp_path: Path) -> None:
 
 def test_review_candidates_retries_invalid_correction(tmp_path: Path) -> None:
     async def run_check() -> None:
-        candidate = make_candidate()
+        candidate = make_candidate(value="Revenue increased materially")
+        corrected = candidate.model_copy(update={"value": "Revenue increased"})
         bad_correction = _raw_correction(candidate) or {}
         bad_correction["span_start_char"] = candidate.source_span.start_char
         bad_correction["span_text"] = "Margin declined"
@@ -958,7 +1322,12 @@ def test_review_candidates_retries_invalid_correction(tmp_path: Path) -> None:
         anthropic_client = QueuedAnthropicClient(
             [
                 batch_payload(bad_item),
-                batch_payload(accepted_payload(candidate_id=candidate.candidate_id)),
+                batch_payload(
+                    accepted_payload(
+                        candidate_id=candidate.candidate_id,
+                        corrected_candidate=corrected,
+                    )
+                ),
             ]
         )
         llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
@@ -978,12 +1347,12 @@ def test_review_candidates_retries_invalid_correction(tmp_path: Path) -> None:
             logs = await audit_store.list_llm_call_logs("run-1")
             rejections = await audit_store.list_candidate_rejections(candidate.candidate_id)
 
-        assert result.accepted_candidates == (candidate,)
+        assert result.accepted_candidates == (corrected,)
         assert result.rejected_candidates == ()
         assert result.rejections == ()
         assert rejections == ()
         assert reports[0].accepted is True
-        assert reports[0].corrected_candidate is None
+        assert reports[0].corrected_candidate == corrected
         assert [log.attempt for log in logs] == [1, 2]
 
         retry_messages = anthropic_client.messages.calls[1]["messages"]

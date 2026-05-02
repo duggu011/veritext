@@ -14,6 +14,7 @@ from extractor.contracts import (
     CriticIssue,
     CriticReport,
     ExtractionPlan,
+    FieldDefinition,
     LensCandidate,
     RejectionReason,
     SourceSpan,
@@ -68,6 +69,34 @@ _MEANINGFUL_VALUE_QUALIFIER_PHRASES = (
     ("up",),
     ("down",),
     ("subject", "to"),
+)
+_ATOMIC_FIELD_ROLE_TOKENS = frozenset(
+    {
+        "amount",
+        "count",
+        "date",
+        "deadline",
+        "duration",
+        "number",
+        "pct",
+        "percent",
+        "percentage",
+        "period",
+        "quantity",
+        "rate",
+        "ratio",
+        "term",
+        "time",
+        "total",
+        "value",
+        "year",
+    }
+)
+_CONTEXT_OBJECTION_TOKENS = frozenset(
+    {"alone", "ambiguous", "anchor", "anchored", "context", "specific", "vague"}
+)
+_COMPANION_OBJECTION_TOKENS = frozenset(
+    {"category", "companion", "entry", "field", "record", "without"}
 )
 
 
@@ -385,6 +414,14 @@ def _validate_critic_batch(
                     corrected=corrected,
                 )
             )
+        if _should_preserve_original_for_correction(
+            plan=plan,
+            chunk=chunk,
+            original=candidate,
+            corrected=corrected,
+            reasons=reasons,
+        ):
+            reasons = []
         if reasons:
             complaints.append(
                 ItemComplaint(
@@ -673,6 +710,15 @@ def _build_report(
                     corrected=corrected_candidate,
                 )
             )
+        if _should_preserve_original_for_correction(
+            plan=plan,
+            chunk=chunk,
+            original=candidate,
+            corrected=corrected_candidate,
+            reasons=validation_reasons,
+        ):
+            validation_reasons = []
+            corrected_candidate = None
         accepted = not validation_reasons
         plausibility_score = 1.0 if accepted else 0.0
         issues = ()
@@ -959,7 +1005,200 @@ def _contradicted_rejection_reasons(
                 ),
             )
         )
+    if verdict.code in {"critic_rejected", "schema_violation", "invented_span"} and (
+        _is_source_backed_corporate_event_asset_detail(
+            plan=plan,
+            chunk=chunk,
+            candidate=candidate,
+        )
+    ):
+        reasons.append(
+            RejectionReason(
+                code=verdict.code,
+                message=(
+                    "CorporateEvent.asset_detail is approved for source-backed "
+                    "asset details, and this candidate is mechanically valid "
+                    "under that schema role."
+                ),
+            )
+        )
+    if verdict.code in {"critic_rejected", "schema_violation"} and (
+        _is_context_only_atomic_field_rejection(
+            plan=plan,
+            chunk=chunk,
+            candidate=candidate,
+            verdict=verdict,
+        )
+    ):
+        reasons.append(
+            RejectionReason(
+                code=verdict.code,
+                message=(
+                    "Candidate field is an approved atomic source-backed role; "
+                    "companion-field context is reconstructed after candidate "
+                    "review."
+                ),
+            )
+        )
     return reasons
+
+
+def _should_preserve_original_for_correction(
+    *,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    original: LensCandidate,
+    corrected: LensCandidate | None,
+    reasons: list[RejectionReason],
+) -> bool:
+    if not _candidate_is_mechanically_valid(
+        plan=plan,
+        chunk=chunk,
+        candidate=original,
+    ):
+        return False
+    if corrected is not None:
+        # Field identity is part of the executor/schema contract once the
+        # original is mechanically valid; critic can reject, but not relabel it.
+        return _correction_changes_schema_slot(original, corrected) or (
+            _only_expanded_span_rejection(reasons)
+        )
+    return _only_structural_materialization_rejections(reasons)
+
+
+def _correction_changes_schema_slot(
+    original: LensCandidate,
+    corrected: LensCandidate,
+) -> bool:
+    return (
+        corrected.category != original.category
+        or corrected.field_name != original.field_name
+    )
+
+
+def _only_expanded_span_rejection(reasons: list[RejectionReason]) -> bool:
+    return len(reasons) == 1 and "must not expand beyond it" in reasons[0].message
+
+
+def _only_structural_materialization_rejections(
+    reasons: list[RejectionReason],
+) -> bool:
+    if not reasons:
+        return False
+    return all(_is_structural_materialization_rejection(reason) for reason in reasons)
+
+
+def _is_structural_materialization_rejection(reason: RejectionReason) -> bool:
+    return reason.code == "invented_span" and (
+        reason.message.startswith("Corrected candidate span_text does not match")
+        or reason.message.startswith("Corrected candidate violated invariants")
+    )
+
+
+def _candidate_is_mechanically_valid(
+    *,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    candidate: LensCandidate,
+) -> bool:
+    fields = _approved_category_fields(plan).get(candidate.category)
+    return (
+        fields is not None
+        and candidate.field_name in fields
+        and _span_matches_chunk(candidate.source_span, chunk)
+        and value_is_source_supported(candidate)
+    )
+
+
+def _is_context_only_atomic_field_rejection(
+    *,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    candidate: LensCandidate,
+    verdict: CriticVerdict,
+) -> bool:
+    return (
+        _candidate_is_mechanically_valid(plan=plan, chunk=chunk, candidate=candidate)
+        and _is_atomic_field_role(plan=plan, candidate=candidate)
+        and _is_companion_context_objection(verdict.evidence)
+    )
+
+
+def _is_atomic_field_role(
+    *,
+    plan: ExtractionPlan,
+    candidate: LensCandidate,
+) -> bool:
+    field = _approved_field_definition(plan=plan, candidate=candidate)
+    if field is None:
+        return False
+    return bool(_field_role_tokens(field.name) & _ATOMIC_FIELD_ROLE_TOKENS)
+
+
+def _approved_field_definition(
+    *,
+    plan: ExtractionPlan,
+    candidate: LensCandidate,
+) -> FieldDefinition | None:
+    for category in plan.approved_categories:
+        if category.name != candidate.category:
+            continue
+        for field in category.fields:
+            if field.name == candidate.field_name:
+                return field
+    return None
+
+
+def _field_role_tokens(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", text.casefold().replace("_", " ")))
+
+
+def _is_companion_context_objection(evidence: str | None) -> bool:
+    if not evidence:
+        return False
+    tokens = set(_qualifier_tokens(evidence))
+    return bool(tokens & _CONTEXT_OBJECTION_TOKENS) and bool(
+        tokens & _COMPANION_OBJECTION_TOKENS
+    )
+
+
+def _is_source_backed_corporate_event_asset_detail(
+    *,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    candidate: LensCandidate,
+) -> bool:
+    if candidate.category != "CorporateEvent" or candidate.field_name != "asset_detail":
+        return False
+    if not _candidate_is_mechanically_valid(
+        plan=plan,
+        chunk=chunk,
+        candidate=candidate,
+    ):
+        return False
+    return _asset_detail_description_allows_source_backed_details(plan)
+
+
+def _asset_detail_description_allows_source_backed_details(
+    plan: ExtractionPlan,
+) -> bool:
+    for category in plan.approved_categories:
+        if category.name != "CorporateEvent":
+            continue
+        for field in category.fields:
+            if field.name != "asset_detail":
+                continue
+            description = f"{category.description} {field.description}".casefold()
+            detail_role = any(
+                term in description
+                for term in ("detail", "description", "attribute", "profile")
+            )
+            source_role = any(
+                term in description
+                for term in ("source-backed", "source-stated", "stated", "verbatim")
+            )
+            return detail_role and source_role
+    return False
 
 
 def _filter_contradicted_reject_issues(

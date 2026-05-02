@@ -26,7 +26,6 @@ from extractor.llm.views import (
 )
 from extractor.source_support import (
     is_label_field,
-    source_traced_label_value,
     value_is_source_supported,
 )
 from extractor.verifier.models import (
@@ -332,11 +331,10 @@ def _build_report(
     span_matches = _span_matches_chunk(candidate.source_span, chunk)
     schema_approved = _candidate_schema_approved(plan=plan, candidate=candidate)
     value_supported = value_is_source_supported(candidate)
-    label_supported = source_traced_label_value(candidate)
     llm_reasons = _llm_rejection_reasons(verdict)
     if span_matches or schema_approved or value_supported:
         # Deterministic checks are authoritative for mechanical schema, offsets,
-        # exact span text, and source-traced label support. Drop LLM objections
+        # exact span text, and source support. Drop LLM objections
         # that contradict those checks; keep any remaining reasons.
         llm_reasons = tuple(
             reason for reason in llm_reasons
@@ -345,7 +343,6 @@ def _build_report(
                 span_matches=span_matches,
                 schema_approved=schema_approved,
                 value_supported=value_supported,
-                label_supported=label_supported,
             )
         )
     rejection_reasons = _merged_rejection_reasons(
@@ -445,7 +442,6 @@ def _is_contradicted_llm_reason(
     span_matches: bool,
     schema_approved: bool,
     value_supported: bool,
-    label_supported: bool,
 ) -> bool:
     if reason.code in {"invalid_source_offsets", "ambiguous_source_span"}:
         return span_matches
@@ -454,7 +450,7 @@ def _is_contradicted_llm_reason(
     if reason.code == "category_not_approved":
         return schema_approved
     if reason.code == "schema_violation":
-        return schema_approved and label_supported
+        return schema_approved and span_matches and value_supported
     return False
 
 

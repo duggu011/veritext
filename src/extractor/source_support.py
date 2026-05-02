@@ -16,6 +16,39 @@ _LABEL_FIELDS = frozenset(
         "status_type",
     }
 )
+_QUALIFIER_PHRASES = (
+    ("approximately",),
+    ("approx",),
+    ("about",),
+    ("around",),
+    ("at", "least"),
+    ("at", "most"),
+    ("no", "more", "than"),
+    ("no", "less", "than"),
+    ("more", "than"),
+    ("less", "than"),
+    ("up",),
+    ("down",),
+)
+_SCOPED_METRIC_TOKENS = frozenset(
+    {
+        "annual",
+        "fy",
+        "full",
+        "full-year",
+        "fullyear",
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "quarter",
+        "quarterly",
+        "year",
+        "year-end",
+        "yearend",
+    }
+)
+_GENERIC_METRIC_ROLE_TOKENS = frozenset({"guidance", "metric", "measure"})
 
 
 def value_is_source_supported(candidate: LensCandidate) -> bool:
@@ -64,16 +97,34 @@ def correction_expands_source_span(
     )
 
 
-def candidate_source_specificity_rank(candidate: LensCandidate) -> tuple[int, int, int, int, str]:
+def candidate_source_specificity_rank(
+    candidate: LensCandidate,
+) -> tuple[int, int, int, int, int, int, str]:
     """Rank source candidates for deterministic reconciliation tie-breaking."""
     unsupported = 0 if value_is_source_supported(candidate) else 1
     if is_label_field(candidate.field_name):
-        value_shape = 0 if source_traced_label_value(candidate) else 1
+        field_rank = (
+            _label_extra_source_token_count(candidate),
+            _label_value_shape(candidate),
+            0,
+        )
+    elif _is_percentage_or_exposure_field(candidate.field_name):
+        field_rank = (
+            _percentage_qualifier_rank(candidate),
+            0,
+            0,
+        )
+    elif _is_name_field(candidate.field_name):
+        field_rank = _name_field_rank(candidate)
     else:
-        value_shape = 0 if _same_normalized(candidate.value, candidate.source_span.text) else 1
+        field_rank = (
+            0 if _same_normalized(candidate.value, candidate.source_span.text) else 1,
+            0,
+            0,
+        )
     return (
         unsupported,
-        value_shape,
+        *field_rank,
         len(candidate.source_span.text),
         len(candidate.value),
         candidate.candidate_id,
@@ -82,6 +133,82 @@ def candidate_source_specificity_rank(candidate: LensCandidate) -> tuple[int, in
 
 def is_label_field(field_name: str) -> bool:
     return field_name in _LABEL_FIELDS or field_name.endswith("_type")
+
+
+def _label_value_shape(candidate: LensCandidate) -> int:
+    if not source_traced_label_value(candidate):
+        return 2
+    if _same_normalized(candidate.value, candidate.source_span.text):
+        return 1
+    return 0
+
+
+def _label_extra_source_token_count(candidate: LensCandidate) -> int:
+    value_tokens = {_canonical_token(token) for token in _tokens(candidate.value)}
+    source_tokens = tuple(
+        _canonical_token(token) for token in _tokens(candidate.source_span.text)
+    )
+    if not value_tokens:
+        return len(source_tokens)
+    return sum(1 for token in source_tokens if token not in value_tokens)
+
+
+def _percentage_qualifier_rank(candidate: LensCandidate) -> int:
+    source_tokens = _tokens(candidate.source_span.text)
+    value_tokens = _tokens(candidate.value)
+    source_has_qualifier = _has_qualifier_phrase(source_tokens)
+    value_has_qualifier = _has_qualifier_phrase(value_tokens)
+    if source_has_qualifier and value_has_qualifier:
+        return 0
+    if source_has_qualifier:
+        return 2
+    return 1
+
+
+def _name_field_rank(candidate: LensCandidate) -> tuple[int, int, int]:
+    if candidate.category != "ForwardGuidance" or candidate.field_name != "metric_name":
+        return (
+            0 if _same_normalized(candidate.value, candidate.source_span.text) else 1,
+            0,
+            0,
+        )
+
+    tokens = set(_tokens(f"{candidate.value} {candidate.source_span.text}"))
+    scope_rank = 0 if _has_scoped_metric_token(tokens) else 1
+    generic_role_rank = 1 if tokens & _GENERIC_METRIC_ROLE_TOKENS else 0
+    return (scope_rank, generic_role_rank, -len(_tokens(candidate.value)))
+
+
+def _is_percentage_or_exposure_field(field_name: str) -> bool:
+    return (
+        field_name.endswith("_pct")
+        or field_name.endswith("_percentage")
+        or field_name.endswith("_rate")
+        or "exposure" in field_name
+    )
+
+
+def _is_name_field(field_name: str) -> bool:
+    return field_name == "metric_name" or field_name.endswith("_name")
+
+
+def _has_qualifier_phrase(tokens: tuple[str, ...]) -> bool:
+    return any(_contains_phrase(tokens, phrase) for phrase in _QUALIFIER_PHRASES)
+
+
+def _has_scoped_metric_token(tokens: set[str]) -> bool:
+    if tokens & _SCOPED_METRIC_TOKENS:
+        return True
+    return any(token.isdigit() and len(token) == 4 for token in tokens)
+
+
+def _contains_phrase(tokens: tuple[str, ...], phrase: tuple[str, ...]) -> bool:
+    if len(phrase) > len(tokens):
+        return False
+    return any(
+        tokens[index : index + len(phrase)] == phrase
+        for index in range(len(tokens) - len(phrase) + 1)
+    )
 
 
 def _tokens(text: str) -> tuple[str, ...]:

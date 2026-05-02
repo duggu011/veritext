@@ -156,6 +156,35 @@ def make_plan() -> ExtractionPlan:
     )
 
 
+def make_corporate_asset_detail_plan() -> ExtractionPlan:
+    return make_plan().model_copy(
+        update={
+            "approved_categories": (
+                CategoryDefinition(
+                    name="CorporateEvent",
+                    description="Source-backed corporate events from audited records.",
+                    fields=(
+                        FieldDefinition(
+                            name="asset_detail",
+                            description=(
+                                "Source-stated asset or facility details involved "
+                                "in the event."
+                            ),
+                            value_type="text",
+                            required=False,
+                        ),
+                    ),
+                ),
+            ),
+            "enabled_lenses": ("event",),
+            "budget": ExtractionBudget(
+                per_chunk_concurrency=1,
+                lens_budgets=(LensBudget(lens="event", max_calls=1),),
+            ),
+        }
+    )
+
+
 def make_run_manifest() -> RunManifest:
     return RunManifest(
         run_id="run-1",
@@ -368,7 +397,7 @@ def test_verify_candidates_persists_reports_rejections_and_logs(tmp_path: Path) 
                 chunk=chunks[1],
                 source_text="Margin declined",
                 start_char=second_start,
-                value="Margin declined",
+                value="Margin declined materially",
             ),
         )
         critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
@@ -606,6 +635,137 @@ def test_verify_candidates_overrides_source_traced_label_schema_rejection() -> N
         assert result.rejected_candidates == ()
         assert result.reports[0].accepted is True
         assert result.reports[0].rejection_reasons == ()
+
+    asyncio.run(run_check())
+
+
+def test_verify_candidates_overrides_source_supported_non_label_schema_rejection() -> None:
+    async def run_check() -> None:
+        chunk_text = "The acquired laboratory includes two certified clean rooms."
+        chunk = Chunk(
+            chunk_id="chunk-asset",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=8,
+        )
+        candidate = LensCandidate(
+            candidate_id="candidate-asset-detail",
+            run_id="run-1",
+            doc_id="doc-1",
+            chunk_id=chunk.chunk_id,
+            lens="event",
+            category="CorporateEvent",
+            field_name="asset_detail",
+            value=chunk_text,
+            source_span=SourceSpan(
+                doc_id="doc-1",
+                chunk_id=chunk.chunk_id,
+                start_char=0,
+                end_char=len(chunk_text),
+                start_byte=0,
+                end_byte=len(chunk_text.encode("utf-8")),
+                text=chunk_text,
+            ),
+            confidence=0.86,
+            executor_call_id="call-executor-1",
+        )
+        critic_report = make_critic_report(candidate)
+        hallucinated_payload = {
+            "id": short_candidate_id(candidate.candidate_id),
+            "decision": "reject",
+            "code": "schema_violation",
+            "evidence": (
+                "asset_detail is for facility details; this span describes the "
+                "event rather than a suitable field value."
+            ),
+        }
+        anthropic_client = QueuedAnthropicClient([batch_payload(hallucinated_payload)])
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await verify_candidates(
+            plan=make_corporate_asset_detail_plan(),
+            chunks=(chunk,),
+            candidates=(candidate,),
+            critic_reports=(critic_report,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert result.reports[0].accepted is True
+        assert result.reports[0].rejection_reasons == ()
+
+    asyncio.run(run_check())
+
+
+def test_verify_candidates_keeps_schema_rejection_for_unapproved_non_label_field() -> None:
+    async def run_check() -> None:
+        chunk_text = "The acquired laboratory includes two certified clean rooms."
+        chunk = Chunk(
+            chunk_id="chunk-asset",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=8,
+        )
+        candidate = LensCandidate(
+            candidate_id="candidate-asset-detail",
+            run_id="run-1",
+            doc_id="doc-1",
+            chunk_id=chunk.chunk_id,
+            lens="event",
+            category="CorporateEvent",
+            field_name="asset_detail",
+            value=chunk_text,
+            source_span=SourceSpan(
+                doc_id="doc-1",
+                chunk_id=chunk.chunk_id,
+                start_char=0,
+                end_char=len(chunk_text),
+                start_byte=0,
+                end_byte=len(chunk_text.encode("utf-8")),
+                text=chunk_text,
+            ),
+            confidence=0.86,
+            executor_call_id="call-executor-1",
+        )
+        critic_report = make_critic_report(candidate)
+        hallucinated_payload = {
+            "id": short_candidate_id(candidate.candidate_id),
+            "decision": "reject",
+            "code": "schema_violation",
+            "evidence": "asset_detail is not approved by the schema.",
+        }
+        anthropic_client = QueuedAnthropicClient([batch_payload(hallucinated_payload)])
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await verify_candidates(
+            plan=make_plan(),
+            chunks=(chunk,),
+            candidates=(candidate,),
+            critic_reports=(critic_report,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.accepted_candidates == ()
+        assert result.rejected_candidates == (candidate,)
+        assert result.reports[0].accepted is False
+        assert result.reports[0].rejection_reasons[0].code == "schema_violation"
 
     asyncio.run(run_check())
 
