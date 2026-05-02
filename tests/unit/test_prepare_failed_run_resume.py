@@ -45,6 +45,8 @@ def make_audit_db(path: Path, *, status: str = "completed") -> None:
                 completed_at TEXT,
                 payload_json TEXT NOT NULL
             );
+            CREATE TABLE extraction_plans (run_id TEXT NOT NULL);
+            CREATE TABLE lens_candidates (run_id TEXT NOT NULL);
             CREATE TABLE critic_reports (run_id TEXT NOT NULL);
             CREATE TABLE verifier_reports (run_id TEXT NOT NULL);
             CREATE TABLE data_points (run_id TEXT NOT NULL);
@@ -64,12 +66,33 @@ def make_audit_db(path: Path, *, status: str = "completed") -> None:
                 json.dumps(manifest),
             ),
         )
+        for table in ("extraction_plans", "lens_candidates"):
+            conn.execute(f"INSERT INTO {table} VALUES (?)", ("run-1",))
         for table in ("critic_reports", "verifier_reports", "data_points"):
             conn.execute(f"INSERT INTO {table} VALUES (?)", ("run-1",))
-        for stage in ("critic", "verifier", "reconciler"):
+        for stage in ("executor", "dedup", "critic", "verifier", "reconciler"):
             conn.execute("INSERT INTO candidate_rejections VALUES (?, ?)", ("run-1", stage))
+        for stage in (
+            "planner.classify_document",
+            "planner.propose_schema",
+            "planner.critique_schema",
+            "planner.select_strategy",
+            "planner.allocate_budget",
+            "executor.claim",
+            "critic",
+            "verifier",
+            "reconciler",
+        ):
             conn.execute("INSERT INTO llm_call_logs VALUES (?, ?)", ("run-1", stage))
-        for stage in ("critic", "verifier", "reconciler", "reporter"):
+        for stage in (
+            "planner",
+            "executor",
+            "dedup",
+            "critic",
+            "verifier",
+            "reconciler",
+            "reporter",
+        ):
             conn.execute("INSERT INTO run_stage_states VALUES (?, ?)", ("run-1", stage))
         conn.commit()
     finally:
@@ -152,8 +175,65 @@ def test_prepare_resume_allow_completed_resets_manifest_and_clears_downstream(
         assert payload["completed_at"] is not None
         for table in ("critic_reports", "verifier_reports", "data_points"):
             assert conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 0
-        assert conn.execute("SELECT COUNT(*) FROM candidate_rejections").fetchone()[0] == 0
-        assert conn.execute("SELECT COUNT(*) FROM llm_call_logs").fetchone()[0] == 0
-        assert conn.execute("SELECT COUNT(*) FROM run_stage_states").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM extraction_plans").fetchone()[0] == 1
+        assert conn.execute("SELECT COUNT(*) FROM lens_candidates").fetchone()[0] == 1
+        assert conn.execute("SELECT COUNT(*) FROM candidate_rejections").fetchone()[0] == 2
+        assert conn.execute("SELECT COUNT(*) FROM llm_call_logs").fetchone()[0] == 6
+        assert conn.execute("SELECT COUNT(*) FROM run_stage_states").fetchone()[0] == 3
+    finally:
+        conn.close()
+
+
+def test_prepare_resume_from_planner_clears_plan_and_all_downstream_artifacts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    audit_path = tmp_path / "audit.sqlite3"
+    make_audit_db(audit_path)
+    module = load_script_module()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prepare_failed_run_resume.py",
+            "--run-id",
+            "run-1",
+            "--audit",
+            str(audit_path),
+            "--from-stage",
+            "planner",
+            "--allow-completed",
+            "--apply",
+        ],
+    )
+
+    assert module.main() == 0
+    output = capsys.readouterr().out
+    assert "from_stage=planner" in output
+    assert "extraction_plans=1" in output
+    assert "lens_candidates=1" in output
+    assert "llm_call_logs_from_stage=9" in output
+
+    conn = sqlite3.connect(audit_path)
+    try:
+        status, payload_json = conn.execute(
+            "SELECT status, payload_json FROM run_manifests WHERE run_id = 'run-1'"
+        ).fetchone()
+        payload = json.loads(payload_json)
+        assert status == "failed"
+        assert payload["status"] == "failed"
+        assert payload["output_data_point_ids"] == []
+        for table in (
+            "extraction_plans",
+            "lens_candidates",
+            "critic_reports",
+            "verifier_reports",
+            "data_points",
+            "candidate_rejections",
+            "llm_call_logs",
+            "run_stage_states",
+        ):
+            assert conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 0
     finally:
         conn.close()

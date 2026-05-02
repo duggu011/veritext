@@ -157,11 +157,16 @@ def make_openai_response(
     )
 
 
-def make_config(*, prompt_cache_enabled: bool = True) -> LLMConfig:
+def make_config(
+    *,
+    prompt_cache_enabled: bool = True,
+    min_request_interval_seconds: int = 0,
+) -> LLMConfig:
     return LLMConfig(
         provider="anthropic",
         model="configured-model",
         max_retries=0,
+        min_request_interval_seconds=min_request_interval_seconds,
         timeout_seconds=30,
         max_output_tokens=512,
         temperature=0.0,
@@ -347,6 +352,54 @@ def test_llm_client_forces_tool_use_and_records_audit_log(tmp_path: Path) -> Non
         assert call["tool_choice"] == {"type": "tool", "name": "extract_claim"}
         assert call["tools"][0]["name"] == "extract_claim"
         assert call["tools"][0]["input_schema"]["properties"]["value"]["type"] == "string"
+
+    asyncio.run(run_check())
+
+
+def test_llm_client_throttles_request_starts() -> None:
+    async def run_check() -> None:
+        now = 100.0
+        sleep_calls: list[float] = []
+
+        def monotonic() -> float:
+            return now
+
+        async def fake_sleep(delay: float) -> None:
+            nonlocal now
+            sleep_calls.append(delay)
+            now += delay
+
+        response = make_response(
+            [
+                SimpleNamespace(
+                    type="tool_use",
+                    name="extract_claim",
+                    input={"value": "hello world", "confidence": 0.9},
+                )
+            ]
+        )
+        anthropic_client = FakeAnthropicClient(response)
+        client = LLMClient(
+            make_config(
+                prompt_cache_enabled=False,
+                min_request_interval_seconds=60,
+            ),
+            anthropic_client=anthropic_client,
+            monotonic=monotonic,
+            sleep=fake_sleep,
+        )
+
+        await client.complete_structured(
+            make_request(),
+            output_model=ExtractClaimOutput,
+        )
+        await client.complete_structured(
+            make_request(),
+            output_model=ExtractClaimOutput,
+        )
+
+        assert sleep_calls == [60.0]
+        assert len(anthropic_client.messages.calls) == 2
 
     asyncio.run(run_check())
 

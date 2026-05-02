@@ -31,6 +31,7 @@ class LLMConfig(ConfigModel):
     base_url: NonEmptyStr | None = None
     api_key_env: NonEmptyStr | None = None
     max_retries: NonNegativeInt
+    min_request_interval_seconds: NonNegativeInt = 0
     timeout_seconds: PositiveInt
     max_output_tokens: PositiveInt
     temperature: Temperature

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sys
 import time
 import uuid
 
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Annotated, Any, Generic, TypeVar
@@ -171,8 +172,14 @@ class LLMClient:
         *,
         anthropic_client: object | None = None,
         openai_client: object | None = None,
+        monotonic: Callable[[], float] | None = None,
+        sleep: Callable[[float], Awaitable[None]] | None = None,
     ) -> None:
         self.config = config
+        self._request_lock = asyncio.Lock()
+        self._last_request_started_at: float | None = None
+        self._monotonic = monotonic or time.monotonic
+        self._sleep = sleep or asyncio.sleep
         self._anthropic_client = (
             anthropic_client if config.provider == "anthropic" else None
         )
@@ -244,6 +251,7 @@ class LLMClient:
         if anthropic_client is None:
             raise LLMClientError("Anthropic client is not configured")
 
+        await self._throttle_request_start()
         start = time.perf_counter()
         response = await anthropic_client.messages.create(
             model=settings.model,
@@ -388,6 +396,7 @@ class LLMClient:
             settings=settings,
         )
 
+        await self._throttle_request_start()
         start = time.perf_counter()
         response = await openai_client.chat.completions.create(**create_kwargs)
         latency_ms = int((time.perf_counter() - start) * 1000)
@@ -405,6 +414,21 @@ class LLMClient:
         output = output_model.model_validate(tool_input)
         _print_llm_trace(request=request, output=output, call_log=call_log)
         return StructuredLLMResult[OutputModelT](output=output, call_log=call_log)
+
+    async def _throttle_request_start(self) -> None:
+        interval = self.config.min_request_interval_seconds
+        if interval <= 0:
+            return
+
+        async with self._request_lock:
+            now = self._monotonic()
+            if self._last_request_started_at is not None:
+                elapsed = now - self._last_request_started_at
+                remaining = interval - elapsed
+                if remaining > 0:
+                    await self._sleep(remaining)
+                    now = self._monotonic()
+            self._last_request_started_at = now
 
 
 def _create_anthropic_client(config: LLMConfig) -> object:

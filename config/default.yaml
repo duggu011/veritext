@@ -3,6 +3,8 @@ llm:
   api_key_env: ANTHROPIC_API_KEY
   model: claude-sonnet-4-6
   max_retries: 3
+  # Serialize LLM request starts to avoid token-per-minute rate-limit bursts.
+  min_request_interval_seconds: 60
   timeout_seconds: 300
   # Keep a large completion budget for dense structured tool outputs.
   max_output_tokens: 32768

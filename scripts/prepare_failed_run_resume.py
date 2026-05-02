@@ -19,8 +19,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-STAGE_ORDER = ("critic", "verifier", "reconciler")
-REPORT_STAGE_ORDER = ("critic", "verifier", "reconciler", "reporter")
+STAGE_ORDER = ("planner", "executor", "dedup", "critic", "verifier", "reconciler")
+REPORT_STAGE_ORDER = (
+    "planner",
+    "executor",
+    "dedup",
+    "critic",
+    "verifier",
+    "reconciler",
+    "reporter",
+)
+REJECTION_STAGES = ("executor", "dedup", "critic", "verifier", "reconciler")
+LLM_STAGE_PREFIXES = {
+    "planner": "planner.",
+    "executor": "executor.",
+}
 
 
 def main() -> int:
@@ -42,9 +55,11 @@ def main() -> int:
         choices=STAGE_ORDER,
         default="critic",
         help=(
-            "First downstream stage to clear. Default keeps old behavior and "
-            "clears critic and later. Use verifier after a partial verifier "
-            "rate-limit failure to preserve completed critic work."
+            "First stage to clear. Default keeps old behavior and clears "
+            "critic and later. Use planner after prompt/schema changes to "
+            "force a new plan plus all downstream artifacts. Use verifier "
+            "after a partial verifier rate-limit failure to preserve completed "
+            "critic work."
         ),
     )
     parser.add_argument(
@@ -110,6 +125,17 @@ def _counts(
     stage_delete = _stages_from(from_stage, STAGE_ORDER)
     stage_state_delete = _stages_from(from_stage, REPORT_STAGE_ORDER)
     counts: list[tuple[str, int]] = []
+    if "planner" in stage_delete:
+        counts.append(
+            (
+                "extraction_plans",
+                _count(conn, "extraction_plans", "run_id = ?", (run_id,)),
+            )
+        )
+    if "executor" in stage_delete:
+        counts.append(
+            ("lens_candidates", _count(conn, "lens_candidates", "run_id = ?", (run_id,)))
+        )
     if "critic" in stage_delete:
         counts.append(
             ("critic_reports", _count(conn, "critic_reports", "run_id = ?", (run_id,)))
@@ -130,8 +156,8 @@ def _counts(
                 _count(
                     conn,
                     "candidate_rejections",
-                    f"run_id = ? AND stage IN ({_placeholders(stage_delete)})",
-                    (run_id, *stage_delete),
+                    f"run_id = ? AND stage IN ({_placeholders(_rejection_stages(stage_delete))})",
+                    (run_id, *_rejection_stages(stage_delete)),
                 ),
             ),
             (
@@ -139,8 +165,8 @@ def _counts(
                 _count(
                     conn,
                     "llm_call_logs",
-                    f"run_id = ? AND stage IN ({_placeholders(stage_delete)})",
-                    (run_id, *stage_delete),
+                    f"run_id = ? AND ({_stage_where_clause(stage_delete)})",
+                    (run_id, *_stage_where_params(stage_delete)),
                 ),
             ),
             (
@@ -185,16 +211,21 @@ def _delete_partial_rows(
         conn.execute("DELETE FROM verifier_reports WHERE run_id = ?", (run_id,))
     if "reconciler" in stage_delete:
         conn.execute("DELETE FROM data_points WHERE run_id = ?", (run_id,))
+    rejection_stages = _rejection_stages(stage_delete)
     conn.execute(
         f"DELETE FROM candidate_rejections WHERE run_id = ? "
-        f"AND stage IN ({_placeholders(stage_delete)})",
-        (run_id, *stage_delete),
+        f"AND stage IN ({_placeholders(rejection_stages)})",
+        (run_id, *rejection_stages),
     )
     conn.execute(
         f"DELETE FROM llm_call_logs WHERE run_id = ? "
-        f"AND stage IN ({_placeholders(stage_delete)})",
-        (run_id, *stage_delete),
+        f"AND ({_stage_where_clause(stage_delete)})",
+        (run_id, *_stage_where_params(stage_delete)),
     )
+    if "executor" in stage_delete:
+        conn.execute("DELETE FROM lens_candidates WHERE run_id = ?", (run_id,))
+    if "planner" in stage_delete:
+        conn.execute("DELETE FROM extraction_plans WHERE run_id = ?", (run_id,))
     conn.execute(
         f"DELETE FROM run_stage_states WHERE run_id = ? "
         f"AND stage IN ({_placeholders(stage_state_delete)})",
@@ -226,6 +257,26 @@ def _reset_manifest_for_resume(conn: sqlite3.Connection, run_id: str) -> None:
 def _stages_from(from_stage: str, order: tuple[str, ...]) -> tuple[str, ...]:
     start = order.index(from_stage)
     return order[start:]
+
+
+def _rejection_stages(stages: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(stage for stage in stages if stage in REJECTION_STAGES)
+
+
+def _stage_where_clause(stages: tuple[str, ...]) -> str:
+    clauses: list[str] = []
+    for stage in stages:
+        prefix = LLM_STAGE_PREFIXES.get(stage)
+        clauses.append("stage LIKE ?" if prefix is not None else "stage = ?")
+    return " OR ".join(clauses)
+
+
+def _stage_where_params(stages: tuple[str, ...]) -> tuple[str, ...]:
+    params: list[str] = []
+    for stage in stages:
+        prefix = LLM_STAGE_PREFIXES.get(stage)
+        params.append(f"{prefix}%" if prefix is not None else stage)
+    return tuple(params)
 
 
 def _placeholders(values: tuple[str, ...]) -> str:
