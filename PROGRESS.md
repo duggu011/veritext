@@ -4,12 +4,30 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Executor structural decomposition slice 4
-- Current status: Moved executor payload expansion, source text resolution, field-specific normalization, text matching helpers, and trace output out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
-- Next required work: continue executor cleanup with batch retry validation and rejection policy slices; run a targeted per-stage model comparison; or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: `src/extractor/executor/service.py` is now under 400 lines; future executor slices should keep behavior unchanged and preserve the same focused module boundaries.
+- Last completed phase: Executor structural decomposition slice 5
+- Current status: Moved executor batch retry validation/merge logic and candidate rejection policy out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
+- Next required work: choose the next oversized pipeline target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: executor modules now satisfy the 400-line convention; future cleanup should preserve the focused executor module boundaries and avoid re-growing `service.py`.
 
 ## Session Log
+
+### 2026-05-03 — Executor structural decomposition slice 5
+
+- Completed the current executor cleanup by moving batch retry validation and rejection policy out of `src/extractor/executor/service.py`.
+- Moved executor batch validation, retry merge behavior, and retry complaint rendering into `src/extractor/executor/batching.py`.
+- Moved candidate schema/span rejection policy, approved category-field lookup, and exact chunk-span matching into `src/extractor/executor/policies.py`.
+- Kept `src/extractor/executor/service.py` focused on execution orchestration, LLM calls, audit writes, candidate acceptance/rejection assembly, and result construction.
+- Confirmed touched executor files are under the 400-line limit after the split:
+  - `src/extractor/executor/batching.py`: 121 lines
+  - `src/extractor/executor/policies.py`: 77 lines
+  - `src/extractor/executor/service.py`: 211 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/executor/__init__.py src/extractor/executor/batching.py src/extractor/executor/dedup.py src/extractor/executor/errors.py src/extractor/executor/field_normalizers.py src/extractor/executor/ids.py src/extractor/executor/materialization.py src/extractor/executor/models.py src/extractor/executor/normalization.py src/extractor/executor/payload_expansion.py src/extractor/executor/policies.py src/extractor/executor/service.py src/extractor/executor/source_resolution.py src/extractor/executor/text_utils.py src/extractor/executor/trace.py src/extractor/executor/validation.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or audit DB mutations were made.
 
 ### 2026-05-03 — Executor structural decomposition slice 4
 
