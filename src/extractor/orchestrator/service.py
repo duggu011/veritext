@@ -411,6 +411,7 @@ async def run_extraction_pipeline(
                         prompt_loader=prompt_loader,
                         llm_client=actual_llm_client,
                         audit_store=audit_store,
+                        max_retries=max(config.execution.max_llm_attempts - 1, 0),
                     )
                 _print_stage("reconciler.done", f"data_points={len(reconciliation.data_points)}")
                 await _ensure_stage_completed(

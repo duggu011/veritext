@@ -35,7 +35,8 @@ Offset rules:
 - Never output source_text, start_text, start, offset, start_offset, end_char, start_byte, or end_byte.
 - Choose the shortest exact span that supports both the claim value and the approved field meaning.
 - A bare value or label is insufficient when the field meaning depends on qualifiers, role words, target/forecast status, comparison wording, speaker attribution, or risk/exposure context.
-- For statement-like fields such as summary, statement, description, condition, notable_qualifier, or asset_detail, choose the full source sentence or standalone clause with closing punctuation and set value equal to that span verbatim.
+- For statement-like fields such as summary, statement, description, or condition, choose the full source sentence or standalone clause with closing punctuation and set value equal to that span verbatim.
+- For qualifier or attribute fields such as notable_qualifier or asset_detail, choose the shortest exact phrase or clause that carries the qualifier/detail role; use a full sentence only when the whole sentence is the approved statement.
 - Do not trim leading dates, prices, values, conditions, or sentence punctuation from statement-like fields.
 
 Candidate rules:
@@ -52,6 +53,8 @@ Few-shot examples:
 - Common error to avoid: when chunk_view.text contains "...consolidated revenue of\n$482.3 million, a 17.4% year-over-year increase..." and the source span is "a 17.4% year-over-year increase", start_char must point to the 'a' of 'a 17.4%', not the comma or space before it. Whitespace and newlines are characters; counting must include them, but start_char itself must land on the first character of the span. Run the slice check mentally before emitting.
 - Valid: approved field is PolicyRequirement.summary and source states "Remote employees must complete security training every quarter"; extract that exact requirement.
 - Valid statement-like span: if approved field is RiskSummary.summary and source states "On May 3, the regulator raised the required reserve ratio to 12.0%.", extract the full sentence including date, value, and closing punctuation.
+- Valid qualifier span: if approved field is FinancialMetric.notable_qualifier and source says "Free cash flow positive at $12.6 million for the first time in eight quarters.", select "for the first time in eight quarters" because the sentence's metric and value are separate fields.
+- Valid static asset-detail span: if approved field is CorporateEvent.asset_detail and source states "Northwind operates 1.85 gigawatt-hours across seven U.S. states.", select "1.85 gigawatt-hours across seven U.S. states" because the field role is the operational profile rather than the company name or verb.
 - Valid label normalization: if approved field is PersonnelChange.change_type and source says "appointed Chief Operating Officer", value may be "appointment" with the source span over "appointed" or the phrase required by field meaning.
 - Valid speaker-role provenance: if approved field is guidance_speaker and source says "CEO Marcus Bell said", select "CEO Marcus Bell" when the speaker role is part of the field meaning.
 - Valid semantic-label provenance: if approved field is RiskExposure.exposure_type and source says "foreign-exchange exposure increased", select the phrase that includes "foreign-exchange exposure" rather than a bare generic label.

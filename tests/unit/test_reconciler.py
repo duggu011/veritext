@@ -47,6 +47,7 @@ class QueuedMessages:
             content=[
                 SimpleNamespace(
                     type="tool_use",
+                    id=f"toolu_{len(self.calls)}",
                     name=kwargs["tool_choice"]["name"],
                     input=self.payloads.pop(0),
                 )
@@ -417,6 +418,70 @@ def test_reconcile_candidates_uses_accepted_corrected_candidate_without_rewritin
     asyncio.run(run_check())
 
 
+def test_reconcile_candidates_prefers_tighter_source_candidate_in_group() -> None:
+    async def run_check() -> None:
+        chunk = Chunk(
+            chunk_id="chunk-asset",
+            doc_id="doc-1",
+            chunk_index=0,
+            text="Atacama-1 in Chile",
+            start_char=0,
+            end_char=len("Atacama-1 in Chile"),
+            start_byte=0,
+            end_byte=len("Atacama-1 in Chile".encode("utf-8")),
+            start_token=0,
+            end_token=4,
+        )
+        wide = make_candidate(
+            candidate_id="candidate-wide",
+            chunk=chunk,
+            source_text="Atacama-1 in Chile",
+            start_char=0,
+            value="Atacama-1 in Chile",
+        )
+        narrow = make_candidate(
+            candidate_id="candidate-narrow",
+            chunk=chunk,
+            source_text="Atacama-1",
+            start_char=0,
+            value="Atacama-1",
+        )
+        candidates = (wide, narrow)
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+        verifier_reports = tuple(make_verifier_report(candidate) for candidate in candidates)
+        wide_id = short_candidate_id(wide.candidate_id)
+        narrow_id = short_candidate_id(narrow.candidate_id)
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {
+                    "groups": ((wide_id, (wide_id, narrow_id)),),
+                    "rejected": (),
+                }
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        result = await reconcile_candidates(
+            plan=make_plan(),
+            candidates=candidates,
+            critic_reports=critic_reports,
+            verifier_reports=verifier_reports,
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        assert len(result.data_points) == 1
+        data_point = result.data_points[0]
+        assert data_point.value == "Atacama-1"
+        assert data_point.source_span == narrow.source_span
+        assert data_point.contributing_candidate_ids == (
+            "candidate-wide",
+            "candidate-narrow",
+        )
+
+    asyncio.run(run_check())
+
+
 def test_reconcile_candidates_logs_omitted_verified_candidates(
     tmp_path: Path,
 ) -> None:
@@ -500,8 +565,61 @@ def test_reconcile_candidates_rejects_unknown_output_candidate_id() -> None:
                 verifier_reports=verifier_reports,
                 prompt_loader=PromptLoader(ROOT / "prompts"),
                 llm_client=llm_client,
+                max_retries=0,
             )
 
         assert len(anthropic_client.messages.calls) == 1
+
+    asyncio.run(run_check())
+
+
+def test_reconcile_candidates_retries_unknown_compact_candidate_id(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        candidates = make_candidates()
+        critic_reports = tuple(make_critic_report(candidate) for candidate in candidates)
+        verifier_reports = tuple(make_verifier_report(candidate) for candidate in candidates)
+        good_first_id = short_candidate_id("candidate-1")
+        good_second_id = short_candidate_id("candidate-2")
+        anthropic_client = QueuedAnthropicClient(
+            [
+                {
+                    "groups": (("6eb85b6df135", ("6eb85b6df135",)),),
+                    "rejected": ((good_second_id, "reconciler_rejected"),),
+                },
+                {
+                    "groups": ((good_first_id, (good_first_id,)),),
+                    "rejected": ((good_second_id, "reconciler_rejected"),),
+                },
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, candidates, critic_reports, verifier_reports)
+            result = await reconcile_candidates(
+                plan=make_plan(),
+                candidates=candidates,
+                critic_reports=critic_reports,
+                verifier_reports=verifier_reports,
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                audit_store=audit_store,
+                max_retries=1,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+
+        assert len(anthropic_client.messages.calls) == 2
+        assert [log.attempt for log in logs] == [1, 2]
+        assert len(result.data_points) == 1
+        assert result.data_points[0].contributing_candidate_ids == ("candidate-1",)
+        retry_messages = anthropic_client.messages.calls[1]["messages"]
+        assert len(retry_messages) == 3
+        tool_result = retry_messages[2]["content"][0]
+        assert tool_result["type"] == "tool_result"
+        assert tool_result["is_error"] is True
+        assert "6eb85b6df135" in tool_result["content"]
+        assert good_first_id in tool_result["content"]
 
     asyncio.run(run_check())

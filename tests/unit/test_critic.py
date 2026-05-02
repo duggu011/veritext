@@ -649,6 +649,139 @@ def test_review_candidates_rejects_correction_that_drops_source_qualifier(
     asyncio.run(run_check())
 
 
+def test_review_candidates_rejects_correction_that_adds_ungrounded_tokens(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        span_text = "6,581 in Q1 2025"
+        chunk = Chunk(
+            chunk_id="chunk-prior",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=span_text,
+            start_char=0,
+            end_char=len(span_text),
+            start_byte=0,
+            end_byte=len(span_text.encode("utf-8")),
+            start_token=0,
+            end_token=5,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text=span_text,
+            value=span_text,
+        )
+        corrected = candidate.model_copy(
+            update={"value": "6,581 gigawatt-hours in Q1 2025"}
+        )
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(
+                    accepted_payload(
+                        candidate_id=candidate.candidate_id,
+                        corrected_candidate=corrected,
+                    )
+                )
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, (candidate,), chunks=(chunk,))
+            result = await review_candidates(
+                plan=make_plan(),
+                chunks=(chunk,),
+                candidates=(candidate,),
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=make_execution_config(),
+                audit_store=audit_store,
+            )
+            rejections = await audit_store.list_candidate_rejections(candidate.candidate_id)
+
+        assert result.accepted_candidates == ()
+        assert result.rejected_candidates == (candidate,)
+        assert rejections[0].reasons[0].code == "invented_span"
+        assert "adds words or units" in rejections[0].reasons[0].message
+
+    asyncio.run(run_check())
+
+
+def test_review_candidates_retries_correction_that_expands_source_span(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        chunk_text = "CEO Marcus Bell"
+        chunk = Chunk(
+            chunk_id="chunk-speaker",
+            doc_id="doc-1",
+            chunk_index=0,
+            text=chunk_text,
+            start_char=0,
+            end_char=len(chunk_text),
+            start_byte=0,
+            end_byte=len(chunk_text.encode("utf-8")),
+            start_token=0,
+            end_token=3,
+        )
+        candidate = make_candidate(
+            chunk=chunk,
+            source_text="Marcus Bell",
+            start_char=4,
+            value="Marcus Bell",
+        )
+        corrected = candidate.model_copy(
+            update={
+                "value": chunk_text,
+                "source_span": SourceSpan(
+                    doc_id="doc-1",
+                    chunk_id=chunk.chunk_id,
+                    start_char=0,
+                    end_char=len(chunk_text),
+                    start_byte=0,
+                    end_byte=len(chunk_text.encode("utf-8")),
+                    text=chunk_text,
+                ),
+            }
+        )
+        anthropic_client = QueuedAnthropicClient(
+            [
+                batch_payload(
+                    accepted_payload(
+                        candidate_id=candidate.candidate_id,
+                        corrected_candidate=corrected,
+                    )
+                ),
+                batch_payload(accepted_payload(candidate_id=candidate.candidate_id)),
+            ]
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=anthropic_client)
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, (candidate,), chunks=(chunk,))
+            result = await review_candidates(
+                plan=make_plan(),
+                chunks=(chunk,),
+                candidates=(candidate,),
+                prompt_loader=PromptLoader(ROOT / "prompts"),
+                llm_client=llm_client,
+                execution_config=make_execution_config(max_llm_attempts=2),
+                audit_store=audit_store,
+            )
+            logs = await audit_store.list_llm_call_logs("run-1")
+            rejections = await audit_store.list_candidate_rejections(candidate.candidate_id)
+
+        assert result.accepted_candidates == (candidate,)
+        assert result.rejected_candidates == ()
+        assert rejections == ()
+        assert [log.attempt for log in logs] == [1, 2]
+        retry_messages = anthropic_client.messages.calls[1]["messages"]
+        tool_result = retry_messages[2]["content"][0]
+        assert "must not expand beyond it" in tool_result["content"]
+
+    asyncio.run(run_check())
+
+
 def test_review_candidates_rejects_invalid_correction_without_silent_drop(
     tmp_path: Path,
 ) -> None:

@@ -24,6 +24,11 @@ from extractor.llm.views import (
     schema_card_from_plan,
     short_candidate_id,
 )
+from extractor.source_support import (
+    is_label_field,
+    source_traced_label_value,
+    value_is_source_supported,
+)
 from extractor.verifier.models import (
     CriticSummary,
     VerificationResult,
@@ -324,19 +329,24 @@ def _build_report(
         chunk=chunk,
         candidate=candidate,
     )
-    deterministic_span_valid = not any(
-        reason.code == "invented_span" for reason in deterministic_reasons
-    )
+    span_matches = _span_matches_chunk(candidate.source_span, chunk)
+    schema_approved = _candidate_schema_approved(plan=plan, candidate=candidate)
+    value_supported = value_is_source_supported(candidate)
+    label_supported = source_traced_label_value(candidate)
     llm_reasons = _llm_rejection_reasons(verdict)
-    if deterministic_span_valid:
-        # The deterministic span check is authoritative for offsets and exact
-        # text. When the LLM rejects with a span-correctness code against a
-        # span that actually matches the chunk, the verdict is hallucinated;
-        # drop those reasons so a correct candidate isn't lost. Other LLM
-        # signals (schema_violation, verifier_rejected, etc.) stay intact.
+    if span_matches or schema_approved or value_supported:
+        # Deterministic checks are authoritative for mechanical schema, offsets,
+        # exact span text, and source-traced label support. Drop LLM objections
+        # that contradict those checks; keep any remaining reasons.
         llm_reasons = tuple(
             reason for reason in llm_reasons
-            if reason.code not in _SPAN_CORRECTNESS_CODES
+            if not _is_contradicted_llm_reason(
+                reason=reason,
+                span_matches=span_matches,
+                schema_approved=schema_approved,
+                value_supported=value_supported,
+                label_supported=label_supported,
+            )
         )
     rejection_reasons = _merged_rejection_reasons(
         (*llm_reasons, *deterministic_reasons)
@@ -405,7 +415,47 @@ def _deterministic_rejection_reasons(
                 message="Candidate source span does not match the chunk text at the provided offsets.",
             )
         )
+    elif not is_label_field(candidate.field_name) and not value_is_source_supported(
+        candidate
+    ):
+        reasons.append(
+            RejectionReason(
+                code="invented_span",
+                message=(
+                    "Candidate value adds words or units that are not grounded "
+                    "in the selected source span."
+                ),
+            )
+        )
     return tuple(reasons)
+
+
+def _candidate_schema_approved(
+    *,
+    plan: ExtractionPlan,
+    candidate: LensCandidate,
+) -> bool:
+    fields = _approved_category_fields(plan).get(candidate.category)
+    return fields is not None and candidate.field_name in fields
+
+
+def _is_contradicted_llm_reason(
+    *,
+    reason: RejectionReason,
+    span_matches: bool,
+    schema_approved: bool,
+    value_supported: bool,
+    label_supported: bool,
+) -> bool:
+    if reason.code in {"invalid_source_offsets", "ambiguous_source_span"}:
+        return span_matches
+    if reason.code == "invented_span":
+        return span_matches and value_supported
+    if reason.code == "category_not_approved":
+        return schema_approved
+    if reason.code == "schema_violation":
+        return schema_approved and label_supported
+    return False
 
 
 def _llm_rejection_reasons(verdict: VerifierVerdict) -> tuple[RejectionReason, ...]:

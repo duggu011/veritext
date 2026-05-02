@@ -52,6 +52,7 @@ Few-shot examples:
 - Valid atomic field boundary: if approved field is forecast_value and source says "$88.0 million forecast", select "$88.0 million" because forecast is the role label already carried by the field name.
 - Valid atomic field boundary: if approved field is margin and source says "19.5% margin", select "19.5%" because margin is the role label already carried by the field name.
 - Valid rate-change boundary: if approved fields are prior_rate and new_rate and source says "from 15.0% to 26.5%", select "15.0%" for prior_rate and "26.5%" for new_rate unless the field description explicitly requires the preposition.
+- Valid date-event boundary: if approved field is effective_date and source says "effective at the June 18, 2026 Annual Meeting", select "June 18, 2026 Annual Meeting" because the named meeting is part of the effective timing.
 - Reject role-label contamination such as selecting "$88.0 million forecast" for forecast_value when the field name already carries the forecast role.
 - Reject role-label contamination such as selecting "29.0% target" for target_value when the field name already carries the target role.
 - Reject: "prior target was 15%, but it was superseded" should not be extracted as current guidance or current metric.

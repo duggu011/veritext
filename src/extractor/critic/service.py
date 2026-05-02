@@ -35,6 +35,11 @@ from extractor.llm.views import (
     schema_card_from_plan,
     short_candidate_id,
 )
+from extractor.source_support import (
+    correction_expands_source_span,
+    is_label_field,
+    value_is_source_supported,
+)
 from extractor.critic.models import (
     CompactCorrection,
     CriticBatchVerdicts,
@@ -342,9 +347,29 @@ def _validate_critic_batch(
         )
 
     for verdict in output.verdicts:
-        if verdict.id not in expected_ids or verdict.decision != "correct":
+        if verdict.id not in expected_ids:
             continue
         candidate = candidates_by_view_id[verdict.id]
+        if verdict.decision == "reject":
+            reasons = _contradicted_rejection_reasons(
+                plan=plan,
+                chunk=chunk,
+                candidate=candidate,
+                verdict=verdict,
+            )
+            if reasons:
+                complaints.append(
+                    ItemComplaint(
+                        identifier=verdict.id,
+                        message=_format_critic_rejection_complaint(
+                            verdict=verdict,
+                            reasons=reasons,
+                        ),
+                    )
+                )
+            continue
+        if verdict.decision != "correct":
+            continue
         corrected, structural_reasons = _materialize_correction(
             raw=verdict.correction,
             original=candidate,
@@ -457,6 +482,23 @@ def _format_critic_correction_complaint(
         "Action: re-emit ONLY this verdict with a valid decision/correction. "
         "If correcting, the correction must preserve candidate identity and its "
         "span_text must match chunk.text at span_start_char."
+    )
+
+
+def _format_critic_rejection_complaint(
+    *,
+    verdict: CriticVerdict,
+    reasons: list[RejectionReason],
+) -> str:
+    constraint = "; ".join(reason.message for reason in reasons)
+    return (
+        f"Verdict id {verdict.id!r} was rejected.\n"
+        f"You returned: decision={verdict.decision!r}, code={verdict.code!r}, "
+        f"evidence={verdict.evidence!r}.\n"
+        f"Constraint violated: {constraint}.\n"
+        "Action: re-emit ONLY this verdict. Accept if the candidate is valid; "
+        "otherwise reject using a reason that is not contradicted by the input "
+        "schema, offsets, and span_text."
     )
 
 
@@ -600,15 +642,21 @@ def _build_report(
         plausibility_score = 1.0
         issues: tuple[CriticIssue, ...] = ()
     elif verdict.decision == "reject":
-        accepted = False
-        plausibility_score = 0.0
-        issues = (
+        raw_issues = (
             CriticIssue(
                 code=_required_code(verdict),
                 severity=_severity_for(_required_code(verdict)),
                 message=verdict.evidence or _default_message(_required_code(verdict)),
             ),
         )
+        issues = _filter_contradicted_reject_issues(
+            plan=plan,
+            chunk=chunk,
+            candidate=candidate,
+            issues=raw_issues,
+        )
+        accepted = not issues
+        plausibility_score = 1.0 if accepted else 0.0
     else:
         corrected_candidate, structural_reasons = _materialize_correction(
             raw=verdict.correction,
@@ -840,6 +888,28 @@ def _correction_rejection_reasons(
                 message="Corrected candidate source span must match the chunk text at its offsets.",
             )
         )
+    if correction_expands_source_span(original=original, corrected=corrected):
+        reasons.append(
+            RejectionReason(
+                code="schema_violation",
+                message=(
+                    "Corrected candidate source span may narrow the executor "
+                    "span but must not expand beyond it."
+                ),
+            )
+        )
+    if not is_label_field(corrected.field_name) and not value_is_source_supported(
+        corrected
+    ):
+        reasons.append(
+            RejectionReason(
+                code="invented_span",
+                message=(
+                    "Corrected candidate value adds words or units that are not "
+                    "grounded in the corrected source span."
+                ),
+            )
+        )
     lost_qualifier = _lost_source_qualifier(original=original, corrected=corrected)
     if lost_qualifier is not None:
         reasons.append(
@@ -852,6 +922,70 @@ def _correction_rejection_reasons(
             )
         )
     return reasons
+
+
+def _contradicted_rejection_reasons(
+    *,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    candidate: LensCandidate,
+    verdict: CriticVerdict,
+) -> list[RejectionReason]:
+    if verdict.code is None:
+        return []
+
+    reasons: list[RejectionReason] = []
+    fields = _approved_category_fields(plan).get(candidate.category)
+    schema_approved = fields is not None and candidate.field_name in fields
+    span_matches = _span_matches_chunk(candidate.source_span, chunk)
+
+    if verdict.code == "category_not_approved" and schema_approved:
+        reasons.append(
+            RejectionReason(
+                code="category_not_approved",
+                message=(
+                    "Candidate category and field are present in the approved "
+                    "schema; category_not_approved is mechanically false."
+                ),
+            )
+        )
+    if verdict.code == "invalid_source_offsets" and span_matches:
+        reasons.append(
+            RejectionReason(
+                code="invalid_source_offsets",
+                message=(
+                    "Candidate source offsets and span_text exactly match the "
+                    "chunk; invalid_source_offsets is mechanically false."
+                ),
+            )
+        )
+    return reasons
+
+
+def _filter_contradicted_reject_issues(
+    *,
+    plan: ExtractionPlan,
+    chunk: Chunk,
+    candidate: LensCandidate,
+    issues: tuple[CriticIssue, ...],
+) -> tuple[CriticIssue, ...]:
+    filtered: list[CriticIssue] = []
+    for issue in issues:
+        verdict = CriticVerdict(
+            id=short_candidate_id(candidate.candidate_id),
+            decision="reject",
+            code=issue.code,
+            evidence=issue.message,
+        )
+        if _contradicted_rejection_reasons(
+            plan=plan,
+            chunk=chunk,
+            candidate=candidate,
+            verdict=verdict,
+        ):
+            continue
+        filtered.append(issue)
+    return tuple(filtered)
 
 
 def _lost_source_qualifier(

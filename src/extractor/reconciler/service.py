@@ -13,7 +13,14 @@ from extractor.contracts import (
     VerifierReport,
 )
 from extractor.contracts.models import RejectionReasonCode
-from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
+from extractor.llm import (
+    Accepted,
+    Complaints,
+    ItemComplaint,
+    LLMClient,
+    PromptLoader,
+    StructuredLLMRequest,
+)
 from extractor.llm.views import build_candidate_view_map, schema_card_from_plan
 from extractor.reconciler.models import (
     ReconciledGroupPayload,
@@ -23,6 +30,7 @@ from extractor.reconciler.models import (
     ReconcilerStageInput,
     RejectedCandidateDecision,
 )
+from extractor.source_support import candidate_source_specificity_rank
 
 
 class ReconcilerError(RuntimeError):
@@ -38,6 +46,7 @@ async def reconcile_candidates(
     prompt_loader: PromptLoader,
     llm_client: LLMClient,
     audit_store: AuditStore | None = None,
+    max_retries: int = 1,
 ) -> ReconciliationResult:
     if not candidates:
         return ReconciliationResult(data_points=(), rejections=())
@@ -53,21 +62,35 @@ async def reconcile_candidates(
     except ValueError as exc:
         raise ReconcilerError(str(exc)) from exc
 
-    result = await llm_client.complete_structured(
-        StructuredLLMRequest(
-            run_id=plan.run_id,
-            stage="reconciler",
-            prompt=prompt_loader.load("reconciler"),
-            user_content=ReconcilerStageInput(
-                schema_card=schema_card_from_plan(plan),
-                candidates=candidate_views,
-            ).model_dump_json(),
-            tool_name="reconcile_candidates",
-            tool_description="Reconcile verified candidates into final source-backed data points.",
-        ),
-        output_model=ReconciliationBatch,
-        audit_store=audit_store,
+    request = StructuredLLMRequest(
+        run_id=plan.run_id,
+        stage="reconciler",
+        prompt=prompt_loader.load("reconciler"),
+        user_content=ReconcilerStageInput(
+            schema_card=schema_card_from_plan(plan),
+            candidates=candidate_views,
+        ).model_dump_json(),
+        tool_name="reconcile_candidates",
+        tool_description="Reconcile verified candidates into final source-backed data points.",
     )
+    if max_retries > 0 and llm_client.config.provider == "anthropic":
+        result = await llm_client.complete_structured_with_retry(
+            request,
+            output_model=ReconciliationBatch,
+            audit_store=audit_store,
+            validate=lambda batch: _validate_reconciliation_batch(
+                batch=batch,
+                candidates_by_view_id=candidates_by_view_id,
+            ),
+            merge=_replace_reconciliation_batch,
+            max_retries=max_retries,
+        )
+    else:
+        result = await llm_client.complete_structured(
+            request,
+            output_model=ReconciliationBatch,
+            audit_store=audit_store,
+        )
     expanded_batch = _expand_reconciliation_batch_ids(
         batch=result.output,
         candidates_by_view_id=candidates_by_view_id,
@@ -184,6 +207,57 @@ def _expand_reconciliation_batch_ids(
         groups=tuple(groups),
         rejected=tuple(rejected),
     )
+
+
+def _validate_reconciliation_batch(
+    *,
+    batch: ReconciliationBatch,
+    candidates_by_view_id: dict[str, LensCandidate],
+) -> Accepted[ReconciliationBatch] | Complaints:
+    unknown_ids = _unknown_compact_candidate_ids(
+        batch=batch,
+        candidates_by_view_id=candidates_by_view_id,
+    )
+    if not unknown_ids:
+        return Accepted(output=batch)
+
+    allowed_ids = ", ".join(sorted(candidates_by_view_id))
+    return Complaints(
+        complaints=(
+            ItemComplaint(
+                identifier="candidate_ids",
+                message=(
+                    "Reconciler output referenced candidate IDs that were not "
+                    f"in the input candidate list: {', '.join(unknown_ids)}. "
+                    "Re-emit the complete reconciliation output using only "
+                    f"these candidate IDs: {allowed_ids}."
+                ),
+            ),
+        )
+    )
+
+
+def _replace_reconciliation_batch(
+    prior: ReconciliationBatch,
+    retry: ReconciliationBatch,
+    bad_ids: frozenset[str],
+) -> ReconciliationBatch:
+    del prior, bad_ids
+    return retry
+
+
+def _unknown_compact_candidate_ids(
+    *,
+    batch: ReconciliationBatch,
+    candidates_by_view_id: dict[str, LensCandidate],
+) -> tuple[str, ...]:
+    known_ids = set(candidates_by_view_id)
+    referenced_ids: set[str] = set()
+    for source_candidate_id, contributing_candidate_ids in batch.groups:
+        referenced_ids.add(source_candidate_id)
+        referenced_ids.update(contributing_candidate_ids)
+    referenced_ids.update(candidate_id for candidate_id, _ in batch.rejected)
+    return tuple(sorted(referenced_ids - known_ids))
 
 
 def _full_candidate_id(
@@ -311,6 +385,11 @@ def _payload_from_group(
     candidates_by_id: dict[str, LensCandidate],
 ) -> ReconciledDataPointPayload:
     source_candidate_id, contributing_candidate_ids = group
+    source_candidate_id = _best_source_candidate_id(
+        selected_source_candidate_id=source_candidate_id,
+        contributing_candidate_ids=contributing_candidate_ids,
+        candidates_by_id=candidates_by_id,
+    )
     source_candidate = candidates_by_id[source_candidate_id]
     return ReconciledDataPointPayload(
         category=source_candidate.category,
@@ -320,6 +399,26 @@ def _payload_from_group(
         contributing_candidate_ids=contributing_candidate_ids,
         confidence=source_candidate.confidence,
     )
+
+
+def _best_source_candidate_id(
+    *,
+    selected_source_candidate_id: str,
+    contributing_candidate_ids: tuple[str, ...],
+    candidates_by_id: dict[str, LensCandidate],
+) -> str:
+    selected = candidates_by_id[selected_source_candidate_id]
+    comparable = [
+        candidates_by_id[candidate_id]
+        for candidate_id in contributing_candidate_ids
+        if (
+            candidates_by_id[candidate_id].category == selected.category
+            and candidates_by_id[candidate_id].field_name == selected.field_name
+        )
+    ]
+    if not comparable:
+        return selected_source_candidate_id
+    return min(comparable, key=candidate_source_specificity_rank).candidate_id
 
 
 def _data_point_rejection_reasons(

@@ -1,23 +1,26 @@
-"""Prepare a failed run for safe resume from the critic stage.
+"""Prepare a failed or explicitly opted-in completed run for safe resume.
 
 This script is local-only and makes no API calls. By default it only reports
 what it would remove. Pass `--apply` to back up the audit DB and delete partial
-critic/verifier/reconciler/reporter artifacts for one failed run id, leaving
-ingestion, chunker, planner, executor, and dedup audit state intact.
+artifacts for one run id, leaving earlier completed audit state intact.
+
+Completed runs are refused unless `--allow-completed` is supplied. That option
+exists for deliberate downstream remeasurement only; when applied it resets the
+manifest to a failed, resumable state and clears old output data point IDs.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
 
-STAGE_STATE_DELETE = ("critic", "verifier", "reconciler", "reporter")
-REJECTION_DELETE = ("critic", "verifier", "reconciler")
-LLM_STAGE_DELETE = ("critic", "verifier", "reconciler")
+STAGE_ORDER = ("critic", "verifier", "reconciler")
+REPORT_STAGE_ORDER = ("critic", "verifier", "reconciler", "reporter")
 
 
 def main() -> int:
@@ -34,6 +37,25 @@ def main() -> int:
         action="store_true",
         help="Actually back up and modify the audit DB. Omit for dry-run.",
     )
+    parser.add_argument(
+        "--from-stage",
+        choices=STAGE_ORDER,
+        default="critic",
+        help=(
+            "First downstream stage to clear. Default keeps old behavior and "
+            "clears critic and later. Use verifier after a partial verifier "
+            "rate-limit failure to preserve completed critic work."
+        ),
+    )
+    parser.add_argument(
+        "--allow-completed",
+        action="store_true",
+        help=(
+            "Allow deliberate cleanup of a completed run. Requires --apply to "
+            "mutate the DB; dry-run shows the rows and manifest reset that "
+            "would occur."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.audit.exists():
@@ -47,12 +69,16 @@ def main() -> int:
         ).fetchone()
         if manifest is None:
             parser.error(f"run_id not found in run_manifests: {args.run_id}")
-        if manifest[0] == "completed":
+        completed_run = manifest[0] == "completed"
+        if completed_run and not args.allow_completed:
             parser.error(f"refusing to prepare completed run: {args.run_id}")
 
-        counts = _counts(conn, args.run_id)
+        counts = _counts(conn, args.run_id, from_stage=args.from_stage)
         print(f"run_id={args.run_id}")
         print(f"manifest_status={manifest[0]}")
+        print(f"from_stage={args.from_stage}")
+        if completed_run:
+            print("completed_manifest_reset=1")
         for label, count in counts:
             print(f"{label}={count}")
 
@@ -66,48 +92,70 @@ def main() -> int:
         print(f"backup={backup_path}")
 
         with conn:
-            _delete_partial_rows(conn, args.run_id)
+            _delete_partial_rows(conn, args.run_id, from_stage=args.from_stage)
+            if completed_run:
+                _reset_manifest_for_resume(conn, args.run_id)
         print("resume_prep=applied")
         return 0
     finally:
         conn.close()
 
 
-def _counts(conn: sqlite3.Connection, run_id: str) -> list[tuple[str, int]]:
+def _counts(
+    conn: sqlite3.Connection,
+    run_id: str,
+    *,
+    from_stage: str,
+) -> list[tuple[str, int]]:
+    stage_delete = _stages_from(from_stage, STAGE_ORDER)
+    stage_state_delete = _stages_from(from_stage, REPORT_STAGE_ORDER)
+    counts: list[tuple[str, int]] = []
+    if "critic" in stage_delete:
+        counts.append(
+            ("critic_reports", _count(conn, "critic_reports", "run_id = ?", (run_id,)))
+        )
+    if "verifier" in stage_delete:
+        counts.append(
+            (
+                "verifier_reports",
+                _count(conn, "verifier_reports", "run_id = ?", (run_id,)),
+            )
+        )
+    if "reconciler" in stage_delete:
+        counts.append(("data_points", _count(conn, "data_points", "run_id = ?", (run_id,))))
+    counts.extend(
+        [
+            (
+                "candidate_rejections_from_stage",
+                _count(
+                    conn,
+                    "candidate_rejections",
+                    f"run_id = ? AND stage IN ({_placeholders(stage_delete)})",
+                    (run_id, *stage_delete),
+                ),
+            ),
+            (
+                "llm_call_logs_from_stage",
+                _count(
+                    conn,
+                    "llm_call_logs",
+                    f"run_id = ? AND stage IN ({_placeholders(stage_delete)})",
+                    (run_id, *stage_delete),
+                ),
+            ),
+            (
+                "run_stage_states_from_stage",
+                _count(
+                    conn,
+                    "run_stage_states",
+                    f"run_id = ? AND stage IN ({_placeholders(stage_state_delete)})",
+                    (run_id, *stage_state_delete),
+                ),
+            ),
+        ]
+    )
     return [
-        ("critic_reports", _count(conn, "critic_reports", "run_id = ?", (run_id,))),
-        (
-            "verifier_reports",
-            _count(conn, "verifier_reports", "run_id = ?", (run_id,)),
-        ),
-        ("data_points", _count(conn, "data_points", "run_id = ?", (run_id,))),
-        (
-            "candidate_rejections_critic_later",
-            _count(
-                conn,
-                "candidate_rejections",
-                f"run_id = ? AND stage IN ({_placeholders(REJECTION_DELETE)})",
-                (run_id, *REJECTION_DELETE),
-            ),
-        ),
-        (
-            "llm_call_logs_critic_later",
-            _count(
-                conn,
-                "llm_call_logs",
-                f"run_id = ? AND stage IN ({_placeholders(LLM_STAGE_DELETE)})",
-                (run_id, *LLM_STAGE_DELETE),
-            ),
-        ),
-        (
-            "run_stage_states_critic_later",
-            _count(
-                conn,
-                "run_stage_states",
-                f"run_id = ? AND stage IN ({_placeholders(STAGE_STATE_DELETE)})",
-                (run_id, *STAGE_STATE_DELETE),
-            ),
-        ),
+        item for item in counts if item[1] > 0 or item[0].endswith("_from_stage")
     ]
 
 
@@ -123,25 +171,61 @@ def _count(
     return int(row[0])
 
 
-def _delete_partial_rows(conn: sqlite3.Connection, run_id: str) -> None:
-    conn.execute("DELETE FROM critic_reports WHERE run_id = ?", (run_id,))
-    conn.execute("DELETE FROM verifier_reports WHERE run_id = ?", (run_id,))
-    conn.execute("DELETE FROM data_points WHERE run_id = ?", (run_id,))
+def _delete_partial_rows(
+    conn: sqlite3.Connection,
+    run_id: str,
+    *,
+    from_stage: str,
+) -> None:
+    stage_delete = _stages_from(from_stage, STAGE_ORDER)
+    stage_state_delete = _stages_from(from_stage, REPORT_STAGE_ORDER)
+    if "critic" in stage_delete:
+        conn.execute("DELETE FROM critic_reports WHERE run_id = ?", (run_id,))
+    if "verifier" in stage_delete:
+        conn.execute("DELETE FROM verifier_reports WHERE run_id = ?", (run_id,))
+    if "reconciler" in stage_delete:
+        conn.execute("DELETE FROM data_points WHERE run_id = ?", (run_id,))
     conn.execute(
         f"DELETE FROM candidate_rejections WHERE run_id = ? "
-        f"AND stage IN ({_placeholders(REJECTION_DELETE)})",
-        (run_id, *REJECTION_DELETE),
+        f"AND stage IN ({_placeholders(stage_delete)})",
+        (run_id, *stage_delete),
     )
     conn.execute(
         f"DELETE FROM llm_call_logs WHERE run_id = ? "
-        f"AND stage IN ({_placeholders(LLM_STAGE_DELETE)})",
-        (run_id, *LLM_STAGE_DELETE),
+        f"AND stage IN ({_placeholders(stage_delete)})",
+        (run_id, *stage_delete),
     )
     conn.execute(
         f"DELETE FROM run_stage_states WHERE run_id = ? "
-        f"AND stage IN ({_placeholders(STAGE_STATE_DELETE)})",
-        (run_id, *STAGE_STATE_DELETE),
+        f"AND stage IN ({_placeholders(stage_state_delete)})",
+        (run_id, *stage_state_delete),
     )
+
+
+def _reset_manifest_for_resume(conn: sqlite3.Connection, run_id: str) -> None:
+    row = conn.execute(
+        "SELECT payload_json FROM run_manifests WHERE run_id = ?",
+        (run_id,),
+    ).fetchone()
+    if row is None:
+        raise RuntimeError(f"run_id not found in run_manifests: {run_id}")
+
+    reset_at = datetime.now(timezone.utc).isoformat()
+    payload = json.loads(row[0])
+    payload["status"] = "failed"
+    payload["completed_at"] = reset_at
+    payload["output_data_point_ids"] = []
+    conn.execute(
+        "UPDATE run_manifests "
+        "SET status = ?, completed_at = ?, payload_json = ? "
+        "WHERE run_id = ?",
+        ("failed", reset_at, json.dumps(payload), run_id),
+    )
+
+
+def _stages_from(from_stage: str, order: tuple[str, ...]) -> tuple[str, ...]:
+    start = order.index(from_stage)
+    return order[start:]
 
 
 def _placeholders(values: tuple[str, ...]) -> str:

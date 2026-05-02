@@ -202,9 +202,11 @@ def test_executor_prompts_require_statement_clause_span_widths() -> None:
 
     for body in (claim, event):
         for phrase in (
-            "For statement-like fields such as summary, statement, description, condition, notable_qualifier, or asset_detail",
+            "For statement-like fields such as summary, statement, description, or condition",
             "choose the full source sentence or standalone clause with closing punctuation",
             "set value equal to that span verbatim",
+            "For qualifier or attribute fields such as notable_qualifier or asset_detail",
+            "choose the shortest exact phrase or clause that carries the qualifier/detail role",
             "Do not trim leading dates, prices, values, conditions, or sentence punctuation from statement-like fields",
         ):
             assert phrase in body

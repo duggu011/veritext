@@ -4,12 +4,230 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Prompt-hardening live rerun review
-- Current status: Resumed run `medium-research-prompt-hardening-20260502-1` completed with improved quality: precision `0.765`, recall `0.736`, F1 `0.750`, provenance recall `0.717`, and zero invariant violations
-- Next required work: operator approval for the next local repair phase, likely targeted executor normalization/offset fixes plus one fixture punctuation audit for `RegulatoryRisk.summary`
-- Next-phase context: start from the triage of `medium-research-prompt-hardening-20260502-1`. Do not run live LLM calls. The highest-leverage local targets are executor-side value/span normalization, not another broad prompt rewrite: (1) generate noun-form labels for source phrases such as `commenced operation` -> `Facility commencement`, `approved acquiring` -> `Acquisition approval`, and `appointed` -> `appointment`; (2) preserve period wording in prior-period values such as `$410.8 million in Q1 2025` and `6,581 in Q1 2025`; (3) trim guidance near-misses to expected role values, especially `condition` without a leading `with` and bare `speaker` names when the approved field is `speaker`; (4) improve retry/repair for repeated or header-adjacent offsets such as `Revenue` and `Q1 2026`; (5) audit `exp-052`, where the actual full-sentence `RegulatoryRisk.summary` includes the closing period and appears more consistent with `docs/annotation-conventions.md` than the current fixture span.
+- Last completed phase: Downstream guardrail live rerun review
+- Current status: Completed resumed run `medium-research-executor-check-20260502-044644` after critic-and-later cleanup. Score improved to precision `0.842`, recall `0.906`, F1 `0.873`, provenance recall `0.906`, TP `48`, FP `9`, FN `5`, exact-provenance matches `48`, invariant violations `0`.
+- Next required work: local planner/schema-description generalization phase. Remaining losses are driven by over-specific plan wording and one label normalization/source-selection case, not executor absence.
+- Next-phase context: remaining missing bucket counts are critic-rejected `3`, verifier-rejected `1`, surfaced-but-not-matched `1`. The plan still describes `CorporateEvent` as specifically the Northwind acquisition and `OperationalMetric.facility` as name-and-location; these descriptions caused critic/verifier to reject exact executor candidates for Atacama facility commencement and bare facility name.
 
 ## Session Log
+
+### 2026-05-02 — Downstream guardrail live rerun review
+
+- Operator applied completed-run cleanup from `critic` and resumed `medium-research-executor-check-20260502-044644`; the run completed with 57 final data points.
+- Scored `outputs/medium-research-executor-check-20260502-044644.json` against `evals/fixtures/medium_research_brief/case.json`: precision `0.842`, recall `0.906`, F1 `0.873`, provenance recall `0.906`, TP `48`, FP `9`, FN `5`, exact-provenance matches `48`, invariant violations `0`.
+- Compared with the prior completed score for the same run: precision `0.815 -> 0.842`, recall `0.830 -> 0.906`, F1 `0.822 -> 0.873`, false negatives `9 -> 5`, false positives `10 -> 9`, exact-provenance matches `43 -> 48`.
+- Audit summary after rerun:
+  - lens candidates: `202`
+  - critic reports: `202` (`191` accepted, `11` rejected)
+  - verifier reports: `191` (`189` accepted, `2` rejected)
+  - data points: `57`
+  - rejections: dedup `134`, critic `9`, verifier `2`
+  - LLM calls preserved/added: planner `5`, executor `4`, critic `8`, verifier `2`, reconciler `1`
+- Triage for the remaining five misses:
+  - critic rejected `CorporateEvent.asset_detail`, `CorporateEvent.event_type = Facility commencement`, and `CorporateEvent.summary` because the plan description scopes `CorporateEvent` to the Northwind acquisition rather than event-like facts generally.
+  - verifier rejected `OperationalMetric.facility = Atacama-1` because the plan field description says facility should include name and location.
+  - `PersonnelChange.change_type = appointment` surfaced with the exact expected span but final value `appointed`, so the remaining issue is label normalization/source-candidate preference for change-type values.
+- Confirmed provenance mismatches among true positives are now `0`; the remaining work is recall/normalization and false-positive control.
+- No live LLM calls were run by the agent during this review; scoring and audit inspection were local-only.
+
+### 2026-05-02 — Completed-run downstream resume helper
+
+- Added `--allow-completed` to `scripts/prepare_failed_run_resume.py` after the operator attempted the explicit completed-run cleanup command.
+- Completed runs remain protected by default: without `--allow-completed`, the script still refuses to prepare a completed manifest.
+- With `--allow-completed --apply`, the script:
+  - backs up the audit DB before mutation
+  - deletes only rows from the requested downstream stage onward
+  - resets the manifest from `completed` to `failed`
+  - clears `output_data_point_ids` in the manifest payload so `--resume` can produce fresh reporter output
+- Added `tests/unit/test_prepare_failed_run_resume.py` covering default completed-run refusal and the explicit allow path.
+- Verified:
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_prepare_failed_run_resume.py -q` (`2 passed`)
+  - `PYTHONPATH=src python3 -m py_compile scripts/prepare_failed_run_resume.py tests/unit/test_prepare_failed_run_resume.py`
+  - `PYTHONPATH=src python3 scripts/prepare_failed_run_resume.py --help`
+  - dry-run for `medium-research-executor-check-20260502-044644 --from-stage critic --allow-completed`
+  - `git diff --check -- scripts/prepare_failed_run_resume.py tests/unit/test_prepare_failed_run_resume.py PROGRESS.md`
+  - `make lint`
+- No cleanup was applied to the live audit DB by the agent, and no live LLM calls were run.
+
+### 2026-05-02 — Downstream local guardrail repair
+
+- Traced the nine misses in `medium-research-executor-check-20260502-044644` with `scripts/triage_missing_and_spans.py`: critic-rejected `4`, verifier-rejected `1`, and surfaced-but-not-matched `4`.
+- Confirmed the surfaced-but-not-matched misses came from downstream rewriting or source selection, not executor absence:
+  - critic corrected `Marcus Bell` to `CEO Marcus Bell`
+  - critic corrected `Atacama-1` to `Atacama-1 in Chile`
+  - critic corrected `6,581 in Q1 2025` to `6,581 gigawatt-hours in Q1 2025` while keeping the narrower source span
+  - critic widened `retirement` provenance to `announced retirement`
+- Added `src/extractor/source_support.py` for general downstream source-support helpers:
+  - correction span expansion detection
+  - non-label value/source token support
+  - source-traced label detection using generic canonical token support
+  - reconciler source-candidate specificity ranking
+- Removed an initially added phrase-specific label table from `source_support.py`; no document names, company names, asset names, or exact fixture label mappings remain.
+- Hardened critic behavior in `src/extractor/critic/service.py`:
+  - invalid corrections that expand beyond the executor span are rejected/retried
+  - invalid corrections that add unsupported non-label words or units are rejected/retried
+  - `category_not_approved` is treated as mechanically contradicted when the candidate category and field are approved by the plan
+  - `invalid_source_offsets` is treated as mechanically contradicted when the span exactly matches the chunk
+- Hardened verifier behavior in `src/extractor/verifier/service.py`:
+  - unsupported non-label value additions now fail deterministic verification even if the LLM accepts
+  - source-traced label schema objections can be ignored only when generic label token support says the source supports the normalized label
+  - label fields are not deterministically rejected just because the value is a normalization rather than a verbatim span
+- Hardened reconciler source selection in `src/extractor/reconciler/service.py`: when the model groups multiple candidates, the server chooses the most source-supported and specific candidate from the group as the data point source instead of blindly trusting a wider model-selected source ID.
+- Added focused regression coverage in `tests/unit/test_critic.py`, `tests/unit/test_verifier.py`, and `tests/unit/test_reconciler.py` for the downstream failure classes.
+- Verified:
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py -q` (`42 passed`)
+  - focused new regression tests (`5 passed`)
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_executor.py -q` (`67 passed`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
+  - `make test` (`188 passed`, `2 skipped`)
+- No live LLM calls were run.
+
+### 2026-05-02 — Pre-cleanup audit inspection
+
+- Checked `git status --short`; existing local modifications remain in place and were not reverted.
+- Read `PROGRESS.md` and confirmed it already recorded the completed full resume and downstream score for `medium-research-executor-check-20260502-044644`.
+- Inspected `.veritext/audit.sqlite3` before any cleanup:
+  - run manifest status: `completed`
+  - completed stage states: `ingestion`, `chunker`, `planner`, `executor`, `dedup`, `critic`, `verifier`, `reconciler`, `reporter`
+  - LLM call logs: planner 5, executor 4, critic 6, verifier 2, reconciler 1
+  - lens candidates: `202`
+  - critic reports: `202` (`191` accepted, `11` rejected)
+  - verifier reports: `191` (`183` accepted, `8` rejected)
+  - data points: `54`
+  - rejections: dedup `134`, critic `8`, verifier `8`
+- Confirmed output `outputs/medium-research-executor-check-20260502-044644.json` is 77,239 bytes with SHA-256 `a948e4c42fe5d2682b4feb15a70fc478c1e1f9a82ad56cf49da05249af988753`.
+- Re-ran local-only eval scoring; metrics matched the prior log: precision `0.815`, recall `0.830`, F1 `0.822`, provenance recall `0.811`, TP `44`, FP `10`, FN `9`, exact-provenance matches `43`, invariant violations `0`.
+- Did not apply `scripts/prepare_failed_run_resume.py --from-stage verifier --apply` because the audit manifest is no longer failed; deleting verifier-and-later rows now would discard valid completed-run artifacts.
+- No live LLM calls were run.
+
+### 2026-05-02 — Executor-check full resume review
+
+- Operator cleared partial verifier state and resumed `medium-research-executor-check-20260502-044644` with throttled verifier settings; the run completed with 54 final data points.
+- Scored `outputs/medium-research-executor-check-20260502-044644.json` against `evals/fixtures/medium_research_brief/case.json`: precision `0.815`, recall `0.830`, F1 `0.822`, provenance recall `0.811`, TP `44`, FP `10`, FN `9`, exact-provenance matches `43`, invariant violations `0`.
+- Acceptance/usage checks from audit passed: critic batches `6 <= 6`, verifier batches `2 <= 5`, and both critic/verifier cache-read token checks were nonzero.
+- The executor-only gate remains strong: all `53/53` expected fixture items had exact candidates before downstream stages. Full-run losses are downstream.
+- Missing expected bucket counts:
+  - critic rejected: `4`
+  - verifier rejected: `1`
+  - exact candidate contributed to a surfaced data point but final value/span did not match eval: `4`
+- Concrete downstream failures:
+  - Critic rejected Atacama `CorporateEvent.asset_detail`, `CorporateEvent.event_type = Facility commencement`, and `CorporateEvent.summary`, citing category mismatch because the plan description framed `CorporateEvent` around the Northwind acquisition.
+  - Verifier rejected `CorporateEvent.event_type = Acquisition approval`, failing to allow source-traced label normalization from `approved acquiring`.
+  - Critic falsely rejected `OperationalMetric.metric_name = Solar capacity factor` as an invalid offset even though executor had already built exact source spans.
+  - Reconciler/source selection produced wider or unnormalized final values for exact accepted candidates: `CEO Marcus Bell` vs `Marcus Bell`, `Atacama-1 in Chile` vs `Atacama-1`, `6,581 gigawatt-hours in Q1 2025` vs `6,581 in Q1 2025`, `appointed` vs `appointment`, and `announced retirement` vs `retirement`.
+- No live LLM calls were run by the agent during scoring/triage; scoring and audit inspection were local-only.
+
+### 2026-05-02 — Verifier rate-limit resume prep
+
+- Operator resumed `medium-research-executor-check-20260502-044644` through the full CLI; Anthropic returned `429 Too Many Requests` for `claude-sonnet-4-6` with an organization limit of 5 requests per minute.
+- Inspected audit state after failure:
+  - run manifest status: `failed`
+  - completed stage states: `ingestion`, `chunker`, `planner`, `executor`, `dedup`, `critic`
+  - LLM call logs: planner 5, executor 4, critic 6, verifier 6
+  - lens candidates: `202`
+  - critic reports: `202`
+  - verifier reports: `120`
+  - data points: `0`
+  - rejections: dedup `134`, critic `8`, verifier `5`
+- Extended `scripts/prepare_failed_run_resume.py` with `--from-stage {critic,verifier,reconciler}` so a partial verifier failure can be cleaned without deleting completed critic reports/logs.
+- Dry-run for `--from-stage verifier` reports it would delete only verifier-and-later partial rows: verifier reports `120`, verifier/reconciler rejections `5`, verifier/reconciler LLM call logs `6`, and no completed verifier/reconciler/reporter stage states.
+- Verified `PYTHONPATH=src python3 -m py_compile scripts/prepare_failed_run_resume.py`, `make lint`, `make smoke`, `git diff --check`, and `make test` (`183 passed`, `2 skipped`).
+
+### 2026-05-02 — Executor-only live gate check
+
+- Operator ran fresh executor-only debug run `medium-research-executor-check-20260502-044644` after the effective-date context repair.
+- Inspected `.veritext/debug/medium-research-executor-check-20260502-044644/02_extraction_plan.json`; the planner approved every category/field required by `evals/fixtures/medium_research_brief/case.json`.
+- Inspected executor artifacts:
+  - accepted executor candidates: `202`
+  - executor rejections: `0`
+  - expected fixture items with exact candidate present before downstream stages: `53/53`
+  - expected fixture items missing at executor: `0`
+  - expected fixture items present only with non-exact provenance: `0`
+- Confirmed the prior miss is closed: `PersonnelChange.effective_date` now has exact candidates with value/span `June 18, 2026 Annual Meeting`.
+- No code changes or live LLM calls were run by the agent during this inspection; live calls were made by the operator through the debug runner.
+
+### 2026-05-02 — Executor effective-date context repair
+
+- Analyzed executor-only live artifacts from `medium-research-executor-check-20260502-043728`.
+- Confirmed planner approved all expected fields and executor produced zero rejections, with `52/53` exact expected candidates present at executor stage.
+- Isolated the only executor-stage miss: `PersonnelChange.effective_date` expected `June 18, 2026 Annual Meeting`, while executor produced `June 18, 2026`.
+- Added deterministic normalization in `src/extractor/executor/service.py` for `effective_date`: when the date span is immediately followed by named meeting context such as `Annual Meeting`, the executor extends both value and source span to include the named event context.
+- Updated `docs/annotation-conventions.md` and executor prompts to document the general rule that effective timing spans keep an immediately attached named event context when the action is effective at that named event.
+- Added unit coverage in `tests/unit/test_executor.py` for the `effective at the June 18, 2026 Annual Meeting` shape.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_prompt_schema_quality.py -q`, `make lint`, `make smoke`, `git diff --check`, and `make test` (`183 passed`, `2 skipped`).
+- No paid/live LLM calls were run for the repair.
+
+### 2026-05-02 — Executor-only debug runner
+
+- Added `scripts/debug_executor_only.py` for the operator workflow: run source ingestion, chunking, planner, and executor only; dump review artifacts under `.veritext/debug/<run-id>/`; stop before downstream paid review/reconciliation stages.
+- The runner creates normal audit rows and marks `ingestion`, `chunker`, `planner`, and `executor` stage states complete, leaving the run manifest resumable rather than completed.
+- The runner also supports existing non-completed runs that already have audited chunks and a plan; it will run executor if needed or load existing executor candidates without duplicating them.
+- Review artifacts:
+  - `00_document.json`
+  - `01_chunks.json`
+  - `02_extraction_plan.json`
+  - `03_executor_summary.json`
+  - `04_executor_candidates.json`
+  - `05_executor_rejections.json`
+- Verified `PYTHONPATH=src python3 scripts/debug_executor_only.py --help`, `PYTHONPATH=src python3 -m py_compile scripts/debug_executor_only.py`, `make lint`, `make smoke`, `git diff --check`, and `make test` (`182 passed`, `2 skipped`).
+- No paid/live LLM calls were run.
+
+### 2026-05-02 — Executor generalization local repair
+
+- Inspected `.veritext/debug/medium-research-executor-repair-20260502-1/triage.md`, `docs/annotation-conventions.md`, `docs/extraction-quality-generalization-audit.md`, and executor prompts before editing.
+- Added deterministic executor candidate expansion for event-lens chunks with explicit source phrases:
+  - `commenced/began/started operation(s)` produces source-backed `event_type = Facility commencement` and, when approved, the source sentence as `summary` and `asset_detail`.
+  - `approved acquiring` / `approved acquisition` produces source-backed `event_type = Acquisition approval` and, when approved, the source sentence as `summary`.
+- Added executor post-resolution normalization for general span-width failures:
+  - trims role suffixes such as `target`, `forecast`, and `margin` from fields whose names already encode that role;
+  - narrows `notable_qualifier` to the qualifier phrase when the model selected the whole sentence;
+  - narrows static operational-profile `asset_detail` spans such as `Northwind operates 1.85 gigawatt-hours across seven U.S. states.` to the profile phrase;
+  - preserves original model duplicates so the existing audited dedup stage still records duplicate rejections.
+- Updated `docs/annotation-conventions.md` and `prompts/executor/{claim,event}.md` to distinguish statement fields from qualifier/attribute fields: `summary`/`statement`/`description`/`condition` stay sentence-wide, while `notable_qualifier` and static `asset_detail` use tight source phrases unless the whole event sentence is the detail.
+- Added focused unit coverage in `tests/unit/test_executor.py` for derived operation/acquisition event candidates, operational-profile asset-detail tightening, target/forecast suffix trimming, and notable qualifier tightening; updated prompt-quality assertions for the new field-width rule.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_prompt_schema_quality.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_orchestrator.py tests/unit/test_prompt_schema_quality.py -q`, `make test` (`182 passed`, `2 skipped`), `make lint`, `make smoke`, and `git diff --check`.
+- No paid/live LLM calls were run.
+
+### 2026-05-02 — Executor-repair live rerun review
+
+- Operator resumed `medium-research-executor-repair-20260502-1` after the reconciler unknown-ID retry repair; the run completed with 55 final data points and zero invariant violations.
+- Scored `outputs/medium-research-executor-repair-20260502-1.json` against `evals/fixtures/medium_research_brief/case.json`: precision `0.818`, recall `0.849`, F1 `0.833`, provenance recall `0.830`, TP `45`, FP `10`, FN `8`, exact-provenance matches `44`.
+- Compared with the immediately prior scored state for `medium-research-prompt-hardening-20260502-1` after the `exp-052` fixture audit: precision improved `0.765 -> 0.818`, recall improved `0.736 -> 0.849`, F1 improved `0.750 -> 0.833`, false positives dropped `12 -> 10`, false negatives dropped `14 -> 8`, and exact-provenance matches improved `39 -> 44`.
+- Regenerated `.veritext/debug/medium-research-executor-repair-20260502-1/triage.md`.
+- Missing bucket counts for the 8 residual misses: 5 no-candidate, 1 critic-rejected, and 2 surfaced-but-not-matched.
+- Remaining concrete targets:
+  - `CorporateEvent.asset_detail` and `CorporateEvent.summary` still do not produce the Atacama operation sentence, while Northwind asset-detail values remain over- or under-wide.
+  - `CorporateEvent.event_type` still misses `Facility commencement` and `Acquisition approval`; the live run only produced generic `acquisition` candidates for those event-type fields.
+  - `OperationalMetric.target_value = 29.0%` was rejected by critic as a duplicate of a wider `29.0% target` candidate.
+  - `ForwardGuidance.speaker` and `PersonnelChange.change_type` exact normalized candidates reached the reconciler, but final data points used grouped unnormalized source candidates (`CEO Marcus Bell`, `appointed`), so eval counted them as false positives instead of matches.
+  - `FinancialMetric.notable_qualifier` matched by value but used the full sentence span, not the expected tight qualifier span.
+- No local live LLM calls were run during the scoring/triage review.
+
+### 2026-05-02 — Reconciler unknown-ID retry repair
+
+- Diagnosed operator live-run failure `ReconcilerError: reconciler output referenced unknown candidate IDs: 6eb85b6df135` in run `medium-research-executor-repair-20260502-1`.
+- Confirmed the compact ID `6eb85b6df135` does not match any audited candidate short ID for the run, so this was reconciler model ID drift rather than a missing candidate.
+- Added reconciler retry validation in `src/extractor/reconciler/service.py`: before expanding compact IDs, the batch is checked against the candidate view map; unknown IDs produce a targeted complaint listing the invalid IDs and allowed compact IDs.
+- Reconciler retries now replace the full reconciliation batch with the retry output, because reconciliation decisions are a single accounting set rather than independently mergeable row edits.
+- Wired orchestrator reconciliation through `max(config.execution.max_llm_attempts - 1, 0)` so the reconciler uses the same stage retry budget as executor/critic/verifier.
+- Added regression coverage for the live failure shape: first reconciler response references unknown compact ID `6eb85b6df135`, retry response uses valid compact IDs, and the final data point is produced from the intended candidate.
+- Dry-run of `scripts/prepare_failed_run_resume.py --run-id medium-research-executor-repair-20260502-1` showed it would remove reusable critic/verifier rows; do not apply it for this reconciler-only failure.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_reconciler.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_reconciler.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`, `make lint`, `make smoke`, `git diff --check`, and `make test` (`177 passed`, `2 skipped`).
+- No paid/live LLM calls were run during this local repair.
+
+### 2026-05-02 — Executor normalization/offset local repair
+
+- Added deterministic executor boundary normalization in `src/extractor/executor/service.py` after source-span resolution and before candidate construction.
+- Covered source-traced label normalization for current triage shapes: `commenced operation` -> `Facility commencement`, `approved acquiring` -> `Acquisition approval`, and `appointed` / `appointed Chief Sustainability Officer` -> `appointment` while preserving source spans over the source phrases.
+- Added prior-period value repair for fields named `prior_period_value`, extending source-backed numeric/currency values to include adjacent `in Qn YYYY` period wording such as `$410.8 million in Q1 2025` and `6,581 in Q1 2025`.
+- Added guidance role/span cleanup for `ForwardGuidance.condition` values with a leading `with ` and `speaker` values with role prefixes such as `CEO Marcus Bell`, preserving bare source spans and values.
+- Improved deterministic offset repair for header-adjacent `metric_name` and `period` fields by adding case-insensitive value matching and selecting the first non-heading body match after a bad claimed offset; this targets the `Revenue` and `Q1 2026` failures without relaxing source-span invariants.
+- Audited `evals/fixtures/medium_research_brief/case.json` entry `exp-052`; updated `RegulatoryRisk.summary` to include the sentence-closing period in `source_text`, `end_char`, and `end_byte`, matching `docs/annotation-conventions.md`.
+- Regenerated `.veritext/debug/medium-research-prompt-hardening-20260502-1/triage.md`; existing output now has exact-provenance matches `39` and zero provenance mismatches. Precision/recall/F1 are unchanged because no pipeline rerun was performed.
+- Verified `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/integration/test_recall_baseline.py::test_case_loads_and_validates -q`, `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py::test_case_loads_and_validates -q`, `make lint`, `make smoke`, `git diff --check`, and `make test` (`176 passed`, `2 skipped`).
+- No paid/live LLM calls were run.
 
 ### 2026-05-02 — Prompt-hardening live rerun review
 

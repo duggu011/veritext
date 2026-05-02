@@ -579,11 +579,11 @@
       "category": "RegulatoryRisk",
       "field_name": "summary",
       "value": "The U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026.",
-      "source_text": "The U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026",
+      "source_text": "The U.S. Department of Commerce raised module countervailing duties from 15.0% to 26.5% on March 6, 2026.",
       "start_char": 1203,
-      "end_char": 1307,
+      "end_char": 1308,
       "start_byte": 1205,
-      "end_byte": 1309
+      "end_byte": 1310
     }
   ],
   "thresholds": {

@@ -152,6 +152,57 @@ def make_plan(max_calls: int = 2) -> ExtractionPlan:
     )
 
 
+def make_single_chunk(text: str, *, chunk_id: str = "chunk-custom") -> Chunk:
+    text_bytes = text.encode("utf-8")
+    return Chunk(
+        chunk_id=chunk_id,
+        doc_id="doc-1",
+        chunk_index=0,
+        text=text,
+        start_char=0,
+        end_char=len(text),
+        start_byte=0,
+        end_byte=len(text_bytes),
+        start_token=0,
+        end_token=max(1, len(text.split())),
+    )
+
+
+def make_plan_with_fields(
+    categories: dict[str, tuple[str, ...]],
+    *,
+    lens: str = "claim",
+    max_calls: int = 1,
+) -> ExtractionPlan:
+    return ExtractionPlan(
+        run_id="run-1",
+        doc_id="doc-1",
+        domain_hints=("finance",),
+        approved_categories=tuple(
+            CategoryDefinition(
+                name=category,
+                description=f"{category} facts.",
+                fields=tuple(
+                    FieldDefinition(
+                        name=field,
+                        description=f"{field} field.",
+                        value_type="text",
+                        required=True,
+                    )
+                    for field in fields
+                ),
+            )
+            for category, fields in categories.items()
+        ),
+        enabled_lenses=(lens,),  # type: ignore[arg-type]
+        chunk_policy=ChunkPolicy(window_tokens=100, overlap_tokens=10),
+        budget=ExtractionBudget(
+            per_chunk_concurrency=1,
+            lens_budgets=(LensBudget(lens=lens, max_calls=max_calls),),  # type: ignore[arg-type]
+        ),
+    )
+
+
 def make_run_manifest() -> RunManifest:
     return RunManifest(
         run_id="run-1",
@@ -560,6 +611,523 @@ def test_execute_plan_auto_corrects_unique_whitespace_normalized_span() -> None:
         assert result.rejected_candidates == ()
         assert result.accepted_candidates[0].source_span.start_char == 0
         assert result.accepted_candidates[0].source_span.text == chunk_text
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_normalizes_source_traced_label_values() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Atacama-1 commenced operation. "
+            "The board approved acquiring Northwind Storage. "
+            "Dr. Anya Kowalski appointed Chief Sustainability Officer."
+        )
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="CorporateEvent",
+                        field_name="event_type",
+                        source_text="commenced operation",
+                        start_char=chunk_text.index("commenced operation"),
+                        value="commenced operation",
+                    ),
+                    candidate_payload(
+                        category="CorporateEvent",
+                        field_name="event_type",
+                        source_text="approved acquiring",
+                        start_char=chunk_text.index("approved acquiring"),
+                        value="approved acquiring",
+                    ),
+                    candidate_payload(
+                        category="PersonnelChange",
+                        field_name="change_type",
+                        source_text="appointed Chief Sustainability Officer",
+                        start_char=chunk_text.index("appointed"),
+                        value="appointed Chief Sustainability Officer",
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {
+                    "CorporateEvent": ("event_type",),
+                    "PersonnelChange": ("change_type",),
+                },
+                lens="event",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        values = {
+            (candidate.category, candidate.field_name, candidate.source_span.text): candidate.value
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert values[
+            ("CorporateEvent", "event_type", "commenced operation")
+        ] == "Facility commencement"
+        assert values[
+            ("CorporateEvent", "event_type", "approved acquiring")
+        ] == "Acquisition approval"
+        assert values[
+            ("PersonnelChange", "change_type", "appointed")
+        ] == "appointment"
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_derives_operation_commencement_event_candidates() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Line 4 in Ohio commenced operation May 3, 2026, "
+            "contributing 80 megawatt-hours."
+        )
+        chunk = make_single_chunk(chunk_text)
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": ()}]),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"CorporateEvent": ("event_type", "summary", "asset_detail")},
+                lens="event",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        values = {
+            candidate.field_name: (candidate.value, candidate.source_span.text)
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert values["event_type"] == (
+            "Facility commencement",
+            "commenced operation",
+        )
+        assert values["summary"] == (chunk_text, chunk_text)
+        assert values["asset_detail"] == (chunk_text, chunk_text)
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_derives_acquisition_approval_event_type() -> None:
+    async def run_check() -> None:
+        chunk_text = "The board approved acquiring Delta Storage for $2 million."
+        chunk = make_single_chunk(chunk_text)
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient([{"candidates": ()}]),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"CorporateEvent": ("event_type", "summary")},
+                lens="event",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        values = {
+            candidate.field_name: (candidate.value, candidate.source_span.text)
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert values["event_type"] == (
+            "Acquisition approval",
+            "approved acquiring",
+        )
+        assert values["summary"] == (chunk_text, chunk_text)
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_normalizes_asset_detail_operational_profile_clause() -> None:
+    async def run_check() -> None:
+        chunk_text = "Delta Storage operates 900 megawatt-hours across two states."
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="CorporateEvent",
+                        field_name="asset_detail",
+                        source_text=chunk_text,
+                        start_char=0,
+                        value=chunk_text,
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"CorporateEvent": ("asset_detail",)},
+                lens="claim",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.rejected_candidates == ()
+        assert len(result.accepted_candidates) == 1
+        assert result.accepted_candidates[0].value == (
+            "900 megawatt-hours across two states"
+        )
+        assert result.accepted_candidates[0].source_span.text == (
+            "900 megawatt-hours across two states"
+        )
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_normalizes_prior_period_values_with_period_suffix() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Q1 2026 revenue $482.3 million, up 17.4% versus "
+            "$410.8 million in Q1 2025. Fleet generation 7,318 "
+            "gigawatt-hours, up 11.2% from 6,581 in Q1 2025."
+        )
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="FinancialMetric",
+                        field_name="prior_period_value",
+                        source_text="$410.8 million",
+                        start_char=chunk_text.index("$410.8 million"),
+                        value="$410.8 million",
+                    ),
+                    candidate_payload(
+                        category="OperationalMetric",
+                        field_name="prior_period_value",
+                        source_text="6,581",
+                        start_char=chunk_text.index("6,581"),
+                        value="6,581 gigawatt-hours",
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {
+                    "FinancialMetric": ("prior_period_value",),
+                    "OperationalMetric": ("prior_period_value",),
+                },
+                lens="number",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        values = {
+            candidate.category: (candidate.value, candidate.source_span.text)
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert values["FinancialMetric"] == (
+            "$410.8 million in Q1 2025",
+            "$410.8 million in Q1 2025",
+        )
+        assert values["OperationalMetric"] == (
+            "6,581 in Q1 2025",
+            "6,581 in Q1 2025",
+        )
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_trims_role_suffixes_from_atomic_values() -> None:
+    async def run_check() -> None:
+        chunk_text = "Capacity factor was 29.0% target. EBITDA beat $88.0 million forecast."
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="OperationalMetric",
+                        field_name="target_value",
+                        source_text="29.0% target",
+                        start_char=chunk_text.index("29.0% target"),
+                        value="29.0% target",
+                    ),
+                    candidate_payload(
+                        category="FinancialMetric",
+                        field_name="forecast_value",
+                        source_text="$88.0 million forecast",
+                        start_char=chunk_text.index("$88.0 million forecast"),
+                        value="$88.0 million forecast",
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {
+                    "OperationalMetric": ("target_value",),
+                    "FinancialMetric": ("forecast_value",),
+                },
+                lens="number",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        values = {
+            candidate.field_name: (candidate.value, candidate.source_span.text)
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert values["target_value"] == ("29.0%", "29.0%")
+        assert values["forecast_value"] == ("$88.0 million", "$88.0 million")
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_extends_effective_date_to_named_meeting_context() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Director Hiroshi Tanaka announced retirement effective at the "
+            "June 18, 2026 Annual Meeting."
+        )
+        phrase = "June 18, 2026 Annual Meeting"
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="PersonnelChange",
+                        field_name="effective_date",
+                        source_text="June 18, 2026",
+                        start_char=chunk_text.index("June 18, 2026"),
+                        value="June 18, 2026",
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"PersonnelChange": ("effective_date",)},
+                lens="event",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.rejected_candidates == ()
+        assert len(result.accepted_candidates) == 1
+        assert result.accepted_candidates[0].value == phrase
+        assert result.accepted_candidates[0].source_span.text == phrase
+        assert result.accepted_candidates[0].source_span.start_char == chunk_text.index(
+            phrase
+        )
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_tightens_notable_qualifier_span() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "Free cash flow positive at $12.6 million "
+            "for the first time in eight quarters."
+        )
+        qualifier = "for the first time in eight quarters"
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="FinancialMetric",
+                        field_name="notable_qualifier",
+                        source_text=chunk_text,
+                        start_char=0,
+                        value=qualifier,
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"FinancialMetric": ("notable_qualifier",)},
+                lens="claim",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        assert result.rejected_candidates == ()
+        assert len(result.accepted_candidates) == 1
+        assert result.accepted_candidates[0].value == qualifier
+        assert result.accepted_candidates[0].source_span.text == qualifier
+        assert result.accepted_candidates[0].source_span.start_char == chunk_text.index(
+            qualifier
+        )
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_trims_condition_and_speaker_role_prefixes() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "CEO Marcus Bell committed to at least 4.2 gigawatts of new solar "
+            "capacity, with at least 60% under long-term offtake at signing."
+        )
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="ForwardGuidance",
+                        field_name="speaker",
+                        source_text="CEO Marcus Bell",
+                        start_char=chunk_text.index("CEO Marcus Bell"),
+                        value="CEO Marcus Bell",
+                    ),
+                    candidate_payload(
+                        category="ForwardGuidance",
+                        field_name="condition",
+                        source_text="with at least 60% under long-term offtake at signing",
+                        start_char=chunk_text.index("with at least"),
+                        value="with at least 60% under long-term offtake at signing",
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"ForwardGuidance": ("speaker", "condition")},
+                lens="entity",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        values = {
+            candidate.field_name: (candidate.value, candidate.source_span.text)
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert values["speaker"] == ("Marcus Bell", "Marcus Bell")
+        assert values["condition"] == (
+            "at least 60% under long-term offtake at signing",
+            "at least 60% under long-term offtake at signing",
+        )
+
+    asyncio.run(run_check())
+
+
+def test_execute_plan_repairs_header_adjacent_metric_offsets() -> None:
+    async def run_check() -> None:
+        chunk_text = (
+            "# Helios Renewables - Q1 2026 Snapshot\n\n"
+            "Prepared by Lila Okafor, VP of Research, on April 14, 2026.\n\n"
+            "## 1. Headlines\n\n"
+            "Q1 2026 revenue $482.3 million, up 17.4% versus $410.8 million "
+            "in Q1 2025. Full-year 2026 revenue guidance reaffirmed."
+        )
+        chunk = make_single_chunk(chunk_text)
+        payloads = [
+            {
+                "candidates": (
+                    candidate_payload(
+                        category="FinancialMetric",
+                        field_name="period",
+                        source_text=", on April 14, 202",
+                        start_char=chunk_text.index(", on April"),
+                        value="Q1 2026",
+                    ),
+                    candidate_payload(
+                        category="FinancialMetric",
+                        field_name="metric_name",
+                        source_text="of Research, o",
+                        start_char=chunk_text.index("of Research"),
+                        value="Revenue",
+                    ),
+                )
+            }
+        ]
+        llm_client = LLMClient(
+            make_llm_config(),
+            anthropic_client=QueuedAnthropicClient(payloads),
+        )
+
+        result = await execute_plan(
+            plan=make_plan_with_fields(
+                {"FinancialMetric": ("period", "metric_name")},
+                lens="claim",
+            ),
+            chunks=(chunk,),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+            execution_config=make_execution_config(),
+        )
+
+        spans = {
+            candidate.field_name: (candidate.value, candidate.source_span.text)
+            for candidate in result.accepted_candidates
+        }
+        assert result.rejected_candidates == ()
+        assert spans["period"] == ("Q1 2026", "Q1 2026")
+        assert spans["metric_name"] == ("Revenue", "revenue")
 
     asyncio.run(run_check())
 

@@ -39,15 +39,16 @@ slice for every instance.
 Classify each field into exactly one of four types. The type determines span
 width.
 
-### Type A — atomic value
+### Type A — atomic value / qualifier / attribute
 
 The field names a discrete quantity, identifier, date, percentage, currency,
-duration, named entity, or short label whose entire textual form fits in one
-contiguous source token sequence.
+duration, named entity, qualifier, attribute, or short label whose entire
+textual form fits in one contiguous source token sequence.
 
 Examples by intent: numeric values, dates, named parties, named facilities,
 issuing authorities, transaction amounts, change percentages with their
-direction word, prior-period values that carry a period suffix.
+direction word, prior-period values that carry a period suffix, metric
+qualifiers, and operational profile details.
 
 **Span = the smallest contiguous source slice that contains the value's text
 verbatim** (after case-fold normalization).
@@ -62,6 +63,16 @@ verbatim** (after case-fold normalization).
 - The span MUST include period-of-time wording when the field's name does not
   carry the period (e.g. `prior_period_value="$410.8 million in Q1 2025"`
   keeps "in Q1 2025" because no field name encodes the prior period itself).
+- For effective timing fields, the span MUST include an immediately attached
+  named event context when the action becomes effective at that named event,
+  e.g. `effective_date="June 18, 2026 Annual Meeting"` keeps "Annual Meeting"
+  because the source timing is the meeting, not just the calendar date.
+- For qualifier fields such as `notable_qualifier`, span is the qualifier
+  phrase or clause itself, not the whole metric sentence.
+- For attribute/detail fields such as `asset_detail`, span is the tight
+  attribute phrase when the source states a static profile like
+  `"Northwind operates 1.85 gigawatt-hours across seven U.S. states."`;
+  the span is `"1.85 gigawatt-hours across seven U.S. states"`.
 
 ### Type B — label / category term
 
@@ -104,10 +115,11 @@ Exception: when the field's name explicitly bundles role + name (for example
 a hypothetical `speaker_with_role` field), the span includes both. The default
 is bare name.
 
-### Type D — sentence / statement / clause
+### Type D — sentence / statement / event detail clause
 
-The field names a free-text statement (`summary`, `statement`, `description`,
-`condition`, `notable_qualifier`, `asset_detail`).
+The field names a free-text statement (`summary`, `statement`,
+`description`, `condition`) or an event detail field whose source support is
+the whole event sentence rather than a detachable attribute.
 
 **Span = a contiguous source slice that begins at the first non-whitespace
 character of a sentence (or stand-alone clause) and ends at the closing
@@ -119,6 +131,10 @@ punctuation, inclusive.**
   contains two distinct events the schema asks about (for example two separate
   asset-detail events in one sentence), split into two contiguous clauses and
   emit two datapoints, each with its own clause-bounded span.
+- `asset_detail` is Type D only when the field captures an event-level asset
+  detail whose support is the whole sentence or standalone clause, such as an
+  asset commencing operation and contributing output. Static operational
+  profiles remain Type A attribute spans.
 
 ## Mechanical procedure for annotating a fixture
 
