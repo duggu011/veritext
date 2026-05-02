@@ -4,12 +4,36 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Reconciler structural decomposition
-- Current status: Split reconciler error, validation, retry/batch handling, and result materialization helpers out of `src/extractor/reconciler/service.py` without changing public reconciliation behavior. No live LLM calls or non-test audit DB mutations were made.
+- Last completed phase: LLM client structural decomposition
+- Current status: Split LLM public contracts, errors, trace formatting, provider request-shaping helpers, and response parsing helpers out of `src/extractor/llm/client.py` while keeping all SDK calls routed through the client. No live LLM calls or non-test audit DB mutations were made.
 - Next required work: choose the next oversized pipeline target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: reconciler and orchestrator modules now satisfy the 400-line convention; likely remaining oversized cleanup candidates include `src/extractor/llm/client.py` and `src/extractor/audit/store.py`. Preserve the new reconciler service/validation/batching/materialization/error boundaries.
+- Next-phase context: LLM client, reconciler, and orchestrator modules now satisfy the 400-line convention; likely remaining oversized cleanup candidate is `src/extractor/audit/store.py`. Preserve the new LLM client/errors/models/providers/responses/trace boundaries and keep direct SDK calls inside `src/extractor/llm/client.py`.
 
 ## Session Log
+
+### 2026-05-03 — LLM client structural decomposition
+
+- Chose `src/extractor/llm/client.py` as the next cleanup target because it was still 911 lines and contained client orchestration, public retry contracts, provider setup, prompt-cache request shaping, OpenAI strict-schema shaping, response/tool-call parsing, audit call-log materialization, and trace formatting in one module.
+- Moved `LLMClientError`, `LLMToolUseError`, and `LLMRetryMergeError` into `src/extractor/llm/errors.py` while preserving the public `extractor.llm` and `extractor.llm.client` imports.
+- Moved retry complaint/result contracts and structured request/result Pydantic models into `src/extractor/llm/models.py`.
+- Moved human-readable LLM trace formatting and stage grouping into `src/extractor/llm/trace.py`.
+- Moved Anthropic/OpenAI client construction, model/stage settings resolution, Anthropic prompt-cache block construction, OpenAI chat kwargs construction, Kimi reasoning disablement, and strict OpenAI tool schema generation into `src/extractor/llm/providers.py`.
+- Moved Anthropic/OpenAI call-log construction, required tool-call extraction, retry assistant-content serialization, retry complaint formatting, and generic response attribute readers into `src/extractor/llm/responses.py`.
+- Kept `src/extractor/llm/client.py` focused on request throttling, provider dispatch, direct Anthropic/OpenAI SDK calls, audit-log persistence, retry orchestration, output model validation, and final result assembly.
+- Confirmed touched LLM files are under the 400-line limit after the split:
+  - `src/extractor/llm/errors.py`: 16 lines
+  - `src/extractor/llm/models.py`: 70 lines
+  - `src/extractor/llm/trace.py`: 79 lines
+  - `src/extractor/llm/responses.py`: 250 lines
+  - `src/extractor/llm/providers.py`: 284 lines
+  - `src/extractor/llm/client.py`: 329 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/llm/__init__.py src/extractor/llm/client.py src/extractor/llm/errors.py src/extractor/llm/models.py src/extractor/llm/payloads.py src/extractor/llm/prompts.py src/extractor/llm/providers.py src/extractor/llm/responses.py src/extractor/llm/trace.py src/extractor/llm/views.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_llm_client.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_llm_client.py tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or non-test audit DB mutations were made.
 
 ### 2026-05-03 — Reconciler structural decomposition
 
