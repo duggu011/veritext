@@ -19,6 +19,9 @@ build/
 config/local.yaml
 outputs/
 runs/
+eval/
+eval-results/
+eval-runs/
 
 # Audit DB and run state
 .veritext/

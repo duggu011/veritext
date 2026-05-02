@@ -4,12 +4,27 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Haiku cost-routing documentation note
-- Current status: Added the Haiku 4.5 full-run failure evidence to the Cost Reduction Playbook so future cheaper-model work measures stage suitability instead of globally downgrading all stages. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Last completed phase: Local eval scratch ignore cleanup
+- Current status: Added local eval scratch output directories to `.gitignore` while keeping tracked `evals/` fixtures, baselines, and scoring code in the pipeline. No source-code changes, live LLM calls, or audit DB mutations were made.
 - Next required work: decide whether to keep using Haiku 4.5 for experiments, run a targeted per-stage comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: smaller/cheaper models may still fit classification, arithmetic, simple entity/number extraction, critic/verifier sampling, or escalation paths, but the full-run trial showed planner/schema, semantic executor, and reconciler quality can dominate accuracy even when invariants pass.
+- Next-phase context: `evals/` is tracked project infrastructure; only local scratch dirs such as `eval/`, `eval-results/`, and `eval-runs/` should be ignored.
 
 ## Session Log
+
+### 2026-05-03 — Local eval scratch ignore cleanup
+
+- Confirmed `evals/` is part of the tracked pipeline surface:
+  - `evals/fixtures/` and `evals/baselines/` are tracked;
+  - `src/extractor/evals/` contains scoring code;
+  - `tests/unit/test_evals.py` covers eval behavior.
+- Added `.gitignore` entries for local scratch eval output directories only:
+  - `eval/`
+  - `eval-results/`
+  - `eval-runs/`
+- Left tracked `evals/` untouched.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Haiku cost-routing documentation note
 
