@@ -4,12 +4,28 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Executor structural decomposition slice 1
-- Current status: Moved executor error and stable ID helpers out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
-- Next required work: continue executor cleanup with input/budget validation, candidate materialization, normalization, and rejection policy slices; run a targeted per-stage model comparison; or remove `config/local.yaml` to return to canonical config.
+- Last completed phase: Executor structural decomposition slice 2
+- Current status: Moved executor chunk/document/budget preflight validation out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
+- Next required work: continue executor cleanup with candidate materialization, normalization, batch retry validation, and rejection policy slices; run a targeted per-stage model comparison; or remove `config/local.yaml` to return to canonical config.
 - Next-phase context: `src/extractor/executor/service.py` remains oversized; future executor slices should keep behavior unchanged and split cohesive modules under the 400-line convention.
 
 ## Session Log
+
+### 2026-05-03 — Executor structural decomposition slice 2
+
+- Continued executor cleanup with the chunk/document/budget preflight validation slice.
+- Moved `validate_executor_inputs()` into `src/extractor/executor/validation.py`.
+- Updated `src/extractor/executor/service.py` to delegate preflight validation while preserving the public `extractor.executor.service.ExecutorError` name.
+- Left batch retry validation, candidate materialization, payload normalization, audit writes, and rejection behavior unchanged for later executor slices.
+- Confirmed the new executor validation file is under the 400-line limit:
+  - `src/extractor/executor/validation.py`: 23 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/executor/__init__.py src/extractor/executor/dedup.py src/extractor/executor/errors.py src/extractor/executor/ids.py src/extractor/executor/models.py src/extractor/executor/service.py src/extractor/executor/validation.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or audit DB mutations were made.
 
 ### 2026-05-03 — Executor structural decomposition slice 1
 

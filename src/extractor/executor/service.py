@@ -38,6 +38,7 @@ from extractor.executor.models import (
     ExecutorTaskResult,
     ExtractedCandidatePayload,
 )
+from extractor.executor.validation import validate_executor_inputs
 
 
 @dataclass(frozen=True)
@@ -98,7 +99,7 @@ async def execute_plan(
     execution_config: ExecutionConfig,
     audit_store: AuditStore | None = None,
 ) -> ExecutionResult:
-    _validate_executor_inputs(plan, chunks)
+    validate_executor_inputs(plan, chunks)
 
     semaphore = asyncio.Semaphore(execution_config.max_chunk_concurrency)
     prompt_cache_allowed = len(chunks) > 1
@@ -363,22 +364,6 @@ def _format_executor_complaint(
         f"start_char - chunk.start_char + source_length] is a span that supports the "
         f"emitted value exactly."
     )
-
-
-def _validate_executor_inputs(plan: ExtractionPlan, chunks: tuple[Chunk, ...]) -> None:
-    if not chunks:
-        raise ExecutorError("executor requires at least one chunk")
-    for chunk in chunks:
-        if chunk.doc_id != plan.doc_id:
-            raise ExecutorError("chunk doc_id must match extraction plan doc_id")
-
-    budgets = {budget.lens: budget.max_calls for budget in plan.budget.lens_budgets}
-    for lens in plan.enabled_lenses:
-        if len(chunks) > budgets[lens]:
-            raise ExecutorError(
-                f"executor budget for lens {lens} permits {budgets[lens]} calls, "
-                f"but {len(chunks)} chunks require execution"
-            )
 
 
 def _build_candidate(
