@@ -534,6 +534,8 @@ Single biggest underused lever. Haiku 4.5 is roughly 1/12 the price of Sonnet 4.
 
 If 60% of calls move to Haiku, **~50% total token cost reduction** — at no accuracy loss for the right-shaped tasks.
 
+Important evidence from the 2026-05-02 Haiku 4.5 full-run trial (`medium-research-haiku45-20260502-163348`): using `claude-haiku-4-5-20251001` for every stage preserved the hard invariants but dropped the medium fixture to precision 0.769 / recall 0.755 / F1 0.762, versus roughly 0.90+ F1 for the stronger-model run. The failures were mostly model-quality failures, not offset failures: planner/schema field drift (`condition` vs `conditions`, `party` vs `parties`), missing exact candidates for guidance/regulatory facts, weaker normalized labels (`acquisition` vs `Acquisition approval`), and reconciler losses where exact candidates had already passed critic/verifier. Cost work should therefore measure each stage separately before routing it to a cheaper model; do not globally downgrade planner, executor semantic lenses, or reconciler just because the invariants still pass.
+
 The `stage_overrides` config in `config/default.yaml` is already plumbed for this; the values just aren't set.
 
 ## 3. Reduce input tokens (where most spend goes)

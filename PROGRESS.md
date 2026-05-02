@@ -4,12 +4,22 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Haiku 4.5 run review
-- Current status: Reviewed operator-run `medium-research-haiku45-20260502-163348`; it completed with 52 data points but scored precision `0.769`, recall `0.755`, F1 `0.762`, provenance recall `0.755`, with zero invariant violations. No live LLM calls were run by the agent and the audit DB was not mutated by this review.
-- Next required work: decide whether to keep using Haiku 4.5 for experiments, run a targeted comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: Haiku 4.5 preserved invariants but materially underperformed the prior stronger-model medium-fixture runs; failures include schema/name drift, missing exact candidates, and downstream reconciliation losses.
+- Last completed phase: Haiku cost-routing documentation note
+- Current status: Added the Haiku 4.5 full-run failure evidence to the Cost Reduction Playbook so future cheaper-model work measures stage suitability instead of globally downgrading all stages. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: decide whether to keep using Haiku 4.5 for experiments, run a targeted per-stage comparison, or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: smaller/cheaper models may still fit classification, arithmetic, simple entity/number extraction, critic/verifier sampling, or escalation paths, but the full-run trial showed planner/schema, semantic executor, and reconciler quality can dominate accuracy even when invariants pass.
 
 ## Session Log
+
+### 2026-05-02 — Haiku cost-routing documentation note
+
+- Added a concrete note to the `Tiered models per stage` section of `docs/PROJECT_OVERVIEW.md` using the Haiku 4.5 full-run evidence.
+- Captured the key cost-routing lesson: cheaper models can preserve hard provenance/invariant checks while still failing schema semantics, source-grounded candidate generation, normalized label choice, and reconciliation.
+- Documented that future cost work should measure each stage separately before routing it to a cheaper model, and should not globally downgrade planner, semantic executor lenses, or reconciler merely because invariants still pass.
+- Scope stayed limited to `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Haiku 4.5 run review
 
