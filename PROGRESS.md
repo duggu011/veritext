@@ -4,12 +4,46 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Local Haiku 4.5 trial override
-- Current status: Added a gitignored `config/local.yaml` override so local runs use Anthropic Haiku 4.5 (`claude-haiku-4-5-20251001`) through the existing config loader. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: operator can run a local extraction/eval with the Haiku override, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: this was a one-off local runtime override, not a canonical default change.
+- Last completed phase: Haiku 4.5 run review
+- Current status: Reviewed operator-run `medium-research-haiku45-20260502-163348`; it completed with 52 data points but scored precision `0.769`, recall `0.755`, F1 `0.762`, provenance recall `0.755`, with zero invariant violations. No live LLM calls were run by the agent and the audit DB was not mutated by this review.
+- Next required work: decide whether to keep using Haiku 4.5 for experiments, run a targeted comparison, or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: Haiku 4.5 preserved invariants but materially underperformed the prior stronger-model medium-fixture runs; failures include schema/name drift, missing exact candidates, and downstream reconciliation losses.
 
 ## Session Log
+
+### 2026-05-02 — Haiku 4.5 run review
+
+- Operator provided the completed manifest details for run `medium-research-haiku45-20260502-163348`; output path matched locally as `outputs/medium-research-haiku45-20260502-163348.json`.
+- Verified output/run state locally:
+  - output byte length: `76343`
+  - output SHA-256: `5cc9d31abf3c1c5a3bad9e961d49df36d26939f039af2f0e519bd0b27c029738`
+  - run status: `completed`
+  - started_at `2026-05-02T16:33:59.985945Z`, completed_at `2026-05-02T17:14:00.689112Z`
+  - data point count: `52`
+  - completed stages: `ingestion`, `chunker`, `planner`, `executor`, `dedup`, `critic`, `verifier`, `reconciler`, `reporter`
+  - artifact counts: documents `1`, chunks `1`, extraction plans `1`, lens candidates `216`, critic reports `213`, verifier reports `208`, data points `52`, candidate rejections `171`, LLM call logs `30`
+  - all LLM call logs used `claude-haiku-4-5-20251001`
+- Scored against `evals/fixtures/medium_research_brief/case.json`:
+  - precision `0.769`
+  - recall `0.755`
+  - F1 `0.762`
+  - provenance recall `0.755`
+  - TP `40`
+  - FP `12`
+  - FN `13`
+  - exact-provenance matches `40`
+  - invariant violations `0`
+  - eval `passed=false`
+- Missing expected IDs: `exp-000`, `exp-001`, `exp-002`, `exp-004`, `exp-005`, `exp-007`, `exp-009`, `exp-024`, `exp-027`, `exp-031`, `exp-039`, `exp-048`, `exp-052`.
+- Local miss triage found:
+  - schema/name drift for exact source content such as `condition` vs `conditions` and `party` vs `parties`;
+  - exact candidates existed and passed critic/verifier for `exp-004`, `exp-005`, `exp-009`, `exp-031`, and `exp-039`, but were lost, rejected, or outselected downstream;
+  - no exact candidates were found for `exp-001`, `exp-024`, `exp-027`, `exp-048`, or `exp-052`.
+- Verification commands included:
+  - `PYTHONPATH=src python3 -m extractor.evals evals/fixtures/medium_research_brief/case.json outputs/medium-research-haiku45-20260502-163348.json` (`passed=false`)
+  - SQLite audit queries for run manifest, stage state, artifact counts, LLM call counts/models, and rejection counts
+  - targeted local candidate-status triage for missing expected IDs
+- No live LLM calls were run by the agent and `.veritext/audit.sqlite3` was not mutated by this review.
 
 ### 2026-05-02 — Local Haiku 4.5 trial override
 
