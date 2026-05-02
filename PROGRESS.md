@@ -4,12 +4,37 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Audit store structural decomposition
-- Current status: Split audit schema, errors, SQLite connection/helpers, core record persistence, and review/provenance record persistence out of `src/extractor/audit/store.py` while preserving `AuditStore`, `open_audit_store`, schema compatibility, and existing public imports. No live LLM calls or non-test audit DB mutations were made.
+- Last completed phase: LLM provider adapter boundary
+- Current status: Introduced `src/extractor/llm/adapters.py` with provider adapter methods for request shaping, provider send, tool-input extraction, audit call-log construction, and retry support metadata. `LLMClient` now keeps throttling, audit persistence, Pydantic validation, retry orchestration, and trace output while dispatching Anthropic/OpenAI provider-specific call mechanics through adapters. No live LLM calls or audit DB mutations outside tests were made.
 - Next required work: choose the next cleanup target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: Source modules touched in the structural cleanup sequence now satisfy the 400-line convention; `tests/unit/test_audit_store.py` remains 412 lines if test-file cleanup is desired. Preserve the new audit `schema`/`errors`/`base`/`core_records`/`review_records` boundaries and keep audit DB writes routed through `AuditStore`.
+- Next-phase context: Preserve the new LLM adapter boundary when adding providers: provider-specific request kwargs, SDK send mechanics, tool-call parsing, call-log materialization, and retry support live behind `LLMProviderAdapter`; caller-facing structured completion still goes through `LLMClient`. Source modules touched in the structural cleanup sequence remain under the 400-line convention.
 
 ## Session Log
+
+### 2026-05-03 — LLM provider adapter boundary
+
+- Chose the LLM client as the next cleanup target after review showed the existing two-provider implementation was acceptable for Anthropic/OpenAI but still coupled provider dispatch, request shaping, SDK send mechanics, tool parsing, and call-log construction inside `src/extractor/llm/client.py`.
+- Added a focused red test in `tests/unit/test_llm_provider_adapters.py` proving the requested adapter boundary did not yet exist, then implemented the adapter module.
+- Created `src/extractor/llm/adapters.py` with `LLMProviderAdapter`, `AnthropicProviderAdapter`, and `OpenAIChatProviderAdapter`.
+- Moved provider-specific structured-call request construction, provider send calls, required tool-input extraction, audit call-log construction, and `supports_retry` metadata behind the adapters.
+- Kept `LLMClient` responsible for provider selection, request throttling, audit-store persistence, Pydantic output validation, retry orchestration, trace printing, and the existing public `complete_structured` / `complete_structured_with_retry` interfaces.
+- Preserved existing behavior:
+  - Anthropic still uses prompt-cache-aware system/user/tool blocks and named forced tool use.
+  - OpenAI and OpenAI-compatible providers still use strict function tools, named `tool_choice`, `parallel_tool_calls=False`, model-family-specific token settings, and existing Kimi thinking disablement.
+  - Structured retry remains Anthropic-only.
+- Confirmed touched LLM files are under the 400-line limit after the split:
+  - `src/extractor/llm/adapters.py`: 190 lines
+  - `src/extractor/llm/client.py`: 255 lines
+  - `tests/unit/test_llm_provider_adapters.py`: 15 lines
+- Verification:
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_llm_provider_adapters.py -q` first failed with `ModuleNotFoundError: No module named 'extractor.llm.adapters'`
+  - `python3 -m py_compile src/extractor/llm/adapters.py src/extractor/llm/client.py src/extractor/llm/providers.py src/extractor/llm/responses.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_llm_provider_adapters.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_llm_client.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_llm_provider_adapters.py tests/unit/test_llm_client.py tests/unit/test_config.py tests/unit/test_orchestrator.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or non-test audit DB mutations were made.
 
 ### 2026-05-03 — Audit store structural decomposition
 

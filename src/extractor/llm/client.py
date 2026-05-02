@@ -5,8 +5,6 @@ import time
 
 from collections.abc import Awaitable, Callable
 
-from pydantic import BaseModel
-
 from extractor.audit import AuditStore
 from extractor.config import LLMConfig
 from extractor.contracts import LLMCallLog
@@ -19,23 +17,20 @@ from extractor.llm.models import (
     StructuredLLMRequest,
     StructuredLLMResult,
 )
+from extractor.llm.adapters import (
+    AnthropicProviderAdapter,
+    LLMProviderAdapter,
+    OpenAIChatProviderAdapter,
+)
 from extractor.llm.providers import (
-    ResolvedLLMSettings,
     anthropic_prompt_cache_enabled,
-    anthropic_system,
-    anthropic_tool_definition,
     anthropic_user_content,
-    build_openai_chat_kwargs,
     create_anthropic_client,
     create_openai_client,
     resolve_llm_settings,
     uses_openai_chat_client,
 )
 from extractor.llm.responses import (
-    build_anthropic_call_log,
-    build_openai_call_log,
-    extract_required_openai_tool_input,
-    extract_required_tool_input,
     extract_tool_use_id,
     format_complaint_payload,
     serialize_assistant_content,
@@ -68,6 +63,14 @@ class LLMClient:
             self._anthropic_client = create_anthropic_client(config)
         if uses_openai_chat_client(config) and self._openai_client is None:
             self._openai_client = create_openai_client(config)
+        self._provider_adapter, self._provider_client = self._select_provider()
+
+    def _select_provider(self) -> tuple[LLMProviderAdapter, object | None]:
+        if self.config.provider == "anthropic":
+            return AnthropicProviderAdapter(), self._anthropic_client
+        if uses_openai_chat_client(self.config):
+            return OpenAIChatProviderAdapter(), self._openai_client
+        return OpenAIChatProviderAdapter(), None
 
     async def complete_structured(
         self,
@@ -76,81 +79,42 @@ class LLMClient:
         output_model: type[OutputModelT],
         audit_store: AuditStore | None = None,
     ) -> StructuredLLMResult[OutputModelT]:
-        if self.config.provider == "anthropic":
-            return await self._complete_anthropic(
-                request,
-                output_model=output_model,
-                audit_store=audit_store,
-            )
-        if uses_openai_chat_client(self.config):
-            return await self._complete_openai(
-                request,
-                output_model=output_model,
-                audit_store=audit_store,
-            )
-        raise LLMClientError(f"Unsupported LLM provider: {self.config.provider}")
-
-    async def _complete_anthropic(
-        self,
-        request: StructuredLLMRequest,
-        *,
-        output_model: type[OutputModelT],
-        audit_store: AuditStore | None = None,
-    ) -> StructuredLLMResult[OutputModelT]:
-        settings = resolve_llm_settings(self.config, request.stage)
-        cache_enabled = anthropic_prompt_cache_enabled(self.config, request)
-        initial_user_content = anthropic_user_content(
-            request,
-            cache_enabled=cache_enabled,
-        )
-        messages: list[dict[str, object]] = [
-            {"role": "user", "content": initial_user_content}
-        ]
-        output, call_log, _response = await self._run_anthropic_call(
+        output, call_log, _response = await self._run_provider_call(
             request=request,
             output_model=output_model,
             audit_store=audit_store,
             attempt=1,
-            messages=messages,
-            settings=settings,
-            cache_enabled=cache_enabled,
         )
         return StructuredLLMResult[OutputModelT](output=output, call_log=call_log)
 
-    async def _run_anthropic_call(
+    async def _run_provider_call(
         self,
         *,
         request: StructuredLLMRequest,
         output_model: type[OutputModelT],
         audit_store: AuditStore | None,
         attempt: int,
-        messages: list[dict[str, object]],
-        settings: ResolvedLLMSettings,
-        cache_enabled: bool,
+        messages: list[dict[str, object]] | None = None,
+        cache_enabled: bool | None = None,
     ) -> tuple[OutputModelT, LLMCallLog, object]:
-        anthropic_client = self._anthropic_client
-        if anthropic_client is None:
-            raise LLMClientError("Anthropic client is not configured")
+        provider_client = self._provider_client
+        if provider_client is None:
+            raise LLMClientError(f"Unsupported LLM provider: {self.config.provider}")
 
+        settings = resolve_llm_settings(self.config, request.stage)
+        request_kwargs = self._provider_adapter.build_request(
+            config=self.config,
+            request=request,
+            output_model=output_model,
+            settings=settings,
+            messages=messages,
+            cache_enabled=cache_enabled,
+        )
         await self._throttle_request_start()
         start = time.perf_counter()
-        response = await anthropic_client.messages.create(
-            model=settings.model,
-            max_tokens=settings.max_output_tokens,
-            temperature=self.config.temperature,
-            system=anthropic_system(request, cache_enabled=cache_enabled),
-            messages=messages,
-            tools=[
-                anthropic_tool_definition(
-                    request,
-                    output_model,
-                    cache_enabled=cache_enabled,
-                )
-            ],
-            tool_choice={"type": "tool", "name": request.tool_name},
-        )
+        response = await self._provider_adapter.send(provider_client, request_kwargs)
         latency_ms = int((time.perf_counter() - start) * 1000)
-        call_log = build_anthropic_call_log(
+        call_log = self._provider_adapter.build_call_log(
             request=request,
             response=response,
             model=settings.model,
@@ -160,7 +124,10 @@ class LLMClient:
         if audit_store is not None:
             await audit_store.record_llm_call_log(call_log)
 
-        tool_input = extract_required_tool_input(response, request.tool_name)
+        tool_input = self._provider_adapter.extract_tool_input(
+            response,
+            request.tool_name,
+        )
         output = output_model.model_validate(tool_input)
         print_llm_trace(request=request, output=output, call_log=call_log)
         return output, call_log, response
@@ -177,12 +144,11 @@ class LLMClient:
         ],
         max_retries: int = 1,
     ) -> StructuredLLMResult[OutputModelT]:
-        if self.config.provider != "anthropic":
+        if not self._provider_adapter.supports_retry:
             raise NotImplementedError(
                 "complete_structured_with_retry is only implemented for the Anthropic provider"
             )
 
-        settings = resolve_llm_settings(self.config, request.stage)
         cache_enabled = anthropic_prompt_cache_enabled(self.config, request)
         initial_user_content = anthropic_user_content(
             request,
@@ -192,13 +158,12 @@ class LLMClient:
             {"role": "user", "content": initial_user_content}
         ]
 
-        output, call_log, response = await self._run_anthropic_call(
+        output, call_log, response = await self._run_provider_call(
             request=request,
             output_model=output_model,
             audit_store=audit_store,
             attempt=1,
             messages=initial_messages,
-            settings=settings,
             cache_enabled=cache_enabled,
         )
 
@@ -234,13 +199,12 @@ class LLMClient:
                 },
             ]
 
-            retry_output, retry_call_log, retry_response = await self._run_anthropic_call(
+            retry_output, retry_call_log, retry_response = await self._run_provider_call(
                 request=request,
                 output_model=output_model,
                 audit_store=audit_store,
                 attempt=retry_index + 2,
                 messages=followup_messages,
-                settings=settings,
                 cache_enabled=cache_enabled,
             )
 
@@ -260,44 +224,6 @@ class LLMClient:
             call_log = retry_call_log
             response = retry_response
 
-        return StructuredLLMResult[OutputModelT](output=output, call_log=call_log)
-
-    async def _complete_openai(
-        self,
-        request: StructuredLLMRequest,
-        *,
-        output_model: type[OutputModelT],
-        audit_store: AuditStore | None = None,
-    ) -> StructuredLLMResult[OutputModelT]:
-        openai_client = self._openai_client
-        if openai_client is None:
-            raise LLMClientError("OpenAI client is not configured")
-
-        settings = resolve_llm_settings(self.config, request.stage)
-        create_kwargs = build_openai_chat_kwargs(
-            config=self.config,
-            request=request,
-            output_model=output_model,
-            settings=settings,
-        )
-
-        await self._throttle_request_start()
-        start = time.perf_counter()
-        response = await openai_client.chat.completions.create(**create_kwargs)
-        latency_ms = int((time.perf_counter() - start) * 1000)
-        call_log = build_openai_call_log(
-            request=request,
-            response=response,
-            model=settings.model,
-            latency_ms=latency_ms,
-            attempt=1,
-        )
-        if audit_store is not None:
-            await audit_store.record_llm_call_log(call_log)
-
-        tool_input = extract_required_openai_tool_input(response, request.tool_name)
-        output = output_model.model_validate(tool_input)
-        print_llm_trace(request=request, output=output, call_log=call_log)
         return StructuredLLMResult[OutputModelT](output=output, call_log=call_log)
 
     async def _throttle_request_start(self) -> None:
