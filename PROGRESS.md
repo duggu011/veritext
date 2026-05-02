@@ -4,12 +4,24 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Cleanup-only documentation Phase 3 — Configurability Boundary
-- Current status: Defined the configurable domain-pack surface and the non-configurable provenance/audit/invariant core in `docs/PROJECT_OVERVIEW.md`. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 4, Roadmap Rebalance.
-- Next-phase context: Phase 4 should keep the per-stage roadmap but rebalance it around accuracy, generalization, and provenance while separating cost and deferring human-review emphasis.
+- Last completed phase: Cleanup-only documentation Phase 4 — Roadmap Rebalance
+- Current status: Rebalanced the project roadmap around accuracy, generalization, and provenance; separated cost reduction into a deployment-economics track; and deferred human-review framing. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 5, Final Cleanup Review.
+- Next-phase context: Phase 5 should review the final docs diff for consistency, confirm no tracked files outside `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md` changed, run `git diff --check`, add a final cleanup gate report, and commit only if Phase 5 makes doc changes.
 
 ## Session Log
+
+### 2026-05-02 — Cleanup-only documentation Phase 4: Roadmap Rebalance
+
+- Reframed the improvement roadmap title and introduction around extraction accuracy, cross-domain generalization, and auditable provenance.
+- Kept the per-stage roadmap while rewording planner, executor, critic, verifier, evaluation, human-review, and cost-summary framing so cost and human-review work do not drive the active roadmap.
+- Updated the highest-leverage list to prioritize domain packs/schema-fit refusal, diverse fixture gates, boundary-preserving ingestion, source-grounded lenses/normalization, and provenance review/reporting.
+- Kept cost content but separated it into a deployment-economics track and preserved the dedicated Cost Reduction Playbook.
+- Did not expand or prioritize the ingestion table-extraction item.
+- Scope stayed limited to `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`.
+- Verification:
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Cleanup-only documentation Phase 3: Configurability Boundary
 

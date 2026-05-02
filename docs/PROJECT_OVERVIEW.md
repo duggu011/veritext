@@ -158,9 +158,9 @@ None of these are dealbreakers; they're the actual surface a reviewer should foc
 
 ---
 
-# Improvement Roadmap — Per Stage and Cross-Cutting
+# Improvement Roadmap — Accuracy, Generalization, and Provenance
 
-The current system is a strong skeleton. To turn it into something genuinely valuable for the use cases listed above (legal, regulatory, clinical, scientific), the following changes matter most. Ordered by stage, then by cross-cutting concerns. Each item lists *why* it adds value, not just *what* it is.
+The current system is a strong skeleton. To turn it into something genuinely valuable for the use cases listed above (legal, regulatory, clinical, scientific), the primary roadmap should improve extraction accuracy, cross-domain generalization, and auditable provenance. The list stays ordered by stage, then by cross-cutting concerns. Cost and wallclock ideas are noted where they protect quality, but the dedicated Cost Reduction Playbook below is the deployment-economics plan, not the accuracy roadmap.
 
 ---
 
@@ -190,18 +190,18 @@ Currently a fixed 1200/120 token sliding window. Fine for short prose, wrong for
 
 The strongest stage architecturally; the weakest in terms of generalization.
 
-- **Schema cache by `(document_class, domain_hints)`.** First doc of class X pays the planner cost; subsequent docs of class X reuse the approved schema. This alone removes 5 LLM calls × 99% of runs in any production deployment.
+- **Schema registry/cache by `(document_class, domain_hints)`.** First doc of class X establishes a typed, approved, hashed schema; subsequent docs reuse it unless the document no longer fits. The main value is stable field semantics and comparable outputs across a domain pack; the planner-cost reduction is secondary.
 - **Domain packs.** Configurable starting schemas for the real target domains: SEC filings, contracts, clinical trial protocols, drug labels, regulatory rulings, policy documents, scientific papers, standards, patents, insurance, procurement, and audit evidence. The extraction kernel stays domain-neutral; the planner refines the selected pack instead of inventing from scratch. Adding a domain should mean adding pack/config/fixture coverage, not rewriting source code.
 - **Few-shot from prior approved schemas.** Feed the planner 2–3 previously approved schemas for similar documents as positive examples. Cleaner than the current accumulating prompt anti-pattern lists.
 - **Explicit "no fitting schema" path.** Currently the planner always proposes something. Add a refusal with a reason code (`document_out_of_scope`, `coverage_below_threshold`) so silent mis-extraction is impossible. This is the unacknowledged failure mode.
 - **Coverage estimation** — planner should estimate, per category, what fraction of the document supports it, and refuse to enable categories with <X% coverage. Cuts false positives.
-- **Human-in-the-loop schema approval.** For regulated use, schema approval is the audit-committee step. Add a `--require-schema-approval` flag that pauses after the planner and writes the schema to a queue for human sign-off. This is the single change that takes the system from "pipeline" to "deployable in regulated industry."
+- **Future schema approval gate.** Once domain packs and schema versioning are stable, add an optional `--require-schema-approval` flag that pauses after the planner and writes the schema to a review queue. Treat this as a governance layer, not the near-term extraction-kernel fix.
 - **Replace the hardcoded post-critique rewrites** in `planner/service.py:240-313` with another critique round that reads a generic style guide. The current approach is a fixture patch; a second critique pass with a stable rubric scales.
 - **Schema versioning.** Approved schemas get an ID and a hash. Reports cite the schema version. Lets you show "this fact was extracted under schema v3.2" in an audit.
 
 ## 4. Executor
 
-Solid offset enforcement; under-developed in lens variety and cost control.
+Solid offset enforcement; under-developed in lens variety, role coverage, and source-supported normalization.
 
 - **More lenses.** Current four (`entity`, `event`, `claim`, `number`) miss key roles: `relation` (X owes Y), `definition` (term defined here), `citation` (cross-reference), `temporal` (date+duration), `quantity_with_unit` (number + unit + scope). Each new lens roughly +2–4 percentage points of recall on its target domain.
 - **Tiered models per lens.** Entities and numbers don't need Sonnet 4.6 — Haiku 4.5 or even a small open model is enough. Claims and events need the strong model. This cuts cost ~40% with no measurable accuracy hit.
@@ -223,7 +223,7 @@ Currently the weakest deterministic stage. Exact-string match is too brittle.
 
 ## 6. Critic
 
-Architecturally sound; spending too much for what it returns.
+Architecturally sound; should focus on judgments deterministic checks cannot make.
 
 - **Stop using the critic where deterministic rules already work.** The critic currently re-checks span/category/schema, but those are already enforced deterministically. Narrow its role to *value faithfulness* (the only real judgment call) and cut its prompt + token cost in half.
 - **Confidence-gated critic.** High-confidence executor candidates (e.g., logprob-confidence > 0.95) skip the critic. Marginal candidates get the critic. Cuts critic cost ~50% on most runs.
@@ -233,7 +233,7 @@ Architecturally sound; spending too much for what it returns.
 
 ## 7. Verifier
 
-The most expendable stage in its current form. Reshape or shrink.
+Most valuable when it adds independent source-faithfulness evidence beyond deterministic span checks.
 
 - **Audit what the verifier actually catches** that the deterministic offset slice doesn't. If the answer is "almost nothing," replace the verifier LLM with a deterministic span-equality check and one targeted LLM call only for *value-vs-source* faithfulness. Saves ~15% of run cost.
 - **Sample-based verification.** Verify a stratified sample (always the lowest-confidence quartile, plus 10% random), not 100% of candidates. Use binomial confidence intervals to bound the actual accept rate.
@@ -284,18 +284,18 @@ Currently just JSON. The output format is the user-facing surface; expand it.
 
 ## 13. Evaluation
 
-The single biggest gap. The repo has 5 fixtures; one has been iterated on. That's not enough to claim research-grade.
+The single biggest quality gap. The repo has 5 fixtures; one has been iterated on. That's not enough to claim research-grade generalization.
 
 - **20+ diverse fixtures across domains** — legal contracts, FDA labels, SEC filings, ICH-GCP clinical protocols, NIST publications, IEC standards, peer-reviewed papers, internal policy docs. Each annotated by 2 humans for inter-annotator agreement.
 - **Adversarial fixtures.** Same content, different surface forms — paraphrased, reformatted, with distractors. Tests true generalization vs. fixture overfitting.
-- **Per-category and per-field metrics**, not just overall F1. Currently a 0.87 F1 hides the fact that some categories may be 1.0 and others 0.5.
+- **Per-category and per-field metrics**, not just overall F1. The current 0.92 F1 on one heavily iterated fixture can still hide categories that are perfect and categories that fail.
 - **Calibration test.** Predicted confidence should match observed accuracy. Plot reliability diagrams.
 - **Mutation testing.** Mutate the source and ensure the right data points change. Catches regressions where the system extracts the same answer regardless of source content.
 - **CI integration.** Run a small fixture suite on every commit; full suite nightly. Currently `make test` covers unit tests; eval runs are manual.
 
-## 14. Human-in-the-loop (the single biggest value unlock)
+## 14. Human review and governance (future layer)
 
-The use cases that justify Veritext (legal, clinical, regulated) all require a human in the loop. The current pipeline has no integration points.
+The use cases that justify Veritext (legal, clinical, regulated) may need human approval workflows, but those should come after the extraction kernel, domain packs, evaluation gates, and provenance surfaces are stable. Keep these integration points as future governance layers rather than the active extraction roadmap.
 
 - **Schema approval queue.** Pause after the planner; emit the schema to a review queue (file, Slack, email). Resume only on approval.
 - **Marginal-candidate review UI.** Web view of `tentative` candidates with one-click accept/reject. Decisions flow into the audit DB and become future few-shot examples.
@@ -309,9 +309,9 @@ The use cases that justify Veritext (legal, clinical, regulated) all require a h
 - **Per-document key isolation.** Reports for client A should not be readable by client B even if they share a deployment.
 - **Reproducibility manifest.** Pin LLM model versions, prompt hashes, config hashes, and source hashes into one signed manifest per run.
 
-## 16. Cost reduction (without sacrificing accuracy)
+## 16. Cost reduction summary (separate deployment-economics track)
 
-The system is genuinely expensive. Hierarchy of cuts, in order of impact:
+The system is genuinely expensive, but cost reduction should not set the active accuracy/domain roadmap. The full playbook is below; the short version is:
 
 1. **Schema cache + domain packs** → eliminate planner cost on repeat-class docs (~25% saving).
 2. **Tiered models per lens** → cheap model for entity/number, strong model for claim/event (~30% saving).
@@ -324,17 +324,17 @@ Combined: a ~5–10× cost reduction with no accuracy loss on regulated workflow
 
 ---
 
-## Highest-leverage improvements, ranked
+## Highest-leverage accuracy/provenance improvements, ranked
 
 If only five things get done:
 
-1. **Real PDF + DOCX + table support at ingestion.** Without this, the system can't run on the documents that justify it.
-2. **Domain packs and schema caching at the planner.** Keeps one domain-neutral extraction kernel while pack/config/fixture additions adapt it to new domains without source-code rewrites.
-3. **HTML provenance viewer in the reporter.** The single feature that makes auditors trust the system. Adoption blocker today.
-4. **Cross-document reconciliation.** The unique capability that makes Veritext valuable for due diligence and litigation; nothing else on the market does this with byte-level provenance.
-5. **Human-in-the-loop schema approval and marginal-candidate review.** The only path from "research project" to "regulated deployment."
+1. **Domain packs, typed schema registry, and schema-fit refusal.** Keeps one domain-neutral extraction kernel while pack/config/fixture additions adapt it to new domains without source-code rewrites or silent mis-categorization.
+2. **Diverse fixture suite with per-field gates.** Proves generalization across legal, SEC, clinical, regulatory, insurance, standards, scientific, and procurement documents instead of over-optimizing one fixture.
+3. **Boundary-preserving PDF, DOCX, and email ingestion.** Lets the system run on target-domain documents while preserving exact source hashes, byte offsets, character offsets, and page/location maps.
+4. **Expanded source-grounded lenses and normalization policy.** Adds relation, definition, citation, temporal, obligation, condition, exception, and quantity roles while preserving verbatim source spans.
+5. **HTML provenance viewer, run diffs, and signed reports.** Makes audit review practical and keeps every output tied back to source text, schema version, prompt/config hash, and rejection trail.
 
-Everything else is incremental. These five change what the system *is*.
+Everything else is secondary until these are credible. Cost work remains important, but it belongs to the separate deployment-economics track.
 
 ---
 
