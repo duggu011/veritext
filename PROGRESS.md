@@ -4,12 +4,37 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Executor structural decomposition slice 3
-- Current status: Moved executor candidate materialization and byte-offset derivation out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
-- Next required work: continue executor cleanup with normalization, batch retry validation, and rejection policy slices; run a targeted per-stage model comparison; or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: `src/extractor/executor/service.py` remains oversized; future executor slices should keep behavior unchanged and split cohesive modules under the 400-line convention.
+- Last completed phase: Executor structural decomposition slice 4
+- Current status: Moved executor payload expansion, source text resolution, field-specific normalization, text matching helpers, and trace output out of the executor orchestration service without changing public executor behavior. No live LLM calls or audit DB mutations were made.
+- Next required work: continue executor cleanup with batch retry validation and rejection policy slices; run a targeted per-stage model comparison; or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: `src/extractor/executor/service.py` is now under 400 lines; future executor slices should keep behavior unchanged and preserve the same focused module boundaries.
 
 ## Session Log
+
+### 2026-05-03 — Executor structural decomposition slice 4
+
+- Continued executor cleanup with the payload normalization slice.
+- Moved event-derived payload expansion into `src/extractor/executor/payload_expansion.py`.
+- Moved source text resolution, offset repair, ambiguous span detection, and source-support fallback handling into `src/extractor/executor/source_resolution.py`.
+- Moved shared text matching, whitespace normalization, Markdown-heading checks, and sentence-span helpers into `src/extractor/executor/text_utils.py`.
+- Moved field-specific normalization rules into `src/extractor/executor/field_normalizers.py` and the normalization dispatcher into `src/extractor/executor/normalization.py`.
+- Moved executor trace output formatting into `src/extractor/executor/trace.py` so `src/extractor/executor/service.py` remains under the 400-line convention.
+- Left batch retry validation, candidate rejection policy, audit writes, and public executor exports unchanged.
+- Confirmed touched executor files are under the 400-line limit after the split:
+  - `src/extractor/executor/normalization.py`: 42 lines
+  - `src/extractor/executor/trace.py`: 52 lines
+  - `src/extractor/executor/payload_expansion.py`: 157 lines
+  - `src/extractor/executor/text_utils.py`: 157 lines
+  - `src/extractor/executor/source_resolution.py`: 212 lines
+  - `src/extractor/executor/field_normalizers.py`: 372 lines
+  - `src/extractor/executor/service.py`: 380 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/executor/__init__.py src/extractor/executor/dedup.py src/extractor/executor/errors.py src/extractor/executor/field_normalizers.py src/extractor/executor/ids.py src/extractor/executor/materialization.py src/extractor/executor/models.py src/extractor/executor/normalization.py src/extractor/executor/payload_expansion.py src/extractor/executor/service.py src/extractor/executor/source_resolution.py src/extractor/executor/text_utils.py src/extractor/executor/trace.py src/extractor/executor/validation.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_executor.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or audit DB mutations were made.
 
 ### 2026-05-03 — Executor structural decomposition slice 3
 
