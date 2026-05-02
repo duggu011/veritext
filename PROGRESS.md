@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Cleanup-only documentation Phase 5 — Final Cleanup Review
-- Current status: Completed the final documentation cleanup review. The cumulative cleanup is consistent with AGENTS.md generalization rules and touched only `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: stop at this final cleanup gate and wait for explicit operator `continue`.
-- Next-phase context: the cleanup-only documentation plan is complete; any further work should be a new operator-directed task or phase.
+- Last completed phase: Local Haiku 4.5 trial override
+- Current status: Added a gitignored `config/local.yaml` override so local runs use Anthropic Haiku 4.5 (`claude-haiku-4-5-20251001`) through the existing config loader. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: operator can run a local extraction/eval with the Haiku override, or remove `config/local.yaml` to return to canonical config.
+- Next-phase context: this was a one-off local runtime override, not a canonical default change.
 
 ## Session Log
+
+### 2026-05-02 — Local Haiku 4.5 trial override
+
+- Interpreted the operator request to "switch to haiku once" as a one-off local runtime override rather than a canonical `config/default.yaml` change.
+- Reviewed the target-domain/configurability section in `docs/PROJECT_OVERVIEW.md` before changing runtime extraction behavior.
+- Used the operator-supplied Haiku 4.5 model ID `claude-haiku-4-5-20251001`.
+- Added gitignored `config/local.yaml` with:
+  - `llm.provider: anthropic`
+  - `llm.api_key_env: ANTHROPIC_API_KEY`
+  - `llm.model: claude-haiku-4-5-20251001`
+- Verified the config loader picks up the local override:
+  - `PYTHONPATH=src python3 -c "from extractor.config.loader import load_config; c=load_config(); print(c.llm.provider); print(c.llm.model); print(c.llm.api_key_env); print(c.llm.base_url); print(c.llm.stage_overrides)"`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Cleanup-only documentation Phase 5: Final Cleanup Review
 
