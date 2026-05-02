@@ -4,12 +4,28 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Cleanup-only documentation Phase 4 — Roadmap Rebalance
-- Current status: Rebalanced the project roadmap around accuracy, generalization, and provenance; separated cost reduction into a deployment-economics track; and deferred human-review framing. No source-code changes, live LLM calls, or audit DB mutations were made.
-- Next required work: stop at this phase gate and wait for explicit operator `continue` before Phase 5, Final Cleanup Review.
-- Next-phase context: Phase 5 should review the final docs diff for consistency, confirm no tracked files outside `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md` changed, run `git diff --check`, add a final cleanup gate report, and commit only if Phase 5 makes doc changes.
+- Last completed phase: Cleanup-only documentation Phase 5 — Final Cleanup Review
+- Current status: Completed the final documentation cleanup review. The cumulative cleanup is consistent with AGENTS.md generalization rules and touched only `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`. No source-code changes, live LLM calls, or audit DB mutations were made.
+- Next required work: stop at this final cleanup gate and wait for explicit operator `continue`.
+- Next-phase context: the cleanup-only documentation plan is complete; any further work should be a new operator-directed task or phase.
 
 ## Session Log
+
+### 2026-05-02 — Cleanup-only documentation Phase 5: Final Cleanup Review
+
+- Reviewed the cumulative cleanup commits against the pre-cleanup base and confirmed tracked changes were limited to `docs/PROJECT_OVERVIEW.md` and `PROGRESS.md`.
+- Reviewed `docs/PROJECT_OVERVIEW.md` against `AGENTS.md` domain/generalization rules:
+  - target domains remain broad and match the high-stakes, provenance-mandatory scope;
+  - legal contracts are framed as a first proving ground, not a contract-specific specialization;
+  - domain packs are described as typed/configurable additions over one domain-neutral extraction kernel;
+  - non-configurable provenance, offset, audit, forced-tool, Pydantic, invariant, and no-silent-drop rules remain explicit.
+- Checked the roadmap and cost sections for consistency: accuracy/generalization/provenance drives the active roadmap, cost reduction remains in a separate deployment-economics track, and human review is deferred as a governance layer.
+- Ran targeted `rg` checks for stale score/test text, over-specialized first-domain wording, and stray overview resume commands.
+- Verification:
+  - `git status --short`
+  - `git diff --name-only HEAD~4..HEAD`
+  - `git diff --check`
+- No source-code changes, live LLM calls, or audit DB mutations were made.
 
 ### 2026-05-02 — Cleanup-only documentation Phase 4: Roadmap Rebalance
 
