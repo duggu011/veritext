@@ -4,12 +4,41 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Verifier structural decomposition
-- Current status: Split verifier validation, deterministic policy, and error definitions out of the verifier orchestration service without changing public verifier behavior. No live LLM calls or audit DB mutations were made.
+- Last completed phase: Critic structural decomposition
+- Current status: Split critic batching, invariant checks, correction policy, report materialization, stable IDs, mirroring, validation, and errors out of the critic orchestration service without changing public critic behavior. No live LLM calls or audit DB mutations were made.
 - Next required work: choose the next pipeline structure target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: future implementation phases should keep new files under 400 lines, avoid growing oversized service files, and preserve invariant/audit behavior while splitting cohesive modules.
+- Next-phase context: executor and orchestrator remain oversized; future cleanup should continue preserving invariant/audit behavior while splitting cohesive modules under the 400-line convention.
 
 ## Session Log
+
+### 2026-05-03 — Critic structural decomposition
+
+- Chose `src/extractor/critic/service.py` as the next source-code structure cleanup target because it was still a monolithic critic orchestration, validation, correction-policy, retry-validation, and report-materialization module.
+- Moved critic batch partitioning, retry validation, retry merging, and retry complaint text into `src/extractor/critic/batching.py`.
+- Moved shared span/schema/source-support checks and contradicted-rejection detection into `src/extractor/critic/checks.py`.
+- Moved compact correction materialization, correction invariant checks, qualifier preservation, and original-preservation policy into `src/extractor/critic/corrections.py`.
+- Moved stable critic report/rejection ID generation into `src/extractor/critic/ids.py`.
+- Moved duplicate-merge critic report mirroring into `src/extractor/critic/mirroring.py`.
+- Moved critic report construction and critic rejection reason materialization into `src/extractor/critic/reports.py`.
+- Moved critic input preflight checks into `src/extractor/critic/validation.py` and `CriticError` into `src/extractor/critic/errors.py`.
+- Kept `src/extractor/critic/service.py` focused on candidate review orchestration, LLM calls, concurrency, and audit writes.
+- Confirmed touched critic files are under the 400-line limit after the split:
+  - `src/extractor/critic/errors.py`: 8 lines
+  - `src/extractor/critic/validation.py`: 43 lines
+  - `src/extractor/critic/ids.py`: 71 lines
+  - `src/extractor/critic/mirroring.py`: 104 lines
+  - `src/extractor/critic/reports.py`: 189 lines
+  - `src/extractor/critic/batching.py`: 227 lines
+  - `src/extractor/critic/checks.py`: 272 lines
+  - `src/extractor/critic/service.py`: 278 lines
+  - `src/extractor/critic/corrections.py`: 298 lines
+- Verification:
+  - `python3 -m py_compile src/extractor/critic/__init__.py src/extractor/critic/batching.py src/extractor/critic/checks.py src/extractor/critic/corrections.py src/extractor/critic/errors.py src/extractor/critic/ids.py src/extractor/critic/mirroring.py src/extractor/critic/models.py src/extractor/critic/reports.py src/extractor/critic/service.py src/extractor/critic/validation.py`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py -q`
+  - `PYTHONPATH=src python3 -m pytest tests/unit/test_critic.py tests/unit/test_orchestrator.py tests/unit/test_llm_client.py -q`
+  - `make lint`
+  - `git diff --check`
+- No live LLM calls or audit DB mutations were made.
 
 ### 2026-05-03 — Verifier structural decomposition
 

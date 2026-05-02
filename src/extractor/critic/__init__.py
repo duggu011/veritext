@@ -7,7 +7,8 @@ from extractor.critic.models import (
     CriticResult,
     CriticTaskResult,
 )
-from extractor.critic.service import CriticError, review_candidates
+from extractor.critic.errors import CriticError
+from extractor.critic.service import review_candidates
 
 __all__ = [
     "CriticBatchVerdicts",
