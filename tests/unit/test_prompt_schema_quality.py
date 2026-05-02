@@ -61,6 +61,37 @@ def test_planner_prompts_require_naming_stability_without_closed_ontology() -> N
             assert phrase in body
 
 
+def test_planner_prompts_prevent_over_specific_schema_descriptions() -> None:
+    prompts = _prompt_bodies()
+    propose = prompts["planner.propose_schema"]
+    critique = prompts["planner.critique_schema"]
+
+    for phrase in (
+        "Category descriptions for reusable categories must define the source-backed fact class",
+        "CorporateEvent covers source-backed significant business or corporate events",
+        "do not reserve CorporateEvent for one named transaction",
+        "Include an optional OperationalMetric.facility field",
+        "Do not move that facility role to CorporateEvent",
+        "When the field name is facility, describe it as the bare source-stated facility or asset name",
+        "Do not require location unless the field name or source role explicitly requires facility plus location",
+        "For fields ending in _type",
+        "Noun-form normalization is valid",
+    ):
+        assert phrase in propose
+
+    for phrase in (
+        "Correct reusable category descriptions that reserve category semantics for one source example",
+        "do not approve a CorporateEvent description that makes one named transaction the category's exclusive scope",
+        "Require an optional OperationalMetric.facility field",
+        "moves the facility role only to CorporateEvent",
+        "Correct facility field descriptions that require name plus location when the field is simply facility",
+        "A bare source-stated facility or asset name is valid",
+        "Correct descriptions for fields ending in _type",
+        "source-traced concise labels",
+    ):
+        assert phrase in critique
+
+
 def test_planner_prompts_reject_generic_role_collapse() -> None:
     prompts = _prompt_bodies()
     propose = prompts["planner.propose_schema"]

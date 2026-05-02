@@ -61,7 +61,7 @@ from extractor.planner import (
     SchemaProposal,
     StrategySelection,
 )
-from extractor.planner.service import _call_planning_stage
+from extractor.planner.service import _call_planning_stage, _generalize_schema_descriptions
 
 
 _STOP_POINTS = ("classify", "propose", "critique", "strategy", "budget", "planner")
@@ -280,6 +280,14 @@ async def async_main(argv: Sequence[str] | None = None) -> int:
                 "Schema critique rejected the proposed schema: "
                 + "; ".join(critique.issues)
             )
+        critique = critique.model_copy(
+            update={
+                "approved_categories": _generalize_schema_descriptions(
+                    critique.approved_categories,
+                )
+            },
+        )
+        _dump_json(debug_dir / "04_schema_critique.generalized.json", critique)
 
         strategy = await _call_planning_stage(
             run_id=args.run_id,

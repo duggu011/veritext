@@ -7,7 +7,14 @@ from pydantic import ValidationError
 
 from extractor.audit import AuditStore
 from extractor.config import ChunkingConfig
-from extractor.contracts import Chunk, ChunkPolicy, Document, ExtractionPlan
+from extractor.contracts import (
+    CategoryDefinition,
+    Chunk,
+    ChunkPolicy,
+    Document,
+    ExtractionPlan,
+    FieldDefinition,
+)
 from extractor.contracts.models import LLMStage
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
 from extractor.llm.payloads import split_model_json_before_field
@@ -100,6 +107,13 @@ async def create_extraction_plan(
             "Schema critique rejected the proposed schema: "
             + "; ".join(schema_critique.issues)
         )
+    schema_critique = schema_critique.model_copy(
+        update={
+            "approved_categories": _generalize_schema_descriptions(
+                schema_critique.approved_categories,
+            )
+        },
+    )
 
     strategy = await _call_planning_stage(
         run_id=run_id,
@@ -214,6 +228,88 @@ def _merge_domain_hints(
         if hint not in merged:
             merged.append(hint)
     return tuple(merged)
+
+
+def _generalize_schema_descriptions(
+    categories: tuple[CategoryDefinition, ...],
+) -> tuple[CategoryDefinition, ...]:
+    generalized = tuple(_generalize_category_description(category) for category in categories)
+    return tuple(_ensure_operational_metric_facility_field(category) for category in generalized)
+
+
+def _generalize_category_description(category: CategoryDefinition) -> CategoryDefinition:
+    description = category.description
+    if category.name == "CorporateEvent":
+        description = (
+            "Source-backed significant corporate or business events, including "
+            "acquisitions, approvals, facility commencements or operation starts, "
+            "transactions, financings, restructurings, or other stated corporate "
+            "actions. Use exact source evidence for each approved field; examples "
+            "in the document are illustrative and do not reserve this category for "
+            "one named event or transaction."
+        )
+    fields = tuple(_generalize_field_description(field) for field in category.fields)
+    return category.model_copy(update={"description": description, "fields": fields})
+
+
+def _generalize_field_description(field: FieldDefinition) -> FieldDefinition:
+    if field.name == "facility":
+        return field.model_copy(
+            update={
+                "description": (
+                    "The bare source-stated facility or asset name associated with "
+                    "the fact. Include location or descriptive qualifiers only when "
+                    "the field name or approved role explicitly requires facility "
+                    "plus location; otherwise a source-backed bare name is sufficient."
+                )
+            }
+        )
+
+    if field.name.endswith("_type"):
+        return field.model_copy(
+            update={
+                "description": _append_description_sentence(
+                    field.description,
+                    (
+                        "Prefer a concise source-traced label for the field value; "
+                        "noun-form normalization is allowed and preferred when the "
+                        "source words support the same action or type, while "
+                        "provenance stays on the supporting source words."
+                    ),
+                )
+            }
+        )
+
+    return field
+
+
+def _ensure_operational_metric_facility_field(
+    category: CategoryDefinition,
+) -> CategoryDefinition:
+    if category.name != "OperationalMetric":
+        return category
+    if any(field.name == "facility" for field in category.fields):
+        return category
+
+    facility_field = FieldDefinition(
+        name="facility",
+        description=(
+            "The bare source-stated facility or asset name associated with a "
+            "facility-specific operational metric. Populate only when the "
+            "source ties the metric to a named facility or asset; leave absent "
+            "for fleet-wide or company-wide operational metrics."
+        ),
+        value_type="text",
+        required=False,
+    )
+    return category.model_copy(update={"fields": (*category.fields, facility_field)})
+
+
+def _append_description_sentence(description: str, sentence: str) -> str:
+    if sentence in description:
+        return description
+    separator = "" if description.endswith((".", "!", "?")) else "."
+    return f"{description}{separator} {sentence}"
 
 
 __all__ = ["PlanningError", "create_extraction_plan"]

@@ -38,6 +38,8 @@ Naming-stability pass:
 - This is not a closed ontology. Approve new names when no reusable name preserves the source-backed role, but reject new names that are only synonyms.
 - Before accepting any category or field name, ask whether a conventional reusable name captures the same role without losing provenance. If yes, return that corrected name in approved_categories.
 - Prefer recurring business-document category names when they fit naturally, such as FinancialMetric, OperationalMetric, CorporateEvent, ForwardGuidance, RegulatoryRisk, and PersonnelChange. Approve narrower category names only when they add a real source-backed distinction.
+- Correct reusable category descriptions that reserve category semantics for one source example. CorporateEvent covers source-backed significant business or corporate events such as acquisitions, approvals, facility commencements or operation starts, transactions, and other stated corporate actions; do not approve a CorporateEvent description that makes one named transaction the category's exclusive scope when another source-backed event matches the approved fields.
+- Require an optional OperationalMetric.facility field when an operational metric is tied to a named facility or asset. Do not approve a schema that moves the facility role only to CorporateEvent when the same source fact also states a facility-specific operational metric.
 - Reject avoidable category synonym drift: Guidance when the source role is forward-looking company guidance; RegulatoryRateChange when the source role is regulatory risk or exposure.
 - Reject avoidable field synonym drift: change_percentage when change_pct fits, exposure_percentage when exposure_pct fits, announcement_date when event_date fits, forecast_value inside forward guidance when guidance_value fits, event_date when effective_date better captures the source role for a regulatory rate change or personnel appointment with a stated effective date, and target_value when the source labels the comparator a forecast and forecast_value preserves that source role.
 - Reject one-off fields that attach local nouns to common roles unless the local noun is the actual reusable role. For example, facility_contribution or facility_event_date should be value, asset_detail, or event_date when companion fields already identify the facility.
@@ -46,6 +48,8 @@ Naming-stability pass:
 - Use target_date for a by-date, deadline, or target-achievement date in guidance; not generic period. Keep period for the reporting or forecast coverage window.
 - Use condition for one stated contingency, caveat, threshold, or dependency; use conditions only when the source states multiple independent conditions.
 - Use notable_qualifier for source-stated metric qualifiers such as first time in N periods, record-high/low status, minimum/maximum threshold wording, or one-time wording; do not hide that qualifier in summary when it can be represented as its own role.
+- Correct facility field descriptions that require name plus location when the field is simply facility. A bare source-stated facility or asset name is valid unless the field name or source role explicitly requires facility plus location.
+- Correct descriptions for fields ending in _type, including change_type and event_type, when they require verbatim source wording instead of source-traced concise labels. Noun-form normalization is valid when every content word is supported by the source span.
 
 Output rules:
 - If accepted=true, approved_categories must contain the approved schema and issues must be empty unless the issues are minor notes that do not block use.
@@ -60,6 +64,7 @@ Adversarial checklist:
 - Does the schema include a catch-all category? If yes, reject or narrow it.
 - Would required=true force fabricated values for common source cases? If yes, change required=false or reject.
 - Does any generic date, value, rate, party, person, period, conditions, or summary field hide a source-backed role? If yes, replace it with role-specific fields or reject.
+- Does any reusable category description make a source example the exclusive category scope? If yes, correct the description so all source-backed facts matching the category and approved fields remain eligible.
 - Could the approved schema distinguish expected close date from announcement date, prior rate from new rate, speaker from counterparty, target date from reporting period, role/title from person, condition from conditions, event type from summary, and notable qualifier from summary when the source states those distinctions?
 - Does each semantic label have provenance-ready wording in the source, rather than only an inferred category label?
 - Is any name copied from a section heading when a stable role name would be clearer and more reusable?

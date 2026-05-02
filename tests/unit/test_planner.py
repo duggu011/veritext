@@ -252,6 +252,167 @@ def test_create_extraction_plan_runs_planner_calls_and_persists_audit(tmp_path: 
     asyncio.run(run_check())
 
 
+def test_create_extraction_plan_generalizes_over_specific_schema_descriptions() -> None:
+    async def run_check() -> None:
+        corporate_event = {
+            "name": "CorporateEvent",
+            "description": (
+                "A board-approved corporate transaction or significant business event, "
+                "specifically the acquisition of Northwind Storage."
+            ),
+            "fields": (
+                {
+                    "name": "event_type",
+                    "description": "The type of corporate event as stated, e.g. 'Acquisition'.",
+                    "value_type": "text",
+                    "required": True,
+                },
+                {
+                    "name": "asset_detail",
+                    "description": "Descriptive details about the acquired asset.",
+                    "value_type": "text",
+                    "required": False,
+                },
+            ),
+        }
+        operational_metric = {
+            "name": "OperationalMetric",
+            "description": "Non-financial operational metrics.",
+            "fields": (
+                {
+                    "name": "facility",
+                    "description": (
+                        "The name and location of a specific asset or facility, "
+                        "e.g. 'Atacama-1 in Chile'."
+                    ),
+                    "value_type": "text",
+                    "required": False,
+                },
+            ),
+        }
+        personnel_change = {
+            "name": "PersonnelChange",
+            "description": "Personnel changes.",
+            "fields": (
+                {
+                    "name": "change_type",
+                    "description": "The nature of the personnel change as stated.",
+                    "value_type": "text",
+                    "required": True,
+                },
+            ),
+        }
+        categories = (corporate_event, operational_metric, personnel_change)
+        payloads = valid_tool_payloads()
+        payloads[1] = (
+            "propose_schema",
+            {
+                "categories": categories,
+                "rationale": "The schema captures source-backed event and operational facts.",
+            },
+        )
+        payloads[2] = (
+            "critique_schema",
+            {
+                "accepted": True,
+                "approved_categories": categories,
+                "issues": (),
+            },
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=QueuedAnthropicClient(payloads))
+
+        plan = await create_extraction_plan(
+            run_id="run-1",
+            document=make_document(),
+            chunks=make_chunks(),
+            chunking_config=ChunkingConfig(
+                tokenizer="cl100k_base",
+                window_tokens=1200,
+                overlap_tokens=120,
+            ),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        categories_by_name = {category.name: category for category in plan.approved_categories}
+        corporate_description = categories_by_name["CorporateEvent"].description
+        assert "facility commencements or operation starts" in corporate_description
+        assert "one named event or transaction" in corporate_description
+        assert "Northwind" not in corporate_description
+
+        facility_field = categories_by_name["OperationalMetric"].fields[0]
+        assert facility_field.description.startswith("The bare source-stated facility")
+        assert "facility plus location" in facility_field.description
+
+        type_field = categories_by_name["PersonnelChange"].fields[0]
+        assert "noun-form normalization is allowed and preferred" in type_field.description
+        assert "provenance stays on the supporting source words" in type_field.description
+
+    asyncio.run(run_check())
+
+
+def test_create_extraction_plan_adds_optional_operational_metric_facility() -> None:
+    async def run_check() -> None:
+        operational_metric = {
+            "name": "OperationalMetric",
+            "description": "Non-financial operational metrics in physical units.",
+            "fields": (
+                {
+                    "name": "metric_name",
+                    "description": "The operational metric name.",
+                    "value_type": "text",
+                    "required": True,
+                },
+                {
+                    "name": "value",
+                    "description": "The stated operational metric value.",
+                    "value_type": "text",
+                    "required": True,
+                },
+            ),
+        }
+        payloads = valid_tool_payloads()
+        payloads[1] = (
+            "propose_schema",
+            {
+                "categories": (operational_metric,),
+                "rationale": "OperationalMetric captures source-backed operational facts.",
+            },
+        )
+        payloads[2] = (
+            "critique_schema",
+            {
+                "accepted": True,
+                "approved_categories": (operational_metric,),
+                "issues": (),
+            },
+        )
+        llm_client = LLMClient(make_llm_config(), anthropic_client=QueuedAnthropicClient(payloads))
+
+        plan = await create_extraction_plan(
+            run_id="run-1",
+            document=make_document(),
+            chunks=make_chunks(),
+            chunking_config=ChunkingConfig(
+                tokenizer="cl100k_base",
+                window_tokens=1200,
+                overlap_tokens=120,
+            ),
+            prompt_loader=PromptLoader(ROOT / "prompts"),
+            llm_client=llm_client,
+        )
+
+        fields = {field.name: field for field in plan.approved_categories[0].fields}
+        assert set(fields) == {"metric_name", "value", "facility"}
+        assert fields["facility"].required is False
+        assert fields["facility"].description.startswith(
+            "The bare source-stated facility or asset name associated with a "
+            "facility-specific operational metric."
+        )
+
+    asyncio.run(run_check())
+
+
 def test_create_extraction_plan_rejects_failed_schema_critique() -> None:
     async def run_check() -> None:
         payloads = valid_tool_payloads()
