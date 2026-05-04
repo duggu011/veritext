@@ -10,6 +10,7 @@ NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")
 NonNegativeInt = Annotated[int, Field(strict=True, ge=0)]
 PositiveInt = Annotated[int, Field(strict=True, ge=1)]
 Temperature = Annotated[float, Field(ge=0.0, le=1.0)]
+SchemaCoverageThreshold = Annotated[float, Field(strict=True, ge=0.0, le=1.0)]
 LLMProvider = Literal["anthropic", "openai", "openai_compatible"]
 ReasoningEffort = Literal["minimal", "low", "medium", "high"]
 LLMStageGroup = Literal["planner", "executor", "critic", "verifier", "reconciler"]
@@ -90,6 +91,8 @@ class DomainPacksConfig(ConfigModel):
 
 class SchemaRegistryConfig(ConfigModel):
     directory: Path
+    require_approved_schema: bool = Field(default=False, strict=True)
+    minimum_schema_coverage: SchemaCoverageThreshold = 0.65
 
 
 class ExtractorConfig(ConfigModel):
@@ -123,4 +126,5 @@ __all__ = [
     "PromptConfig",
     "RunContext",
     "SchemaRegistryConfig",
+    "SchemaCoverageThreshold",
 ]

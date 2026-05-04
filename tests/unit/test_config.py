@@ -49,6 +49,8 @@ domain_packs:
   directory: config/domain_packs
 schema_registry:
   directory: .veritext/schema_registry
+  require_approved_schema: false
+  minimum_schema_coverage: 0.65
 """
 
 
@@ -76,9 +78,11 @@ def test_default_config_file_loads() -> None:
     assert config.chunking.overlap_tokens < config.chunking.window_tokens
     assert config.domain_packs.directory == Path("config/domain_packs")
     assert config.schema_registry.directory == Path(".veritext/schema_registry")
+    assert config.schema_registry.require_approved_schema is False
+    assert config.schema_registry.minimum_schema_coverage == 0.65
 
 
-def test_domain_pack_and_schema_registry_paths_support_env_overrides(tmp_path: Path) -> None:
+def test_domain_pack_and_schema_registry_settings_support_env_overrides(tmp_path: Path) -> None:
     write_config(tmp_path)
 
     config = load_config(
@@ -86,11 +90,15 @@ def test_domain_pack_and_schema_registry_paths_support_env_overrides(tmp_path: P
         env={
             "VERITEXT_DOMAIN_PACKS__DIRECTORY": "tests/fixtures/domain_packs",
             "VERITEXT_SCHEMA_REGISTRY__DIRECTORY": ".tmp/schema_registry",
+            "VERITEXT_SCHEMA_REGISTRY__REQUIRE_APPROVED_SCHEMA": "true",
+            "VERITEXT_SCHEMA_REGISTRY__MINIMUM_SCHEMA_COVERAGE": "0.82",
         },
     )
 
     assert config.domain_packs.directory == Path("tests/fixtures/domain_packs")
     assert config.schema_registry.directory == Path(".tmp/schema_registry")
+    assert config.schema_registry.require_approved_schema is True
+    assert config.schema_registry.minimum_schema_coverage == 0.82
 
 
 def test_domain_pack_and_schema_registry_config_sections_are_strict() -> None:
@@ -99,6 +107,22 @@ def test_domain_pack_and_schema_registry_config_sections_are_strict() -> None:
 
     with pytest.raises(ValidationError):
         SchemaRegistryConfig(directory=Path(".veritext/schema_registry"), unexpected=True)
+
+
+def test_schema_registry_policy_rejects_invalid_threshold_and_non_strict_flags() -> None:
+    with pytest.raises(ValidationError):
+        SchemaRegistryConfig(
+            directory=Path(".veritext/schema_registry"),
+            require_approved_schema=False,
+            minimum_schema_coverage=1.01,
+        )
+
+    with pytest.raises(ValidationError):
+        SchemaRegistryConfig(
+            directory=Path(".veritext/schema_registry"),
+            require_approved_schema="false",
+            minimum_schema_coverage=0.65,
+        )
 
 
 def test_local_example_config_loads_as_moonshot_balanced_preset(tmp_path: Path) -> None:

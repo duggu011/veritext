@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 1 is complete. Schema registry, selection policy, fit assessment, schema selection, and planner-refusal contracts are implemented and verified.
-- Next required work: Step 2 - add config surface for schema registry policy and coverage threshold. Wait for operator readiness confirmation before implementation.
+- Current status: Phase 27 Step 2 is complete. Schema registry policy config now exposes `require_approved_schema` and `minimum_schema_coverage` with typed defaults and environment override coverage.
+- Next required work: Step 3 - add schema registry loader validation and hash enforcement. Wait for operator readiness confirmation before implementation.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-05 — Phase 27 Step 2 Schema Registry Policy Config
+
+- Added `SchemaRegistryConfig.require_approved_schema` with default `false`.
+- Added `SchemaRegistryConfig.minimum_schema_coverage` as a strict bounded float with default `0.65`.
+- Added canonical defaults to `config/default.yaml`.
+- Exported the schema coverage threshold type from `extractor.config`.
+- Added `tests/unit/test_config.py` coverage for default loading, environment overrides, strict unknown-key behavior, invalid coverage thresholds, and non-strict boolean rejection.
+- Verification:
+  - `python3 -m pytest tests/unit/test_config.py -q` first failed on missing/extra `SchemaRegistryConfig` policy fields
+  - `python3 -m pytest tests/unit/test_config.py -q`
+  - `python3 -m py_compile src/extractor/config/__init__.py src/extractor/config/models.py src/extractor/config/loader.py`
+  - `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q`
+  - `git diff --check`
 
 ### 2026-05-05 — Phase 27 Step 1 Schema Registry and Refusal Contracts
 

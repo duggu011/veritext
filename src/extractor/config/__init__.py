@@ -15,6 +15,7 @@ from extractor.config.models import (
     LoggingConfig,
     PromptConfig,
     RunContext,
+    SchemaCoverageThreshold,
     SchemaRegistryConfig,
 )
 from extractor.config.run_context import bind_run_context, get_run_context, maybe_run_context
@@ -33,6 +34,7 @@ __all__ = [
     "LoggingConfig",
     "PromptConfig",
     "RunContext",
+    "SchemaCoverageThreshold",
     "SchemaRegistryConfig",
     "bind_run_context",
     "configure_logging",

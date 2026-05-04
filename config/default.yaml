@@ -40,3 +40,5 @@ domain_packs:
   directory: config/domain_packs
 schema_registry:
   directory: .veritext/schema_registry
+  require_approved_schema: false
+  minimum_schema_coverage: 0.65

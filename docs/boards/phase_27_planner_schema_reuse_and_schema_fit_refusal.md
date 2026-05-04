@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 1 of 7
+Step: 2 of 7
 Branch: main
 Started: 2026-05-05
 Last session: 2026-05-05
 Spec: `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Step 1 complete. Schema registry, selection policy, fit assessment, and refusal contracts are in place and verified. Next up: Step 2 - add config surface for schema registry policy and coverage threshold.
+Step 2 complete. Schema registry policy config now exposes `require_approved_schema` and `minimum_schema_coverage` with typed defaults and environment override coverage. Next up: Step 3 - add schema registry loader validation and hash enforcement.
 
 ---
 
@@ -18,7 +18,7 @@ Step 1 complete. Schema registry, selection policy, fit assessment, and refusal 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
 - [x] Step 1: Add schema registry, selection policy, fit assessment, and refusal contracts.
-- [ ] Step 2: Add config surface for schema registry policy and coverage threshold.
+- [x] Step 2: Add config surface for schema registry policy and coverage threshold.
 - [ ] Step 3: Add schema registry loader validation and hash enforcement.
 - [ ] Step 4: Add planner approved-schema candidate matching and reuse path.
 - [ ] Step 5: Add planner schema-fit refusal and fallback policy.
@@ -62,6 +62,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/contracts/schema_metadata.py:1` | Added `schema_registry` to schema source kinds for approved registry artifacts. | Step 1 |
 | `src/extractor/contracts/__init__.py:1` | Exported Phase 27 schema registry/refusal contracts from the public contracts package. | Step 1 |
 | `tests/unit/test_schema_registry_contracts.py:1` | Added TDD coverage for registry artifact hash validation, strict policy bounds, fit-assessment reason requirements, schema selection consistency, and refusal consistency. | Step 1 |
+| `src/extractor/config/models.py:1` | Added typed schema-registry policy and minimum coverage threshold config fields. | Step 2 |
+| `src/extractor/config/__init__.py:1` | Exported schema coverage threshold type from the config package. | Step 2 |
+| `config/default.yaml:1` | Added canonical defaults for schema-registry policy and coverage threshold. | Step 2 |
+| `tests/unit/test_config.py:1` | Added config loader, environment override, and strict validation coverage for schema-registry policy fields. | Step 2 |
 
 ---
 
@@ -90,6 +94,7 @@ _(No issues yet.)_
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; `rg -n "phase_27_planner_schema_reuse_and_schema_fit_refusal.md|approved|BOARD OPEN" docs/boards/README.md PROGRESS.md docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-05 |
 | 1 | `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q` first failed with `ImportError: cannot import name 'ApprovedSchemaArtifact'`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_contracts.py -q`; `python3 -m py_compile src/extractor/contracts/__init__.py src/extractor/contracts/base.py src/extractor/contracts/models.py src/extractor/contracts/schema_metadata.py src/extractor/contracts/schema_registry.py`; `python3 -m pytest tests/unit/test_planner.py tests/unit/test_domain_pack_loader.py -q`; `git diff --check` | PASS | 2026-05-05 |
+| 2 | `python3 -m pytest tests/unit/test_config.py -q` first failed on missing/extra `SchemaRegistryConfig` policy fields; `python3 -m pytest tests/unit/test_config.py -q`; `python3 -m py_compile src/extractor/config/__init__.py src/extractor/config/models.py src/extractor/config/loader.py`; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q`; `git diff --check` | PASS | 2026-05-05 |
 
 ### Final Gate
 
@@ -108,6 +113,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-05 - Session 3
+
+- Resumed at Step 2 after operator confirmation.
+- Completed: added typed schema-registry config fields for `require_approved_schema` and `minimum_schema_coverage`, canonical defaults in `config/default.yaml`, and environment override/validation coverage.
+- Issues found: none.
+- Tests: `python3 -m pytest tests/unit/test_config.py -q` first failed on missing/extra `SchemaRegistryConfig` policy fields; `python3 -m pytest tests/unit/test_config.py -q` passed; `python3 -m py_compile src/extractor/config/__init__.py src/extractor/config/models.py src/extractor/config/loader.py` passed; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` passed; `git diff --check` passed.
+- Next: Step 3 - add schema registry loader validation and hash enforcement.
 
 ### 2026-05-05 - Session 2
 
