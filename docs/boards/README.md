@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 26 - Domain Pack and Schema Registry Foundation** | Status: NOT STARTED | Spec: _(not opened)_ | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 26 - Domain Pack and Schema Registry Foundation** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_26_domain_pack_and_schema_registry_foundation.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -24,7 +24,7 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 23 - Reconciler Input Slim | historical | historical | COMPLETE (see `PROGRESS.md`) |
 | 24 - Batch-Size Tuning and Observability | historical | historical | COMPLETE (see `PROGRESS.md`) |
 | 25 - Workflow and Roadmap Tracking | [design](../superpowers/specs/2026-05-04-board-first-workflow-design.md) | [board](phase_25_workflow_and_roadmap_tracking.md) | COMPLETE (2026-05-04) |
-| 26 - Domain Pack and Schema Registry Foundation | _(not opened)_ | _(not opened)_ | ACTIVE NEXT |
+| 26 - Domain Pack and Schema Registry Foundation | [draft](../specs/phase_26_domain_pack_and_schema_registry_foundation.md) | _(not opened)_ | ACTIVE NEXT - SPEC DRAFT |
 | 27 - Planner Schema Reuse and Schema-Fit Refusal | _(not opened)_ | _(not opened)_ | PLANNED |
 | 28 - Legal Contracts Domain Pack v1 | _(not opened)_ | _(not opened)_ | PLANNED |
 | 29 - Evaluation Harness: Per-Field Gates | _(not opened)_ | _(not opened)_ | PLANNED |
