@@ -36,3 +36,7 @@ logging:
   format: json
 prompts:
   directory: prompts
+domain_packs:
+  directory: config/domain_packs
+schema_registry:
+  directory: .veritext/schema_registry

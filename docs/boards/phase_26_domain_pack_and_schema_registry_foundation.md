@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 1 of 6
+Step: 2 of 6
 Branch: main
 Started: 2026-05-04
 Last session: 2026-05-05
 Spec: `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/phase_26_plus_roadmap.md`
 
-Step 1 complete. Schema metadata contracts and deterministic hashing are implemented and verified with narrow contract tests. Next: Step 2 - add config surface for domain packs and schema registry.
+Step 2 complete. Domain-pack and schema-registry config sections are typed, load from canonical defaults, and support environment overrides. Next: Step 3 - attach neutral planner-generated schema metadata to extraction plans.
 
 ---
 
@@ -18,7 +18,7 @@ Step 1 complete. Schema metadata contracts and deterministic hashing are impleme
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
 - [x] Step 1: Add schema metadata contracts and deterministic hashing.
-- [ ] Step 2: Add config surface for domain packs and schema registry.
+- [x] Step 2: Add config surface for domain packs and schema registry.
 - [ ] Step 3: Attach neutral planner-generated schema metadata to extraction plans.
 - [ ] Step 4: Add domain-pack loader validation without planner selection or reuse.
 - [ ] Step 5: Propagate schema metadata through reporter, audit payloads, orchestrator, and CLI summary.
@@ -59,6 +59,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/contracts/schema_metadata.py:1` | Added strict domain-pack, schema-template, and approved-schema metadata contracts plus canonical schema hashing helpers. | Step 1 |
 | `src/extractor/contracts/__init__.py:1` | Exported schema metadata contracts and hashing helpers from the public contracts package. | Step 1 |
 | `tests/unit/test_schema_metadata.py:1` | Added unit coverage for metadata validation, deterministic sorted hashing, semantic hash changes, and planner-generated schema IDs. | Step 1 |
+| `src/extractor/config/models.py:1` | Added typed domain-pack and schema-registry path config sections to `ExtractorConfig`. | Step 2 |
+| `src/extractor/config/__init__.py:1` | Exported domain-pack and schema-registry config models. | Step 2 |
+| `config/default.yaml:1` | Added canonical default directories for domain packs and schema registry. | Step 2 |
+| `tests/unit/test_config.py:1` | Added config loader and strict-model coverage for the new config sections and environment overrides. | Step 2 |
+| `tests/unit/test_cli.py:1` | Updated CLI test config fixture with required domain-pack and schema-registry sections. | Step 2 |
+| `tests/unit/test_orchestrator.py:1` | Updated direct `ExtractorConfig` construction with the new required config sections. | Step 2 |
 
 ---
 
@@ -87,6 +93,7 @@ _(No issues yet.)_
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`; `rg -n "phase_26_domain_pack_and_schema_registry_foundation.md|approved|BOARD OPEN" docs/boards/README.md PROGRESS.md docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md` | PASS | 2026-05-04 |
 | 1 | `python3 -m pytest tests/unit/test_schema_metadata.py -q`; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` | PASS | 2026-05-05 |
+| 2 | `python3 -m pytest tests/unit/test_config.py -q`; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 
 ### Final Gate
 
@@ -109,10 +116,10 @@ Reverse chronological. Log every session.
 ### 2026-05-05 - Session 2
 
 - Resumed at step 1 after operator confirmation.
-- Completed: added strict schema/domain-pack metadata contracts and deterministic canonical schema hashing helpers.
+- Completed: added strict schema/domain-pack metadata contracts and deterministic canonical schema hashing helpers; added typed domain-pack and schema-registry config sections with default YAML and environment override coverage.
 - Issues found: none.
-- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed.
-- Next: step 2 - add config surface for domain packs and schema registry.
+- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_config.py -q` passed; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` passed after allowing tiktoken to populate its tokenizer cache.
+- Next: step 3 - attach neutral planner-generated schema metadata to extraction plans.
 
 ### 2026-05-04 - Session 1
 

@@ -10,8 +10,10 @@ from pydantic import ValidationError
 
 from extractor.config import (
     ConfigError,
+    DomainPacksConfig,
     LoggingConfig,
     RunContext,
+    SchemaRegistryConfig,
     bind_run_context,
     configure_logging,
     get_run_context,
@@ -43,6 +45,10 @@ logging:
   format: json
 prompts:
   directory: prompts
+domain_packs:
+  directory: config/domain_packs
+schema_registry:
+  directory: .veritext/schema_registry
 """
 
 
@@ -68,6 +74,31 @@ def test_default_config_file_loads() -> None:
     assert config.execution.verifier_batch_size == 20
     assert config.logging.format == "json"
     assert config.chunking.overlap_tokens < config.chunking.window_tokens
+    assert config.domain_packs.directory == Path("config/domain_packs")
+    assert config.schema_registry.directory == Path(".veritext/schema_registry")
+
+
+def test_domain_pack_and_schema_registry_paths_support_env_overrides(tmp_path: Path) -> None:
+    write_config(tmp_path)
+
+    config = load_config(
+        config_dir=tmp_path,
+        env={
+            "VERITEXT_DOMAIN_PACKS__DIRECTORY": "tests/fixtures/domain_packs",
+            "VERITEXT_SCHEMA_REGISTRY__DIRECTORY": ".tmp/schema_registry",
+        },
+    )
+
+    assert config.domain_packs.directory == Path("tests/fixtures/domain_packs")
+    assert config.schema_registry.directory == Path(".tmp/schema_registry")
+
+
+def test_domain_pack_and_schema_registry_config_sections_are_strict() -> None:
+    with pytest.raises(ValidationError):
+        DomainPacksConfig(directory=Path("config/domain_packs"), unexpected=True)
+
+    with pytest.raises(ValidationError):
+        SchemaRegistryConfig(directory=Path(".veritext/schema_registry"), unexpected=True)
 
 
 def test_local_example_config_loads_as_moonshot_balanced_preset(tmp_path: Path) -> None:

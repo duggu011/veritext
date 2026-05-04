@@ -40,6 +40,10 @@ def write_config(config_dir: Path, audit_path: Path) -> None:
                 "  format: json",
                 "prompts:",
                 f"  directory: {ROOT / 'prompts'}",
+                "domain_packs:",
+                f"  directory: {config_dir / 'domain_packs'}",
+                "schema_registry:",
+                f"  directory: {config_dir / 'schema_registry'}",
                 "",
             )
         ),

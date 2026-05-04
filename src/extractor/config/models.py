@@ -84,6 +84,14 @@ class PromptConfig(ConfigModel):
     directory: Path
 
 
+class DomainPacksConfig(ConfigModel):
+    directory: Path
+
+
+class SchemaRegistryConfig(ConfigModel):
+    directory: Path
+
+
 class ExtractorConfig(ConfigModel):
     llm: LLMConfig
     chunking: ChunkingConfig
@@ -91,6 +99,8 @@ class ExtractorConfig(ConfigModel):
     audit: AuditConfig
     logging: LoggingConfig
     prompts: PromptConfig
+    domain_packs: DomainPacksConfig
+    schema_registry: SchemaRegistryConfig
 
 
 class RunContext(ConfigModel):
@@ -102,6 +112,7 @@ class RunContext(ConfigModel):
 __all__ = [
     "AuditConfig",
     "ChunkingConfig",
+    "DomainPacksConfig",
     "ExecutionConfig",
     "ExtractorConfig",
     "LLMConfig",
@@ -111,4 +122,5 @@ __all__ = [
     "LoggingConfig",
     "PromptConfig",
     "RunContext",
+    "SchemaRegistryConfig",
 ]

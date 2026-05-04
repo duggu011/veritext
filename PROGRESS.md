@@ -5,21 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 25 - Workflow and Roadmap Tracking
-- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`. Phase 26 spec is approved and board `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` is open. Step 1 is complete with strict schema metadata contracts and deterministic schema hashing.
-- Next required work: Phase 26 Step 2 - add config surface for domain packs and schema registry.
+- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`. Phase 26 spec is approved and board `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` is open. Steps 1 and 2 are complete with strict schema metadata contracts, deterministic schema hashing, and typed domain-pack/schema-registry config paths.
+- Next required work: Phase 26 Step 3 - attach neutral planner-generated schema metadata to extraction plans.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 26 board and approved spec. Implementation must start at Step 1 and preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
 
-### 2026-05-05 — Phase 26 Step 1 Schema Metadata Contracts
+### 2026-05-05 — Phase 26 Steps 1-2 Schema Metadata and Config
 
 - Added `src/extractor/contracts/schema_metadata.py` with strict Pydantic v2 contracts for domain-pack metadata, schema-template metadata, approved-schema metadata, schema source kind, planner-generated schema metadata construction, and canonical schema hashing.
 - Exported the new metadata contracts and helpers through `extractor.contracts`.
 - Added `tests/unit/test_schema_metadata.py` covering strict metadata validation, duplicate template/lens rejection, source-kind pack rules, deterministic sorted schema hashing, semantic hash changes, and `schema:<hash-prefix>` planner-generated IDs.
-- Updated the active Phase 26 board to mark Step 1 complete and hand off to Step 2.
+- Added typed `domain_packs.directory` and `schema_registry.directory` config sections to `ExtractorConfig`, `config/default.yaml`, and the direct CLI/orchestrator test fixtures.
+- Added `tests/unit/test_config.py` coverage for the new config paths and environment overrides.
+- Updated the active Phase 26 board to mark Steps 1 and 2 complete and hand off to Step 3.
 - Verification:
   - `python3 -m pytest tests/unit/test_schema_metadata.py -q`
   - `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q`
+  - `python3 -m pytest tests/unit/test_config.py -q`
+  - `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q`
 
 ### 2026-05-04 — Phase 26 Board Opening
 

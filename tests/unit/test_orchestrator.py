@@ -8,11 +8,13 @@ from extractor.audit import AuditStore
 from extractor.config import (
     AuditConfig,
     ChunkingConfig,
+    DomainPacksConfig,
     ExecutionConfig,
     ExtractorConfig,
     LLMConfig,
     LoggingConfig,
     PromptConfig,
+    SchemaRegistryConfig,
 )
 from extractor.contracts import LLMCallLog
 from extractor.llm import StructuredLLMResult
@@ -204,6 +206,8 @@ def make_config(tmp_path: Path) -> ExtractorConfig:
         audit=AuditConfig(database_path=tmp_path / "audit.sqlite3"),
         logging=LoggingConfig(level="INFO", format="json"),
         prompts=PromptConfig(directory=ROOT / "prompts"),
+        domain_packs=DomainPacksConfig(directory=tmp_path / "domain_packs"),
+        schema_registry=SchemaRegistryConfig(directory=tmp_path / "schema_registry"),
     )
 
 
