@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 7
+Step: 1 of 7
 Branch: main
 Started: 2026-05-05
 Last session: 2026-05-05
 Spec: `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Phase 27 board opened after operator approval of the spec. Do not begin Step 1 until the operator confirms readiness after the session-start report.
+Step 1 complete. Schema registry, selection policy, fit assessment, and refusal contracts are in place and verified. Next up: Step 2 - add config surface for schema registry policy and coverage threshold.
 
 ---
 
@@ -17,7 +17,7 @@ Phase 27 board opened after operator approval of the spec. Do not begin Step 1 u
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add schema registry, selection policy, fit assessment, and refusal contracts.
+- [x] Step 1: Add schema registry, selection policy, fit assessment, and refusal contracts.
 - [ ] Step 2: Add config surface for schema registry policy and coverage threshold.
 - [ ] Step 3: Add schema registry loader validation and hash enforcement.
 - [ ] Step 4: Add planner approved-schema candidate matching and reuse path.
@@ -58,6 +58,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Active Phase 27 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `src/extractor/contracts/schema_registry.py:1` | Added strict approved-schema artifact, selection policy, coverage estimate, fit assessment, schema selection, and planning-refusal contracts. | Step 1 |
+| `src/extractor/contracts/schema_metadata.py:1` | Added `schema_registry` to schema source kinds for approved registry artifacts. | Step 1 |
+| `src/extractor/contracts/__init__.py:1` | Exported Phase 27 schema registry/refusal contracts from the public contracts package. | Step 1 |
+| `tests/unit/test_schema_registry_contracts.py:1` | Added TDD coverage for registry artifact hash validation, strict policy bounds, fit-assessment reason requirements, schema selection consistency, and refusal consistency. | Step 1 |
 
 ---
 
@@ -85,6 +89,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; `rg -n "phase_27_planner_schema_reuse_and_schema_fit_refusal.md|approved|BOARD OPEN" docs/boards/README.md PROGRESS.md docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-05 |
+| 1 | `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q` first failed with `ImportError: cannot import name 'ApprovedSchemaArtifact'`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_contracts.py -q`; `python3 -m py_compile src/extractor/contracts/__init__.py src/extractor/contracts/base.py src/extractor/contracts/models.py src/extractor/contracts/schema_metadata.py src/extractor/contracts/schema_registry.py`; `python3 -m pytest tests/unit/test_planner.py tests/unit/test_domain_pack_loader.py -q`; `git diff --check` | PASS | 2026-05-05 |
 
 ### Final Gate
 
@@ -103,6 +108,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-05 - Session 2
+
+- Resumed at Step 1 after operator confirmation.
+- Completed: added strict Phase 27 contracts for approved schema registry artifacts, schema selection policy, schema coverage estimates, schema-fit assessments, schema selection records, and planner refusal records; added `schema_registry` as a schema source kind; exported the new contracts.
+- Issues found: none.
+- Tests: `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q` first failed with `ImportError: cannot import name 'ApprovedSchemaArtifact'`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q` passed; `python3 -m pytest tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_contracts.py -q` passed; `python3 -m py_compile src/extractor/contracts/__init__.py src/extractor/contracts/base.py src/extractor/contracts/models.py src/extractor/contracts/schema_metadata.py src/extractor/contracts/schema_registry.py` passed; `python3 -m pytest tests/unit/test_planner.py tests/unit/test_domain_pack_loader.py -q` passed; `git diff --check` passed.
+- Next: Step 2 - add config surface for schema registry policy and coverage threshold.
 
 ### 2026-05-05 - Session 1
 

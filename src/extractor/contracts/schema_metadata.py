@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from extractor.contracts.models import CategoryDefinition
 
 
-SchemaSourceKind = Literal["planner_generated", "domain_pack_template"]
+SchemaSourceKind = Literal["planner_generated", "domain_pack_template", "schema_registry"]
 SCHEMA_HASH_PREFIX_LENGTH = 12
 
 

@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 spec is approved and the board is open at `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`. Implementation has not started.
-- Next required work: Step 1 - add schema registry, selection policy, fit assessment, and refusal contracts. Wait for operator readiness confirmation before implementation.
+- Current status: Phase 27 Step 1 is complete. Schema registry, selection policy, fit assessment, schema selection, and planner-refusal contracts are implemented and verified.
+- Next required work: Step 2 - add config surface for schema registry policy and coverage threshold. Wait for operator readiness confirmation before implementation.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-05 — Phase 27 Step 1 Schema Registry and Refusal Contracts
+
+- Added `src/extractor/contracts/schema_registry.py` with strict Pydantic v2 contracts for approved schema registry artifacts, schema selection policy, schema coverage estimates, schema-fit assessments, schema selection records, and planner refusal records.
+- Added `schema_registry` to `SchemaSourceKind` so approved registry artifacts can hash and identify differently from planner-generated schemas and domain-pack templates.
+- Exported the new contracts through `extractor.contracts`.
+- Added `tests/unit/test_schema_registry_contracts.py` covering registry artifact hash validation, strict policy bounds, non-fit reason-code requirements, schema selection candidate consistency, and refusal candidate/assessment consistency.
+- Verification:
+  - `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q` first failed with `ImportError: cannot import name 'ApprovedSchemaArtifact'`
+  - `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q`
+  - `python3 -m pytest tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_contracts.py -q`
+  - `python3 -m py_compile src/extractor/contracts/__init__.py src/extractor/contracts/base.py src/extractor/contracts/models.py src/extractor/contracts/schema_metadata.py src/extractor/contracts/schema_registry.py`
+  - `python3 -m pytest tests/unit/test_planner.py tests/unit/test_domain_pack_loader.py -q`
+  - `git diff --check`
 
 ### 2026-05-05 — Phase 27 Board Opening
 

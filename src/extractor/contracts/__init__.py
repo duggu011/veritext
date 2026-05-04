@@ -28,8 +28,18 @@ from extractor.contracts.schema_metadata import (
     build_planner_generated_schema_metadata,
     canonical_schema_hash,
 )
+from extractor.contracts.schema_registry import (
+    ApprovedSchemaArtifact,
+    PlanningRefusal,
+    PlanningRefusalReasonCode,
+    SchemaCoverageEstimate,
+    SchemaFitAssessment,
+    SchemaSelection,
+    SchemaSelectionPolicy,
+)
 
 __all__ = [
+    "ApprovedSchemaArtifact",
     "ApprovedSchemaMetadata",
     "CategoryDefinition",
     "Chunk",
@@ -46,8 +56,14 @@ __all__ = [
     "LensBudget",
     "LensCandidate",
     "PageSpan",
+    "PlanningRefusal",
+    "PlanningRefusalReasonCode",
     "RejectionReason",
     "RunManifest",
+    "SchemaCoverageEstimate",
+    "SchemaFitAssessment",
+    "SchemaSelection",
+    "SchemaSelectionPolicy",
     "SchemaSourceKind",
     "SchemaTemplateMetadata",
     "SourceSpan",
