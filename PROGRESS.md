@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 25 - Workflow and Roadmap Tracking
-- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`. Phase 26 has a draft spec at `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`; its board is not opened.
-- Next required work: operator review and approval of the Phase 26 draft spec.
-- Next-phase context: Future sessions should start at `docs/boards/README.md`, not this file. If the Phase 26 spec is approved, create `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` from the board template before implementation. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
+- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`. Phase 26 spec is approved and board `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` is open.
+- Next required work: Phase 26 Step 1 - add schema metadata contracts and deterministic hashing.
+- Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 26 board and approved spec. Implementation must start at Step 1 and preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-04 — Phase 26 Board Opening
+
+- Marked `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md` approved after operator approval.
+- Created active board `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`.
+- Pinned Phase 26 implementation open-question resolutions:
+  - Use `schema:<hash-prefix>` for planner-generated schema IDs.
+  - Accept YAML domain-pack artifacts only in Phase 26.
+  - Put synthetic loader fixtures under `tests/fixtures/domain_packs/`.
+  - Include schema identity in the CLI JSON summary.
+- Updated `docs/boards/README.md` to show Phase 26 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`
+  - `rg -n "phase_26_domain_pack_and_schema_registry_foundation.md|approved|BOARD OPEN" docs/boards/README.md PROGRESS.md docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`
 
 ### 2026-05-04 — Phase 26 Spec Draft
 

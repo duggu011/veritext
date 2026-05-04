@@ -1,6 +1,6 @@
 # Phase 26 - Domain Pack and Schema Registry Foundation
 
-Status: draft for operator approval. This spec does not authorize implementation until the operator approves it and a Phase 26 board is created.
+Status: approved by operator on 2026-05-04. Implementation starts only from `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`.
 
 Date opened: 2026-05-04
 
