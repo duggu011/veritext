@@ -9,7 +9,7 @@ Last session: 2026-05-05
 Spec: `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/phase_26_plus_roadmap.md`
 
-Phase 26 implementation complete and ready for operator review. Final verification passed. Do not begin Phase 27 until the operator accepts Phase 26 and explicitly says to continue.
+Phase 26 accepted by the operator on 2026-05-05. Final verification passed and matching commits exist through `f034356`. Phase 27 spec draft is opened; do not begin Phase 27 implementation until its spec is approved and a board is created.
 
 ---
 
@@ -89,6 +89,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Updated active Phase 26 status to ready for operator review. | Step 6 |
 | `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md:1` | Filled final gate, work log, and phase summary. | Step 6 |
 | `PROGRESS.md:1` | Updated current gate and session log for Phase 26 review handoff. | Step 6 |
+| `docs/boards/README.md:1` | Marked Phase 26 complete and made Phase 27 the active spec draft after operator continuation. | Acceptance |
+| `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Opened Phase 27 draft spec. | Acceptance |
+| `PROGRESS.md:1` | Recorded Phase 26 acceptance and Phase 27 spec-draft handoff. | Acceptance |
 
 ---
 
@@ -122,6 +125,7 @@ _(No issues yet.)_
 | 4 | `python3 -m pytest tests/unit/test_domain_pack_loader.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 | 5 | `python3 -m pytest tests/unit/test_reporter.py tests/unit/test_cli.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 | 6 | `python3 -m pytest tests/unit/test_evals.py -q`; `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-05 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md docs/boards/README.md docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`; `rg -n "Phase 27|phase_27_planner_schema_reuse_and_schema_fit_refusal.md|SPEC DRAFT|COMPLETE \\(2026-05-05\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-05 |
 
 ### Final Gate
 
@@ -140,6 +144,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-05 - Session 3
+
+- Resumed at step 6 after operator said `continue`.
+- Completed: treated Phase 26 as accepted, marked the phase complete in the board index, opened the Phase 27 draft spec for planner schema reuse and schema-fit refusal, and updated `PROGRESS.md`.
+- Issues found: none.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md docs/boards/README.md docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` returned no matches; `rg -n "Phase 27|phase_27_planner_schema_reuse_and_schema_fit_refusal.md|SPEC DRAFT|COMPLETE \\(2026-05-05\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator review of `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`. Phase 27 implementation must not begin until the spec is approved and a board is created.
 
 ### 2026-05-05 - Session 2
 

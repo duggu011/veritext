@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 25 - Workflow and Roadmap Tracking
-- Current status: Phase 26 implementation is complete and ready for operator review. It adds strict schema metadata contracts, deterministic schema hashing, typed domain-pack/schema-registry config paths, neutral planner-generated schema metadata on extraction plans, explicit YAML-only domain-pack loader validation, and schema identity in final report JSON plus CLI summaries. `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` contains the final gate evidence and phase summary.
-- Next required work: operator review and acceptance of Phase 26. Do not begin Phase 27 until the operator explicitly says to continue.
-- Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 26 board and approved spec. After Phase 26 is accepted, Phase 27 starts with planner schema reuse and schema-fit refusal; preserve the completed LLM provider adapter boundary when future work touches provider routing.
+- Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
+- Current status: Phase 27 is active in spec-draft mode. The draft spec is `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; no Phase 27 board is open and no implementation may begin until the operator approves the spec.
+- Next required work: operator review of the Phase 27 draft spec, especially the open implementation questions around registry write policy, strict-refusal defaults, refusal report shape, and whether domain-pack templates should carry full categories in this phase.
+- Next-phase context: Future sessions should start at `docs/boards/README.md`, then follow `WORKFLOW.md` phase-doc mode because the active Phase 27 board is not opened. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-05 — Phase 27 Spec Draft Opened
+
+- Accepted Phase 26 after operator continuation and kept the completed Phase 26 evidence on `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`.
+- Updated `docs/boards/README.md` so Phase 26 is complete and Phase 27 is active in `SPEC DRAFT` state.
+- Created `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md` from the Phase 26+ roadmap and `docs/PROJECT_OVERVIEW.md` planner roadmap.
+- Scoped Phase 27 to approved-schema registry validation, schema selection policy, schema-fit assessment, structured planner refusal, terminal refusal orchestration, audit visibility, refusal reports, and CLI summaries.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md docs/boards/README.md docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`
+  - `rg -n "Phase 27|phase_27_planner_schema_reuse_and_schema_fit_refusal.md|SPEC DRAFT|COMPLETE \\(2026-05-05\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-05 — Phase 26 Steps 1-6 Schema Metadata Foundation
 

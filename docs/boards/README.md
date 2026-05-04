@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 26 - Domain Pack and Schema Registry Foundation** | Status: READY FOR OPERATOR REVIEW | Spec: [approved](../specs/phase_26_domain_pack_and_schema_registry_foundation.md) | Board: [active](phase_26_domain_pack_and_schema_registry_foundation.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 27 - Planner Schema Reuse and Schema-Fit Refusal** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -24,8 +24,8 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 23 - Reconciler Input Slim | historical | historical | COMPLETE (see `PROGRESS.md`) |
 | 24 - Batch-Size Tuning and Observability | historical | historical | COMPLETE (see `PROGRESS.md`) |
 | 25 - Workflow and Roadmap Tracking | [design](../superpowers/specs/2026-05-04-board-first-workflow-design.md) | [board](phase_25_workflow_and_roadmap_tracking.md) | COMPLETE (2026-05-04) |
-| 26 - Domain Pack and Schema Registry Foundation | [approved](../specs/phase_26_domain_pack_and_schema_registry_foundation.md) | [board](phase_26_domain_pack_and_schema_registry_foundation.md) | ACTIVE - READY FOR OPERATOR REVIEW |
-| 27 - Planner Schema Reuse and Schema-Fit Refusal | _(not opened)_ | _(not opened)_ | PLANNED |
+| 26 - Domain Pack and Schema Registry Foundation | [approved](../specs/phase_26_domain_pack_and_schema_registry_foundation.md) | [board](phase_26_domain_pack_and_schema_registry_foundation.md) | COMPLETE (2026-05-05) |
+| 27 - Planner Schema Reuse and Schema-Fit Refusal | [draft](../specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
 | 28 - Legal Contracts Domain Pack v1 | _(not opened)_ | _(not opened)_ | PLANNED |
 | 29 - Evaluation Harness: Per-Field Gates | _(not opened)_ | _(not opened)_ | PLANNED |
 | 30 - Diverse Fixture Corpus Round 1 | _(not opened)_ | _(not opened)_ | PLANNED |
