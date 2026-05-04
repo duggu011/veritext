@@ -92,6 +92,7 @@ def render_summary(result: object) -> str:
     summary = {
         "run_id": result.run_id,
         "doc_id": result.document.doc_id,
+        "schema_metadata": result.plan.schema_metadata.model_dump(mode="json"),
         "status": result.completed_manifest.status,
         "audit_db_path": result.completed_manifest.audit_db_path,
         "output_path": result.report.output_path,

@@ -8,7 +8,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from extractor.audit import AuditStore
-from extractor.contracts import DataPoint, RunManifest
+from extractor.contracts import ApprovedSchemaMetadata, DataPoint, RunManifest
 from extractor.reporter.models import ExtractionReport, ReportWriteResult
 
 
@@ -20,6 +20,7 @@ async def write_report(
     *,
     manifest: RunManifest,
     data_points: tuple[DataPoint, ...],
+    schema_metadata: ApprovedSchemaMetadata,
     output_path: str | Path,
     audit_store: AuditStore | None = None,
     generated_at: datetime | None = None,
@@ -48,10 +49,11 @@ async def write_report(
             ),
         )
         report = ExtractionReport(
-            report_schema_version="report.v1",
+            report_schema_version="report.v2",
             run_id=manifest.run_id,
             doc_id=manifest.doc_id,
             generated_at=completed_at,
+            schema_metadata=schema_metadata,
             output_data_point_ids=completed_manifest.output_data_point_ids,
             data_points=ordered_data_points,
         )

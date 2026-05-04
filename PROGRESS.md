@@ -5,8 +5,8 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 25 - Workflow and Roadmap Tracking
-- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`. Phase 26 spec is approved and board `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` is open. Steps 1-4 are complete with strict schema metadata contracts, deterministic schema hashing, typed domain-pack/schema-registry config paths, neutral planner-generated schema metadata on extraction plans, and explicit YAML-only domain-pack loader validation.
-- Next required work: Phase 26 Step 5 - propagate schema metadata through reporter, audit payloads, orchestrator, and CLI summary.
+- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`. Phase 26 spec is approved and board `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` is open. Steps 1-5 are complete with strict schema metadata contracts, deterministic schema hashing, typed domain-pack/schema-registry config paths, neutral planner-generated schema metadata on extraction plans, explicit YAML-only domain-pack loader validation, and schema identity in final report JSON plus CLI summaries.
+- Next required work: Phase 26 Step 6 - run final verification, complete phase summary, update `PROGRESS.md`, and commit/handoff cleanly.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 26 board and approved spec. Implementation must start at Step 1 and preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
@@ -22,7 +22,8 @@ Running log for repository sessions and accepted phase gates.
 - Added `ExtractionPlan.schema_metadata` derivation and validation so neutral planner-generated plans carry `schema:<hash-prefix>` identity without changing approved categories, enabled lenses, chunk policy, or budgets.
 - Added `src/extractor/planner/domain_packs.py` to validate YAML-only domain-pack artifacts and wired orchestrator startup to fail explicitly on invalid configured artifacts without passing pack data into planner selection or schema reuse.
 - Added synthetic generic loader fixture `tests/fixtures/domain_packs/generic_metadata_pack.yaml`.
-- Updated the active Phase 26 board to mark Steps 1-4 complete and hand off to Step 5.
+- Added schema metadata to `ExtractionReport` as `report.v2`, passed plan schema metadata from orchestrator to reporter, and exposed the metadata in CLI JSON summaries.
+- Updated the active Phase 26 board to mark Steps 1-5 complete and hand off to Step 6.
 - Verification:
   - `python3 -m pytest tests/unit/test_schema_metadata.py -q`
   - `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q`
@@ -32,6 +33,7 @@ Running log for repository sessions and accepted phase gates.
   - `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q`
   - `python3 -m pytest tests/unit/test_domain_pack_loader.py -q`
   - `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q`
+  - `python3 -m pytest tests/unit/test_reporter.py tests/unit/test_cli.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q`
 
 ### 2026-05-04 — Phase 26 Board Opening
 

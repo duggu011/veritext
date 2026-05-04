@@ -7,7 +7,16 @@ from pathlib import Path
 import pytest
 
 from extractor.audit import AuditStore
-from extractor.contracts import DataPoint, Document, PageSpan, RunManifest, SourceSpan
+from extractor.contracts import (
+    CategoryDefinition,
+    DataPoint,
+    Document,
+    FieldDefinition,
+    PageSpan,
+    RunManifest,
+    SourceSpan,
+    build_planner_generated_schema_metadata,
+)
 from extractor.reporter import ReporterError, write_report
 
 
@@ -81,6 +90,25 @@ def make_data_point(
     )
 
 
+def make_schema_metadata():
+    category = CategoryDefinition(
+        name="Finding",
+        description="A source-backed finding.",
+        fields=(
+            FieldDefinition(
+                name="summary",
+                description="Short source-backed summary.",
+                value_type="text",
+                required=True,
+            ),
+        ),
+    )
+    return build_planner_generated_schema_metadata(
+        approved_categories=(category,),
+        domain_hints=("generic",),
+    )
+
+
 async def seed_audit_store(
     audit_store: AuditStore,
     manifest: RunManifest,
@@ -104,6 +132,7 @@ def test_write_report_serializes_output_and_completes_manifest(tmp_path: Path) -
             result = await write_report(
                 manifest=manifest,
                 data_points=(second, first),
+                schema_metadata=make_schema_metadata(),
                 output_path=output_path,
                 audit_store=audit_store,
                 generated_at=COMPLETED,
@@ -116,8 +145,10 @@ def test_write_report_serializes_output_and_completes_manifest(tmp_path: Path) -
         assert result.output_path == str(output_path)
         assert result.output_sha256 == hashlib.sha256(rendered.encode("utf-8")).hexdigest()
         assert result.output_byte_length == len(rendered.encode("utf-8"))
-        assert payload["report_schema_version"] == "report.v1"
+        assert payload["report_schema_version"] == "report.v2"
         assert payload["run_id"] == "run-1"
+        assert payload["schema_metadata"]["schema_id"].startswith("schema:")
+        assert payload["schema_metadata"]["source_kind"] == "planner_generated"
         assert payload["output_data_point_ids"] == ["dp-1", "dp-2"]
         assert [item["data_point_id"] for item in payload["data_points"]] == ["dp-1", "dp-2"]
         assert stored_manifest == result.completed_manifest
@@ -142,6 +173,7 @@ def test_write_report_rejects_missing_audited_data_point_without_output(tmp_path
                 await write_report(
                     manifest=manifest,
                     data_points=(data_point,),
+                    schema_metadata=make_schema_metadata(),
                     output_path=output_path,
                     audit_store=audit_store,
                     generated_at=COMPLETED,
@@ -162,6 +194,7 @@ def test_write_report_rejects_data_point_manifest_mismatch(tmp_path: Path) -> No
             await write_report(
                 manifest=make_manifest(),
                 data_points=(bad_data_point,),
+                schema_metadata=make_schema_metadata(),
                 output_path=tmp_path / "run-1.json",
                 generated_at=COMPLETED,
             )
@@ -177,6 +210,7 @@ def test_write_report_rejects_failed_manifest(tmp_path: Path) -> None:
             await write_report(
                 manifest=make_manifest(status="failed"),
                 data_points=(make_data_point(),),
+                schema_metadata=make_schema_metadata(),
                 output_path=tmp_path / "run-1.json",
                 generated_at=COMPLETED,
             )

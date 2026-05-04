@@ -361,6 +361,7 @@ async def run_extraction_pipeline(
                 report = await write_report(
                     manifest=running_manifest,
                     data_points=reconciliation.data_points,
+                    schema_metadata=plan.schema_metadata,
                     output_path=output_path,
                     audit_store=audit_store,
                 )

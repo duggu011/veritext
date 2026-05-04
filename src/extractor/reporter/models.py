@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from extractor.contracts import DataPoint, RunManifest
+from extractor.contracts import ApprovedSchemaMetadata, DataPoint, RunManifest
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
@@ -19,10 +19,11 @@ class ReporterModel(BaseModel):
 
 
 class ExtractionReport(ReporterModel):
-    report_schema_version: Literal["report.v1"]
+    report_schema_version: Literal["report.v2"]
     run_id: NonEmptyStr
     doc_id: NonEmptyStr
     generated_at: Timestamp
+    schema_metadata: ApprovedSchemaMetadata
     output_data_point_ids: tuple[NonEmptyStr, ...]
     data_points: tuple[DataPoint, ...]
 

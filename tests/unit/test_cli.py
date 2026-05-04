@@ -8,6 +8,7 @@ import pytest
 import tomllib
 
 from extractor.cli import async_main, main, render_summary
+from extractor.contracts import ApprovedSchemaMetadata
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -52,9 +53,20 @@ def write_config(config_dir: Path, audit_path: Path) -> None:
 
 
 def fake_pipeline_result() -> SimpleNamespace:
+    schema_metadata = ApprovedSchemaMetadata(
+        schema_id="schema:abcdef123456",
+        schema_version="1",
+        schema_hash="a" * 64,
+        source_kind="planner_generated",
+        domain_pack_id=None,
+        document_class=None,
+        created_from="planner",
+        refined_from_schema_id=None,
+    )
     return SimpleNamespace(
         run_id="run-1",
         document=SimpleNamespace(doc_id="doc-1"),
+        plan=SimpleNamespace(schema_metadata=schema_metadata),
         completed_manifest=SimpleNamespace(
             status="completed",
             audit_db_path="/tmp/audit.sqlite3",
@@ -90,6 +102,16 @@ def test_render_summary_outputs_stable_json() -> None:
         "output_path": "/tmp/report.json",
         "output_sha256": "a" * 64,
         "run_id": "run-1",
+        "schema_metadata": {
+            "created_from": "planner",
+            "document_class": None,
+            "domain_pack_id": None,
+            "refined_from_schema_id": None,
+            "schema_hash": "a" * 64,
+            "schema_id": "schema:abcdef123456",
+            "schema_version": "1",
+            "source_kind": "planner_generated",
+        },
         "status": "completed",
         "usage_summary": {
             "critic": {
