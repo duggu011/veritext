@@ -34,7 +34,11 @@ from extractor.orchestrator.state import (
     verifier_complete as _verifier_complete,
 )
 from extractor.orchestrator.trace import print_stage as _print_stage
-from extractor.planner import create_extraction_plan
+from extractor.planner import (
+    DomainPackLoaderError,
+    create_extraction_plan,
+    load_domain_pack_artifacts,
+)
 from extractor.reconciler import reconcile_candidates
 from extractor.reporter import write_report
 from extractor.verifier import verify_candidates
@@ -52,6 +56,13 @@ async def run_extraction_pipeline(
 ) -> PipelineRunResult:
     if resume and run_id is None:
         raise OrchestratorError("--resume requires an explicit --run-id")
+
+    try:
+        # Phase 26 validates configured pack artifacts but does not use them
+        # for planner selection or schema reuse yet.
+        load_domain_pack_artifacts(config.domain_packs.directory)
+    except DomainPackLoaderError as exc:
+        raise OrchestratorError(f"Invalid domain-pack configuration: {exc}") from exc
 
     actual_run_id = run_id or f"run-{uuid.uuid4().hex}"
     prompt_loader = PromptLoader(config.prompts.directory)

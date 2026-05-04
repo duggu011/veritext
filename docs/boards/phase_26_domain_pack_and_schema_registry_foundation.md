@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 3 of 6
+Step: 4 of 6
 Branch: main
 Started: 2026-05-04
 Last session: 2026-05-05
 Spec: `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/phase_26_plus_roadmap.md`
 
-Step 3 complete. Extraction plans now carry neutral planner-generated schema metadata with hash validation while preserving existing categories, lenses, chunk policy, and budgets. Next: Step 4 - add domain-pack loader validation without planner selection or reuse.
+Step 4 complete. Domain-pack YAML artifacts are validated explicitly, missing optional pack directories remain safe, and orchestrator startup validates configured artifacts without using them for planner selection or schema reuse. Next: Step 5 - propagate schema metadata through reporter, audit payloads, orchestrator, and CLI summary.
 
 ---
 
@@ -20,7 +20,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 1: Add schema metadata contracts and deterministic hashing.
 - [x] Step 2: Add config surface for domain packs and schema registry.
 - [x] Step 3: Attach neutral planner-generated schema metadata to extraction plans.
-- [ ] Step 4: Add domain-pack loader validation without planner selection or reuse.
+- [x] Step 4: Add domain-pack loader validation without planner selection or reuse.
 - [ ] Step 5: Propagate schema metadata through reporter, audit payloads, orchestrator, and CLI summary.
 - [ ] Step 6: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
 
@@ -70,6 +70,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/contracts/schema_metadata.py:1` | Updated schema metadata hashing imports to depend on shared contract primitives. | Step 3 |
 | `tests/unit/test_contracts.py:1` | Added coverage proving extraction plans carry planner-generated schema metadata and ignore run/doc IDs in hashes. | Step 3 |
 | `tests/unit/test_planner.py:1` | Added planner coverage proving stored plans include neutral schema metadata without changing existing plan decisions. | Step 3 |
+| `src/extractor/planner/domain_packs.py:1` | Added YAML-only domain-pack artifact loader and validation errors. | Step 4 |
+| `src/extractor/planner/__init__.py:1` | Exported domain-pack loader utilities. | Step 4 |
+| `src/extractor/orchestrator/service.py:1` | Validates configured domain-pack artifacts before runs without feeding them into planner decisions. | Step 4 |
+| `tests/fixtures/domain_packs/generic_metadata_pack.yaml:1` | Added synthetic generic pack fixture for loader validation. | Step 4 |
+| `tests/unit/test_domain_pack_loader.py:1` | Added loader validation tests for valid YAML, missing directories, template drift, and non-YAML rejection. | Step 4 |
+| `tests/unit/test_orchestrator.py:1` | Added orchestrator boundary coverage for invalid configured pack artifacts. | Step 4 |
 
 ---
 
@@ -100,6 +106,7 @@ _(No issues yet.)_
 | 1 | `python3 -m pytest tests/unit/test_schema_metadata.py -q`; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` | PASS | 2026-05-05 |
 | 2 | `python3 -m pytest tests/unit/test_config.py -q`; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 | 3 | `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_planner.py tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_views.py -q`; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
+| 4 | `python3 -m pytest tests/unit/test_domain_pack_loader.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 
 ### Final Gate
 
@@ -122,10 +129,10 @@ Reverse chronological. Log every session.
 ### 2026-05-05 - Session 2
 
 - Resumed at step 1 after operator confirmation.
-- Completed: added strict schema/domain-pack metadata contracts and deterministic canonical schema hashing helpers; added typed domain-pack and schema-registry config sections with default YAML and environment override coverage; attached neutral planner-generated schema metadata to extraction plans.
+- Completed: added strict schema/domain-pack metadata contracts and deterministic canonical schema hashing helpers; added typed domain-pack and schema-registry config sections with default YAML and environment override coverage; attached neutral planner-generated schema metadata to extraction plans; added YAML-only domain-pack loader validation without planner selection/reuse.
 - Issues found: none.
-- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_config.py -q` passed; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` passed after allowing tiktoken to populate its tokenizer cache; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_planner.py tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_views.py -q` passed; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q` passed.
-- Next: step 4 - add domain-pack loader validation without planner selection or reuse.
+- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_config.py -q` passed; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` passed after allowing tiktoken to populate its tokenizer cache; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_planner.py tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_views.py -q` passed; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q` passed.
+- Next: step 5 - propagate schema metadata through reporter, audit payloads, orchestrator, and CLI summary.
 
 ### 2026-05-04 - Session 1
 

@@ -290,6 +290,34 @@ def test_run_extraction_pipeline_wires_all_stages_and_completes_manifest(tmp_pat
     asyncio.run(run_check())
 
 
+def test_run_extraction_pipeline_rejects_invalid_domain_pack_config(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        source_path = tmp_path / "source.txt"
+        source_path.write_text("Revenue increased.", encoding="utf-8")
+        packs_dir = tmp_path / "domain_packs"
+        packs_dir.mkdir()
+        (packs_dir / "bad.json").write_text("{}", encoding="utf-8")
+        config = make_config(tmp_path).model_copy(
+            update={"domain_packs": DomainPacksConfig(directory=packs_dir)}
+        )
+        llm_client = DeterministicLLMClient()
+
+        with pytest.raises(OrchestratorError, match="Invalid domain-pack configuration"):
+            await run_extraction_pipeline(
+                source_path=source_path,
+                output_path=tmp_path / "report.json",
+                config=config,
+                llm_client=llm_client,
+                run_id="run-1",
+            )
+
+        assert llm_client.calls == []
+
+    import asyncio
+
+    asyncio.run(run_check())
+
+
 def test_run_extraction_pipeline_marks_manifest_failed_on_stage_error(tmp_path: Path) -> None:
     async def run_check() -> None:
         source_path = tmp_path / "source.txt"

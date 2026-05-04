@@ -1,0 +1,28 @@
+metadata:
+  pack_id: generic-metadata-pack
+  display_name: Generic Metadata Pack
+  version: 1.0.0
+  domain_hints:
+    - generic
+    - metadata
+  schema_template_ids:
+    - generic-notice-template
+  supported_document_classes:
+    - generic_notice
+  default_lenses:
+    - claim
+  reporting_expectations:
+    - cite_schema_identity
+schema_templates:
+  - schema_id: generic-notice-template
+    schema_version: 1.0.0
+    display_name: Generic Notice Template
+    domain_pack_id: generic-metadata-pack
+    document_class: generic_notice
+    field_roles:
+      - fact
+      - source_support
+    enabled_lenses:
+      - claim
+    reporting_expectations:
+      - cite_schema_identity
