@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Literal, Sequence
+from typing import TYPE_CHECKING, Literal, Sequence
 
 from pydantic import model_validator
 
-from extractor.contracts.models import (
-    CategoryDefinition,
+from extractor.contracts.base import (
     ContractModel,
     LensName,
     NonEmptyStr,
     Sha256Hex,
 )
+
+if TYPE_CHECKING:
+    from extractor.contracts.models import CategoryDefinition
 
 
 SchemaSourceKind = Literal["planner_generated", "domain_pack_template"]
@@ -74,7 +76,7 @@ class ApprovedSchemaMetadata(ContractModel):
 
 def canonical_schema_hash(
     *,
-    approved_categories: Sequence[CategoryDefinition],
+    approved_categories: Sequence["CategoryDefinition"],
     source_kind: SchemaSourceKind,
     schema_version: str,
     domain_hints: Sequence[str] = (),
@@ -106,7 +108,7 @@ def canonical_schema_hash(
 
 def build_planner_generated_schema_metadata(
     *,
-    approved_categories: Sequence[CategoryDefinition],
+    approved_categories: Sequence["CategoryDefinition"],
     schema_version: str = "1",
     domain_hints: Sequence[str] = (),
     document_class: str | None = None,
@@ -130,7 +132,7 @@ def build_planner_generated_schema_metadata(
     )
 
 
-def _canonical_category(category: CategoryDefinition) -> dict[str, object]:
+def _canonical_category(category: "CategoryDefinition") -> dict[str, object]:
     return {
         "description": category.description,
         "fields": [

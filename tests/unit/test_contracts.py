@@ -200,6 +200,27 @@ def test_extraction_plan_enforces_unique_categories_and_lens_budgets() -> None:
     )
 
     assert valid_plan.approved_category_names == frozenset({"Finding"})
+    assert valid_plan.schema_metadata.source_kind == "planner_generated"
+    assert valid_plan.schema_metadata.domain_pack_id is None
+    assert valid_plan.schema_metadata.schema_id == (
+        f"schema:{valid_plan.schema_metadata.schema_hash[:12]}"
+    )
+
+    same_schema_different_run = ExtractionPlan(
+        run_id="run-2",
+        doc_id="doc-2",
+        domain_hints=("policy",),
+        approved_categories=(make_category("Finding"),),
+        enabled_lenses=("claim",),
+        chunk_policy=ChunkPolicy(window_tokens=100, overlap_tokens=10),
+        budget=ExtractionBudget(
+            per_chunk_concurrency=2,
+            lens_budgets=(LensBudget(lens="claim", max_calls=5),),
+        ),
+    )
+    assert same_schema_different_run.schema_metadata.schema_hash == (
+        valid_plan.schema_metadata.schema_hash
+    )
 
     with pytest.raises(ValidationError):
         ExtractionPlan(

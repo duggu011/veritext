@@ -227,6 +227,10 @@ def test_create_extraction_plan_runs_planner_calls_and_persists_audit(tmp_path: 
         assert plan.chunk_policy.window_tokens == 1200
         assert plan.chunk_policy.overlap_tokens == 120
         assert {budget.lens for budget in plan.budget.lens_budgets} == {"claim", "number"}
+        assert plan.schema_metadata.source_kind == "planner_generated"
+        assert plan.schema_metadata.domain_pack_id is None
+        assert plan.schema_metadata.schema_id == f"schema:{plan.schema_metadata.schema_hash[:12]}"
+        assert stored_plan.schema_metadata == plan.schema_metadata
         assert len(logs) == 5
         assert [log.stage for log in logs] == [
             "planner.classify_document",

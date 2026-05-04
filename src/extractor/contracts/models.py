@@ -1,50 +1,28 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
-
-NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
-Sha256Hex = Annotated[str, Field(strict=True, pattern=r"^[0-9a-f]{64}$")]
-Confidence = Annotated[float, Field(strict=True, ge=0.0, le=1.0)]
-NonNegativeInt = Annotated[int, Field(strict=True, ge=0)]
-PositiveInt = Annotated[int, Field(strict=True, ge=1)]
-Timestamp = Annotated[datetime, Field(strict=True)]
-
-LensName = Literal["entity", "event", "claim", "number"]
-RunStatus = Literal["created", "running", "completed", "failed"]
-DocumentFormat = Literal["plain_text", "markdown", "pdf"]
-LLMStage = Literal[
-    "planner.classify_document",
-    "planner.propose_schema",
-    "planner.critique_schema",
-    "planner.select_strategy",
-    "planner.allocate_budget",
-    "executor.entity",
-    "executor.event",
-    "executor.claim",
-    "executor.number",
-    "critic",
-    "verifier",
-    "reconciler",
-]
-RejectionReasonCode = Literal[
-    "invalid_source_offsets",
-    "invented_span",
-    "category_not_approved",
-    "critic_rejected",
-    "verifier_rejected",
-    "reconciler_rejected",
-    "schema_violation",
-    "ambiguous_source_span",
-    "duplicate_candidate",
-]
-
-
-class ContractModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+from extractor.contracts.base import (
+    Confidence,
+    ContractModel,
+    DocumentFormat,
+    LLMStage,
+    LensName,
+    NonEmptyStr,
+    NonNegativeInt,
+    PositiveInt,
+    RejectionReasonCode,
+    RunStatus,
+    Sha256Hex,
+    Timestamp,
+)
+from extractor.contracts.schema_metadata import (
+    ApprovedSchemaMetadata,
+    build_planner_generated_schema_metadata,
+    canonical_schema_hash,
+)
 
 
 class PageSpan(ContractModel):
@@ -205,9 +183,27 @@ class ExtractionPlan(ContractModel):
     doc_id: NonEmptyStr
     domain_hints: tuple[NonEmptyStr, ...]
     approved_categories: tuple[CategoryDefinition, ...] = Field(min_length=1)
+    schema_metadata: ApprovedSchemaMetadata
     enabled_lenses: tuple[LensName, ...] = Field(min_length=1)
     chunk_policy: ChunkPolicy
     budget: ExtractionBudget
+
+    @model_validator(mode="before")
+    @classmethod
+    def attach_default_schema_metadata(cls, data: object) -> object:
+        if not isinstance(data, dict) or data.get("schema_metadata") is not None:
+            return data
+
+        categories = tuple(
+            CategoryDefinition.model_validate(category)
+            for category in data.get("approved_categories", ())
+        )
+        copied = dict(data)
+        copied["schema_metadata"] = build_planner_generated_schema_metadata(
+            approved_categories=categories,
+            domain_hints=tuple(data.get("domain_hints", ())),
+        )
+        return copied
 
     @model_validator(mode="after")
     def validate_plan(self) -> ExtractionPlan:
@@ -222,6 +218,17 @@ class ExtractionPlan(ContractModel):
         missing_budgets = set(self.enabled_lenses) - budget_lenses
         if missing_budgets:
             raise ValueError("every enabled lens must have a budget")
+
+        expected_schema_hash = canonical_schema_hash(
+            approved_categories=self.approved_categories,
+            source_kind=self.schema_metadata.source_kind,
+            schema_version=self.schema_metadata.schema_version,
+            domain_hints=self.domain_hints,
+            domain_pack_id=self.schema_metadata.domain_pack_id,
+            document_class=self.schema_metadata.document_class,
+        )
+        if self.schema_metadata.schema_hash != expected_schema_hash:
+            raise ValueError("schema_metadata schema_hash must match approved schema")
         return self
 
     @property
