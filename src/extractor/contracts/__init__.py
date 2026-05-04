@@ -20,8 +20,17 @@ from extractor.contracts.models import (
     SourceSpan,
     VerifierReport,
 )
+from extractor.contracts.schema_metadata import (
+    ApprovedSchemaMetadata,
+    DomainPackMetadata,
+    SchemaSourceKind,
+    SchemaTemplateMetadata,
+    build_planner_generated_schema_metadata,
+    canonical_schema_hash,
+)
 
 __all__ = [
+    "ApprovedSchemaMetadata",
     "CategoryDefinition",
     "Chunk",
     "ChunkPolicy",
@@ -29,6 +38,7 @@ __all__ = [
     "CriticReport",
     "DataPoint",
     "Document",
+    "DomainPackMetadata",
     "ExtractionBudget",
     "ExtractionPlan",
     "FieldDefinition",
@@ -38,6 +48,10 @@ __all__ = [
     "PageSpan",
     "RejectionReason",
     "RunManifest",
+    "SchemaSourceKind",
+    "SchemaTemplateMetadata",
     "SourceSpan",
     "VerifierReport",
+    "build_planner_generated_schema_metadata",
+    "canonical_schema_hash",
 ]

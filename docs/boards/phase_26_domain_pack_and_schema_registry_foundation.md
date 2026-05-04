@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 6
+Step: 1 of 6
 Branch: main
 Started: 2026-05-04
-Last session: 2026-05-04
+Last session: 2026-05-05
 Spec: `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/phase_26_plus_roadmap.md`
 
-Spec approved by operator on 2026-05-04. Board opened. Implementation has not started.
+Step 1 complete. Schema metadata contracts and deterministic hashing are implemented and verified with narrow contract tests. Next: Step 2 - add config surface for domain packs and schema registry.
 
 ---
 
@@ -17,7 +17,7 @@ Spec approved by operator on 2026-05-04. Board opened. Implementation has not st
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add schema metadata contracts and deterministic hashing.
+- [x] Step 1: Add schema metadata contracts and deterministic hashing.
 - [ ] Step 2: Add config surface for domain packs and schema registry.
 - [ ] Step 3: Attach neutral planner-generated schema metadata to extraction plans.
 - [ ] Step 4: Add domain-pack loader validation without planner selection or reuse.
@@ -56,6 +56,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md` | Active Phase 26 board. | Board opening |
 | `PROGRESS.md` | Current gate and board-opening session log. | Board opening |
+| `src/extractor/contracts/schema_metadata.py:1` | Added strict domain-pack, schema-template, and approved-schema metadata contracts plus canonical schema hashing helpers. | Step 1 |
+| `src/extractor/contracts/__init__.py:1` | Exported schema metadata contracts and hashing helpers from the public contracts package. | Step 1 |
+| `tests/unit/test_schema_metadata.py:1` | Added unit coverage for metadata validation, deterministic sorted hashing, semantic hash changes, and planner-generated schema IDs. | Step 1 |
 
 ---
 
@@ -83,6 +86,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md`; `rg -n "phase_26_domain_pack_and_schema_registry_foundation.md|approved|BOARD OPEN" docs/boards/README.md PROGRESS.md docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md` | PASS | 2026-05-04 |
+| 1 | `python3 -m pytest tests/unit/test_schema_metadata.py -q`; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` | PASS | 2026-05-05 |
 
 ### Final Gate
 
@@ -101,6 +105,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-05 - Session 2
+
+- Resumed at step 1 after operator confirmation.
+- Completed: added strict schema/domain-pack metadata contracts and deterministic canonical schema hashing helpers.
+- Issues found: none.
+- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed.
+- Next: step 2 - add config surface for domain packs and schema registry.
 
 ### 2026-05-04 - Session 1
 
