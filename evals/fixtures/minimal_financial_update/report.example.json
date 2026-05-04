@@ -92,6 +92,16 @@
     "dp-margin-decline",
     "dp-acquisition-event"
   ],
-  "report_schema_version": "report.v1",
-  "run_id": "run-minimal-financial-update"
+  "report_schema_version": "report.v2",
+  "run_id": "run-minimal-financial-update",
+  "schema_metadata": {
+    "schema_id": "schema:21da487cef88",
+    "schema_version": "1",
+    "schema_hash": "21da487cef8810780d15dc266a6600ead1e29139beb758ee5bc117860322d552",
+    "source_kind": "planner_generated",
+    "domain_pack_id": null,
+    "document_class": null,
+    "created_from": "planner",
+    "refined_from_schema_id": null
+  }
 }

@@ -92,6 +92,16 @@
     "dp-delta-acquisition",
     "dp-policy-exception-review"
   ],
-  "report_schema_version": "report.v1",
-  "run_id": "run-hard-mixed-distractors"
+  "report_schema_version": "report.v2",
+  "run_id": "run-hard-mixed-distractors",
+  "schema_metadata": {
+    "schema_id": "schema:efa83b024adc",
+    "schema_version": "1",
+    "schema_hash": "efa83b024adc4731c85a9a301a49ffddbdbbd6853940cc2f57ea695f4ea83db8",
+    "source_kind": "planner_generated",
+    "domain_pack_id": null,
+    "document_class": null,
+    "created_from": "planner",
+    "refined_from_schema_id": null
+  }
 }

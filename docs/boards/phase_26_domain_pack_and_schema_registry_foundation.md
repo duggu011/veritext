@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 5 of 6
+Step: 6 of 6
 Branch: main
 Started: 2026-05-04
 Last session: 2026-05-05
 Spec: `docs/specs/phase_26_domain_pack_and_schema_registry_foundation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/phase_26_plus_roadmap.md`
 
-Step 5 complete. Schema metadata is visible in stored plan payloads, final report JSON, orchestrator result state, and CLI summary output. Next: Step 6 - final verification, board/progress updates, and clean commit/handoff.
+Phase 26 implementation complete and ready for operator review. Final verification passed. Do not begin Phase 27 until the operator accepts Phase 26 and explicitly says to continue.
 
 ---
 
@@ -22,7 +22,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Attach neutral planner-generated schema metadata to extraction plans.
 - [x] Step 4: Add domain-pack loader validation without planner selection or reuse.
 - [x] Step 5: Propagate schema metadata through reporter, audit payloads, orchestrator, and CLI summary.
-- [ ] Step 6: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
+- [x] Step 6: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
 
 ---
 
@@ -82,6 +82,13 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/cli/main.py:1` | Adds schema metadata to CLI JSON summary output. | Step 5 |
 | `tests/unit/test_reporter.py:1` | Added final report serialization coverage for schema metadata. | Step 5 |
 | `tests/unit/test_cli.py:1` | Added CLI summary coverage for schema metadata. | Step 5 |
+| `evals/fixtures/minimal_financial_update/report.example.json:1` | Updated static eval report fixture to `report.v2` with schema metadata only. | Step 6 |
+| `evals/fixtures/minimal_contract_obligation/report.example.json:1` | Updated static eval report fixture to `report.v2` with schema metadata only. | Step 6 |
+| `evals/fixtures/minimal_policy_controls/report.example.json:1` | Updated static eval report fixture to `report.v2` with schema metadata only. | Step 6 |
+| `evals/fixtures/hard_mixed_distractors/report.example.json:1` | Updated static eval report fixture to `report.v2` with schema metadata only. | Step 6 |
+| `docs/boards/README.md:1` | Updated active Phase 26 status to ready for operator review. | Step 6 |
+| `docs/boards/phase_26_domain_pack_and_schema_registry_foundation.md:1` | Filled final gate, work log, and phase summary. | Step 6 |
+| `PROGRESS.md:1` | Updated current gate and session log for Phase 26 review handoff. | Step 6 |
 
 ---
 
@@ -114,18 +121,19 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_planner.py tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_views.py -q`; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 | 4 | `python3 -m pytest tests/unit/test_domain_pack_loader.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
 | 5 | `python3 -m pytest tests/unit/test_reporter.py tests/unit/test_cli.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` | PASS | 2026-05-05 |
+| 6 | `python3 -m pytest tests/unit/test_evals.py -q`; `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-05 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Extraction behavior remains decision-equivalent except for added schema metadata
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Extraction behavior remains decision-equivalent except for added schema metadata
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -138,8 +146,8 @@ Reverse chronological. Log every session.
 - Resumed at step 1 after operator confirmation.
 - Completed: added strict schema/domain-pack metadata contracts and deterministic canonical schema hashing helpers; added typed domain-pack and schema-registry config sections with default YAML and environment override coverage; attached neutral planner-generated schema metadata to extraction plans; added YAML-only domain-pack loader validation without planner selection/reuse; propagated schema metadata into final report JSON and CLI summaries.
 - Issues found: none.
-- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_config.py -q` passed; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` passed after allowing tiktoken to populate its tokenizer cache; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_planner.py tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_views.py -q` passed; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q` passed; `python3 -m pytest tests/unit/test_reporter.py tests/unit/test_cli.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` passed.
-- Next: step 6 - run final verification, complete phase summary, update `PROGRESS.md`, and commit/handoff cleanly.
+- Tests: `python3 -m pytest tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py -q` passed; `python3 -m pytest tests/unit/test_config.py -q` passed; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q` passed after allowing tiktoken to populate its tokenizer cache; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_planner.py tests/unit/test_audit_store.py tests/unit/test_audit_inspection.py tests/unit/test_llm_views.py -q` passed; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py tests/unit/test_reconciler.py tests/unit/test_orchestrator.py -q` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_metadata.py tests/unit/test_config.py tests/unit/test_planner.py tests/unit/test_orchestrator.py -q` passed; `python3 -m pytest tests/unit/test_reporter.py tests/unit/test_cli.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` passed; `python3 -m pytest tests/unit/test_evals.py -q` passed; `make test` passed with 220 passed and 2 skipped; `make lint` passed; `make smoke` passed; `git diff --check` passed.
+- Next: operator review and acceptance of Phase 26. Phase 27 must not begin without explicit `continue`.
 
 ### 2026-05-04 - Session 1
 
@@ -159,14 +167,13 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: ...
-- Deferred: ...
-- Added beyond spec: ...
+- Built as specified: strict Pydantic v2 schema/domain-pack metadata contracts; deterministic schema hashing; config entries for domain-pack and schema-registry directories; neutral planner-generated schema metadata on extraction plans; YAML-only domain-pack loader validation; schema metadata in stored plan payloads, final report JSON, orchestrator state, and CLI summary output.
+- Deferred: schema-fit refusal, schema reuse/cache lookup, legal contracts domain pack, dedicated audit DB tables, schema migrations, and planner selection from domain packs remain deferred to later phases as specified.
+- Added beyond spec: `src/extractor/contracts/base.py` splits shared contract primitives to keep contract modules under the 400-line convention while avoiding import cycles.
 
 ### Lessons for downstream phases
 
-- ...
+- Phase 27 can consume `ExtractionPlan.schema_metadata` and `load_domain_pack_artifacts(...)` without changing provenance, offset, audit-table, or extraction decision surfaces.
+- Static report fixtures must be advanced alongside report schema versions even when data points remain decision-equivalent.

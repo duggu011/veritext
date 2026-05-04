@@ -92,6 +92,16 @@
     "dp-access-approval",
     "dp-incident-reporting"
   ],
-  "report_schema_version": "report.v1",
-  "run_id": "run-minimal-policy-controls"
+  "report_schema_version": "report.v2",
+  "run_id": "run-minimal-policy-controls",
+  "schema_metadata": {
+    "schema_id": "schema:185c72963999",
+    "schema_version": "1",
+    "schema_hash": "185c72963999559b7e6bf25d28e87fa5420228312ef6f9df95ca6ad5864eebe3",
+    "source_kind": "planner_generated",
+    "domain_pack_id": null,
+    "document_class": null,
+    "created_from": "planner",
+    "refined_from_schema_id": null
+  }
 }

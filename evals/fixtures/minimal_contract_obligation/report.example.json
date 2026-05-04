@@ -92,6 +92,16 @@
     "dp-payment-term",
     "dp-termination-event"
   ],
-  "report_schema_version": "report.v1",
-  "run_id": "run-minimal-contract-obligation"
+  "report_schema_version": "report.v2",
+  "run_id": "run-minimal-contract-obligation",
+  "schema_metadata": {
+    "schema_id": "schema:da25fa4d0697",
+    "schema_version": "1",
+    "schema_hash": "da25fa4d06977370fb5d7a07a1befda68b81ad5ba24576e49e37aa1d8e8c1ccc",
+    "source_kind": "planner_generated",
+    "domain_pack_id": null,
+    "document_class": null,
+    "created_from": "planner",
+    "refined_from_schema_id": null
+  }
 }
