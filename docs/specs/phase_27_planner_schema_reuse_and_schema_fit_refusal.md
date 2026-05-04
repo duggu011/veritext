@@ -1,6 +1,6 @@
 # Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
 
-Status: draft opened after Phase 26 acceptance on 2026-05-05. Implementation starts only after operator approval and board creation.
+Status: approved by operator on 2026-05-05. Implementation starts only from `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`.
 
 Date opened: 2026-05-05
 

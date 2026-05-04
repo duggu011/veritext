@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 is active in spec-draft mode. The draft spec is `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; no Phase 27 board is open and no implementation may begin until the operator approves the spec.
-- Next required work: operator review of the Phase 27 draft spec, especially the open implementation questions around registry write policy, strict-refusal defaults, refusal report shape, and whether domain-pack templates should carry full categories in this phase.
-- Next-phase context: Future sessions should start at `docs/boards/README.md`, then follow `WORKFLOW.md` phase-doc mode because the active Phase 27 board is not opened. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
+- Current status: Phase 27 spec is approved and the board is open at `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`. Implementation has not started.
+- Next required work: Step 1 - add schema registry, selection policy, fit assessment, and refusal contracts. Wait for operator readiness confirmation before implementation.
+- Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-05 — Phase 27 Board Opening
+
+- Marked `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md` approved after operator approval.
+- Created active board `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`.
+- Pinned Phase 27 implementation open-question resolutions:
+  - Treat the registry as read-only approved input.
+  - Default `require_approved_schema` to `false`.
+  - Use a separate strict refusal report contract while leaving successful reports at `report.v2` unless implementation proves a union is cleaner.
+  - Keep full reusable approved schemas in the schema registry for Phase 27.
+- Updated `docs/boards/README.md` to show Phase 27 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
+  - `rg -n "phase_27_planner_schema_reuse_and_schema_fit_refusal.md|approved|BOARD OPEN" docs/boards/README.md PROGRESS.md docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-05 — Phase 27 Spec Draft Opened
 
