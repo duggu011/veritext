@@ -4,12 +4,30 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: LLM provider adapter boundary
-- Current status: Introduced `src/extractor/llm/adapters.py` with provider adapter methods for request shaping, provider send, tool-input extraction, audit call-log construction, and retry support metadata. `LLMClient` now keeps throttling, audit persistence, Pydantic validation, retry orchestration, and trace output while dispatching Anthropic/OpenAI provider-specific call mechanics through adapters. No live LLM calls or audit DB mutations outside tests were made.
-- Next required work: choose the next cleanup target, run a targeted per-stage model comparison, or remove `config/local.yaml` to return to canonical config.
-- Next-phase context: Preserve the new LLM adapter boundary when adding providers: provider-specific request kwargs, SDK send mechanics, tool-call parsing, call-log materialization, and retry support live behind `LLMProviderAdapter`; caller-facing structured completion still goes through `LLMClient`. Source modules touched in the structural cleanup sequence remain under the 400-line convention.
+- Last completed phase: Phase 25 - Workflow and Roadmap Tracking
+- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive.
+- Next required work: open Phase 26 - Domain Packs, Schema Registry, and Schema-Fit Refusal from `docs/PROJECT_OVERVIEW.md` after explicit operator `continue`.
+- Next-phase context: Future sessions should start at `docs/boards/README.md`, not this file. If the active Phase 26 board/spec does not exist yet, follow `WORKFLOW.md` phase-doc and board-creation mode. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-04 — Phase 25 Workflow and Roadmap Tracking
+
+- Added approved design spec `docs/superpowers/specs/2026-05-04-board-first-workflow-design.md` and implementation plan `docs/superpowers/plans/2026-05-04-board-first-workflow.md`.
+- Created `WORKFLOW.md` with Veritext-specific session start/end, phase-doc mode, board creation, implementation mode, issue tracking, test protocol, commit discipline, source-of-truth hierarchy, and roadmap policy.
+- Created `docs/boards/README.md` with active phase status, future roadmap index derived from `docs/PROJECT_OVERVIEW.md`, and the reusable board template.
+- Created `docs/boards/phase_25_workflow_and_roadmap_tracking.md` to record the workflow bootstrap, references, decisions, tests, work log, and Phase 26 handoff.
+- Amended the approved design's phase numbering from Phase 19 to Phase 25 after verifying `PROGRESS.md` already contains historical Phases 19-24.
+- Replaced `AGENTS.md` and `CLAUDE.md` with byte-identical board-first operating rules while preserving Veritext's mission, target-domain discipline, architecture rules, Pydantic/SQLite/LLM-client constraints, prompt rules, invariants, testing, and auditability requirements.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `test -f WORKFLOW.md`
+  - `test -f docs/boards/README.md`
+  - `test -f docs/boards/phase_25_workflow_and_roadmap_tracking.md`
+  - `rg -n "phase_25_workflow_and_roadmap_tracking.md|PROJECT_OVERVIEW.md|WORKFLOW.md" docs/boards/README.md docs/boards/phase_25_workflow_and_roadmap_tracking.md`
+  - `rg -n "Phase 25|Workflow and Roadmap Tracking|docs/PROJECT_OVERVIEW.md" docs/boards/README.md docs/boards/phase_25_workflow_and_roadmap_tracking.md PROGRESS.md`
+  - `git diff --check`
 
 ### 2026-05-03 — LLM provider adapter boundary
 

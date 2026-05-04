@@ -56,24 +56,26 @@ Add:
 
 - `WORKFLOW.md`
 - `docs/boards/README.md`
-- `docs/boards/phase_19_workflow_and_roadmap_tracking.md`
+- `docs/boards/phase_25_workflow_and_roadmap_tracking.md`
 
-Phase 19 is a bootstrap phase that installs the board-first workflow itself. Future phases should be opened one at a time from the roadmap index.
+Phase 25 is a bootstrap phase that installs the board-first workflow itself. Future phases should be opened one at a time from the roadmap index.
+
+> **Amended (Implementation, 2026-05-04):** The approved design initially started new board tracking at Phase 19 based on the README summary that Phases 0-18 were implemented. During implementation, `PROGRESS.md` was verified to already contain historical Phases 19-24. The workflow bootstrap is therefore Phase 25, and future roadmap phases start at Phase 26.
 
 ## Future Roadmap Mapping
 
-The roadmap index should preserve Phases 0-18 as implemented historical work and start future tracking at Phase 19:
+The roadmap index should preserve Phases 0-24 as implemented historical work and start future tracking at Phase 25:
 
 | Phase | Name | Source |
 |---|---|---|
-| 19 | Workflow and Roadmap Tracking | Current workflow bootstrap. |
-| 20 | Domain Packs, Schema Registry, and Schema-Fit Refusal | `docs/PROJECT_OVERVIEW.md` highest-leverage item 1 and Planner roadmap. |
-| 21 | Diverse Evaluation Fixture Suite | Highest-leverage item 2 and Evaluation roadmap. |
-| 22 | Boundary-Preserving PDF, DOCX, and Email Ingestion | Highest-leverage item 3 and Ingestion roadmap. |
-| 23 | Expanded Lenses and Normalization Policy | Highest-leverage item 4, Executor, Dedup, and Reconciler roadmap. |
-| 24 | Provenance Viewer, Run Diffs, and Signed Reports | Highest-leverage item 5 and Reporter/Audit roadmap. |
-| 25 | Cost Observability and Stage Model Comparison | Cost observability prerequisite and tiered-model caution. |
-| 26+ | Deployment-Economics Track | Batch APIs, confidence-gated critic, sampled verifier, provider routing, and local models. |
+| 25 | Workflow and Roadmap Tracking | Current workflow bootstrap. |
+| 26 | Domain Packs, Schema Registry, and Schema-Fit Refusal | `docs/PROJECT_OVERVIEW.md` highest-leverage item 1 and Planner roadmap. |
+| 27 | Diverse Evaluation Fixture Suite | Highest-leverage item 2 and Evaluation roadmap. |
+| 28 | Boundary-Preserving PDF, DOCX, and Email Ingestion | Highest-leverage item 3 and Ingestion roadmap. |
+| 29 | Expanded Lenses and Normalization Policy | Highest-leverage item 4, Executor, Dedup, and Reconciler roadmap. |
+| 30 | Provenance Viewer, Run Diffs, and Signed Reports | Highest-leverage item 5 and Reporter/Audit roadmap. |
+| 31 | Cost Observability and Stage Model Comparison | Cost observability prerequisite and tiered-model caution. |
+| 32+ | Deployment-Economics Track | Batch APIs, confidence-gated critic, sampled verifier, provider routing, and local models. |
 
 ## Constraints
 
@@ -90,7 +92,7 @@ The implementation should be documentation-only:
 - Rewrite `AGENTS.md` and `CLAUDE.md` to be byte-identical and board-aware.
 - Add `WORKFLOW.md`.
 - Add `docs/boards/README.md`.
-- Open the Phase 19 board.
+- Open the Phase 25 board.
 - Update `PROGRESS.md` with the workflow-bootstrap session.
 
 No source behavior, prompts, configs, tests, or extraction logic should change in this phase.
@@ -101,5 +103,5 @@ Verification should confirm:
 
 - `AGENTS.md` and `CLAUDE.md` are byte-identical.
 - The active board link in `docs/boards/README.md` points to an existing file.
-- The Phase 19 board references `WORKFLOW.md`, `docs/boards/README.md`, `AGENTS.md`, `CLAUDE.md`, `PROGRESS.md`, and `docs/PROJECT_OVERVIEW.md`.
+- The Phase 25 board references `WORKFLOW.md`, `docs/boards/README.md`, `AGENTS.md`, `CLAUDE.md`, `PROGRESS.md`, and `docs/PROJECT_OVERVIEW.md`.
 - `git diff --check` passes.
