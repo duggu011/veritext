@@ -5,11 +5,30 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 25 - Workflow and Roadmap Tracking
-- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive.
-- Next required work: open Phase 26 - Domain Packs, Schema Registry, and Schema-Fit Refusal from `docs/PROJECT_OVERVIEW.md` after explicit operator `continue`.
+- Current status: Board-first workflow tracking is installed. `AGENTS.md` and `CLAUDE.md` are byte-identical, `WORKFLOW.md` defines the Veritext phase process, `docs/boards/README.md` is now the active-session entrypoint, and `docs/boards/phase_25_workflow_and_roadmap_tracking.md` records the workflow bootstrap. `PROGRESS.md` remains the historical accepted-gate archive. The approved Phase 26+ roadmap split is recorded in `docs/phase_26_plus_roadmap.md` and reflected in `docs/boards/README.md`.
+- Next required work: open Phase 26 - Domain Pack and Schema Registry Foundation from `docs/PROJECT_OVERVIEW.md` and `docs/phase_26_plus_roadmap.md`.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, not this file. If the active Phase 26 board/spec does not exist yet, follow `WORKFLOW.md` phase-doc and board-creation mode. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-04 — Phase 26+ Roadmap Split Approval
+
+- Created `docs/phase_26_plus_roadmap.md` as a proposal-only roadmap artifact. It does not open the Phase 26 spec or board.
+- Split the coarse Phase 26+ board index into concrete board-ready phases:
+  - Phase 26: Domain Pack and Schema Registry Foundation.
+  - Phase 27: Planner Schema Reuse and Schema-Fit Refusal.
+  - Phase 28: Legal Contracts Domain Pack v1.
+  - Phases 29-31: evaluation harness, diverse fixtures, adversarial/mutation/calibration evaluation.
+  - Phases 32-35: boundary-preserving ingestion, PDF/table ingestion, DOCX/HTML/email ingestion, layout-aware chunking.
+  - Phases 36-39: lens taxonomy, expanded lenses, dedup/canonical/conflict preservation, cross-document reconciliation.
+  - Phases 40-42: signed reports/run diffs, architecture-rule amendment, and viewer work only if approved.
+  - Phases 43-45: cost observability, stage model comparison, and measured deployment-economics cost cuts.
+- Preserved Phase 26 as active next, with spec and board still unopened.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "TBD|TODO|implement later|fill in|placeholder|\\?\\?" docs/phase_26_plus_roadmap.md`
+  - `rg -n "Phase 26 - Domain Pack and Schema Registry Foundation|phase_26_plus_roadmap.md|Phase 45 - Deployment-Economics Cost Cuts" docs/boards/README.md PROGRESS.md`
 
 ### 2026-05-04 — Phase 25 Workflow and Roadmap Tracking
 

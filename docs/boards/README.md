@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 26 - Domain Packs, Schema Registry, and Schema-Fit Refusal** | Status: NOT STARTED | Spec: _(not opened)_ | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md)
+**Phase 26 - Domain Pack and Schema Registry Foundation** | Status: NOT STARTED | Spec: _(not opened)_ | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -24,27 +24,40 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 23 - Reconciler Input Slim | historical | historical | COMPLETE (see `PROGRESS.md`) |
 | 24 - Batch-Size Tuning and Observability | historical | historical | COMPLETE (see `PROGRESS.md`) |
 | 25 - Workflow and Roadmap Tracking | [design](../superpowers/specs/2026-05-04-board-first-workflow-design.md) | [board](phase_25_workflow_and_roadmap_tracking.md) | COMPLETE (2026-05-04) |
-| 26 - Domain Packs, Schema Registry, and Schema-Fit Refusal | _(not opened)_ | _(not opened)_ | ACTIVE NEXT |
-| 27 - Diverse Evaluation Fixture Suite | _(not opened)_ | _(not opened)_ | PLANNED |
-| 28 - Boundary-Preserving PDF, DOCX, and Email Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
-| 29 - Expanded Lenses and Normalization Policy | _(not opened)_ | _(not opened)_ | PLANNED |
-| 30 - Provenance Viewer, Run Diffs, and Signed Reports | _(not opened)_ | _(not opened)_ | PLANNED; requires explicit architecture-rule review before any UI work |
-| 31 - Cost Observability and Stage Model Comparison | _(not opened)_ | _(not opened)_ | PLANNED |
-| 32+ - Deployment-Economics Track | _(not opened)_ | _(not opened)_ | PLANNED |
+| 26 - Domain Pack and Schema Registry Foundation | _(not opened)_ | _(not opened)_ | ACTIVE NEXT |
+| 27 - Planner Schema Reuse and Schema-Fit Refusal | _(not opened)_ | _(not opened)_ | PLANNED |
+| 28 - Legal Contracts Domain Pack v1 | _(not opened)_ | _(not opened)_ | PLANNED |
+| 29 - Evaluation Harness: Per-Field Gates | _(not opened)_ | _(not opened)_ | PLANNED |
+| 30 - Diverse Fixture Corpus Round 1 | _(not opened)_ | _(not opened)_ | PLANNED |
+| 31 - Adversarial, Mutation, and Calibration Evaluation | _(not opened)_ | _(not opened)_ | PLANNED |
+| 32 - Boundary-Preserving Ingestion Model | _(not opened)_ | _(not opened)_ | PLANNED |
+| 33 - PDF and Table Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
+| 34 - DOCX, HTML, and Email Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
+| 35 - Layout-Aware Chunking | _(not opened)_ | _(not opened)_ | PLANNED |
+| 36 - Lens Taxonomy and Normalization Contracts | _(not opened)_ | _(not opened)_ | PLANNED |
+| 37 - Expanded Lenses Round 1 | _(not opened)_ | _(not opened)_ | PLANNED |
+| 38 - Dedup, Canonical Values, and Conflict Preservation | _(not opened)_ | _(not opened)_ | PLANNED |
+| 39 - Cross-Document Reconciliation | _(not opened)_ | _(not opened)_ | PLANNED |
+| 40 - Signed Reports and Run Diffs | _(not opened)_ | _(not opened)_ | PLANNED |
+| 41 - Architecture Rule Amendment for Viewer, Governance, and CI | _(not opened)_ | _(not opened)_ | PLANNED; required before any UI or CI work |
+| 42 - HTML Provenance Viewer, If Approved | _(not opened)_ | _(not opened)_ | PLANNED; gated by Phase 41 |
+| 43 - Cost Observability and Cost-per-Correct-Fact | _(not opened)_ | _(not opened)_ | PLANNED |
+| 44 - Stage Model Comparison | _(not opened)_ | _(not opened)_ | PLANNED |
+| 45 - Deployment-Economics Cost Cuts | _(not opened)_ | _(not opened)_ | PLANNED |
 
 ---
 
 ## Roadmap Source
 
-Future phases are derived from `docs/PROJECT_OVERVIEW.md`:
+Future phases are derived from `docs/PROJECT_OVERVIEW.md` and split in
+`docs/phase_26_plus_roadmap.md`:
 
-- Phase 26 maps to highest-leverage item 1 and the Planner roadmap.
-- Phase 27 maps to highest-leverage item 2 and the Evaluation roadmap.
-- Phase 28 maps to highest-leverage item 3 and the Ingestion roadmap.
-- Phase 29 maps to highest-leverage item 4 plus Executor, Dedup, and Reconciler roadmap items.
-- Phase 30 maps to highest-leverage item 5 plus Reporter and Audit roadmap items.
-- Phase 31 maps to the Cost Observability prerequisite and the per-stage model-comparison caution.
-- Phase 32+ maps to the deployment-economics playbook after cost observability exists.
+- Phases 26-28 map to highest-leverage item 1, the Planner roadmap, and the first-domain-pack proving ground.
+- Phases 29-31 map to highest-leverage item 2 and the Evaluation roadmap.
+- Phases 32-35 map to highest-leverage item 3 plus the Ingestion and Chunker roadmaps.
+- Phases 36-39 map to highest-leverage item 4 plus the Executor, Dedup, and Reconciler roadmaps.
+- Phases 40-42 map to highest-leverage item 5 plus Reporter, Audit, and governance roadmap items.
+- Phases 43-45 map to the Cost Observability prerequisite, stage model-comparison caution, and deployment-economics playbook.
 
 ---
 
