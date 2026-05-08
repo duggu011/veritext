@@ -36,8 +36,10 @@ from extractor.orchestrator.state import (
 from extractor.orchestrator.trace import print_stage as _print_stage
 from extractor.planner import (
     DomainPackLoaderError,
+    SchemaRegistryLoaderError,
     create_extraction_plan,
     load_domain_pack_artifacts,
+    load_schema_registry_artifacts,
 )
 from extractor.reconciler import reconcile_candidates
 from extractor.reporter import write_report
@@ -63,6 +65,12 @@ async def run_extraction_pipeline(
         load_domain_pack_artifacts(config.domain_packs.directory)
     except DomainPackLoaderError as exc:
         raise OrchestratorError(f"Invalid domain-pack configuration: {exc}") from exc
+    try:
+        # Phase 27 validates approved schema artifacts before planner reuse is
+        # enabled so malformed governance input cannot be silently ignored.
+        load_schema_registry_artifacts(config.schema_registry.directory)
+    except SchemaRegistryLoaderError as exc:
+        raise OrchestratorError(f"Invalid schema-registry configuration: {exc}") from exc
 
     actual_run_id = run_id or f"run-{uuid.uuid4().hex}"
     prompt_loader = PromptLoader(config.prompts.directory)

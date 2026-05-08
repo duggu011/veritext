@@ -318,6 +318,34 @@ def test_run_extraction_pipeline_rejects_invalid_domain_pack_config(tmp_path: Pa
     asyncio.run(run_check())
 
 
+def test_run_extraction_pipeline_rejects_invalid_schema_registry_config(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        source_path = tmp_path / "source.txt"
+        source_path.write_text("Revenue increased.", encoding="utf-8")
+        registry_dir = tmp_path / "schema_registry"
+        registry_dir.mkdir()
+        (registry_dir / "bad.json").write_text("{}", encoding="utf-8")
+        config = make_config(tmp_path).model_copy(
+            update={"schema_registry": SchemaRegistryConfig(directory=registry_dir)}
+        )
+        llm_client = DeterministicLLMClient()
+
+        with pytest.raises(OrchestratorError, match="Invalid schema-registry configuration"):
+            await run_extraction_pipeline(
+                source_path=source_path,
+                output_path=tmp_path / "report.json",
+                config=config,
+                llm_client=llm_client,
+                run_id="run-1",
+            )
+
+        assert llm_client.calls == []
+
+    import asyncio
+
+    asyncio.run(run_check())
+
+
 def test_run_extraction_pipeline_marks_manifest_failed_on_stage_error(tmp_path: Path) -> None:
     async def run_check() -> None:
         source_path = tmp_path / "source.txt"

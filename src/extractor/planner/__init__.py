@@ -13,6 +13,10 @@ from extractor.planner.domain_packs import (
     DomainPackLoaderError,
     load_domain_pack_artifacts,
 )
+from extractor.planner.schema_registry import (
+    SchemaRegistryLoaderError,
+    load_schema_registry_artifacts,
+)
 from extractor.planner.service import PlanningError, create_extraction_plan
 
 __all__ = [
@@ -22,9 +26,11 @@ __all__ = [
     "DomainPackLoaderError",
     "PlanningError",
     "PlanningStageInput",
+    "SchemaRegistryLoaderError",
     "SchemaCritique",
     "SchemaProposal",
     "StrategySelection",
     "create_extraction_plan",
     "load_domain_pack_artifacts",
+    "load_schema_registry_artifacts",
 ]

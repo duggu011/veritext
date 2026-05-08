@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 2 is complete. Schema registry policy config now exposes `require_approved_schema` and `minimum_schema_coverage` with typed defaults and environment override coverage.
-- Next required work: Step 3 - add schema registry loader validation and hash enforcement. Wait for operator readiness confirmation before implementation.
+- Current status: Phase 27 Step 3 is complete. Schema registry YAML artifacts now load through strict validation, canonical schema hash mismatches fail before use, duplicate schema IDs are rejected, and invalid configured registry input is rejected before LLM stages.
+- Next required work: Step 4 - add planner approved-schema candidate matching and reuse path. Wait for operator readiness confirmation before implementation.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-08 — Phase 27 Step 3 Schema Registry Loader Validation
+
+- Added `src/extractor/planner/schema_registry.py` with a YAML-only approved schema registry loader.
+- Reused the strict `ApprovedSchemaArtifact` contract so artifact loading enforces `schema_registry` source kind, document-class consistency, and canonical schema hash equality against approved categories.
+- Rejected malformed YAML, non-mapping artifacts, non-directory registry paths, visible non-YAML entries, visible nested directories, and duplicate `schema_id` values with explicit `SchemaRegistryLoaderError` messages.
+- Exported the loader and error through `extractor.planner`.
+- Wired orchestrator startup validation so invalid configured registry input fails before any LLM calls or extraction stages.
+- Added `tests/unit/test_schema_registry_loader.py` and orchestrator startup-validation coverage.
+- Verification:
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed on nested registry directories being silently ignored
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py -q`
+  - `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py`
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_domain_pack_loader.py tests/unit/test_orchestrator.py -q` first failed in sandbox because `tiktoken` attempted a tokenizer download, then passed with network access
+  - `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_domain_pack_loader.py tests/unit/test_orchestrator.py -q`
+  - `git diff --check`
 
 ### 2026-05-05 — Phase 27 Step 2 Schema Registry Policy Config
 
