@@ -9,7 +9,7 @@ Last session: 2026-05-09
 Spec: `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Step 7 complete. Final verification passed, Phase 27 tracking is updated, and the phase is ready for operator review and acceptance. Do not open Phase 28 or begin legal-contract domain-pack work without explicit operator continuation.
+Phase 27 accepted by the operator on 2026-05-09. Final verification passed and matching commits exist through `090251a`. Phase 28 spec draft is opened; do not begin Phase 28 implementation until its spec is approved and a board is created.
 
 ---
 
@@ -112,6 +112,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Updated Phase 27 status to final-gate-ready while leaving Phase 28 unopened. | Step 7 |
 | `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Marked Step 7 complete, recorded final gate results, and filled the phase summary. | Step 7 |
 | `PROGRESS.md:1` | Added Phase 27 Step 7 session log and operator-acceptance handoff. | Step 7 |
+| `docs/specs/phase_28_legal_contracts_domain_pack_v1.md:1` | Opened draft Phase 28 spec after operator acceptance. | Acceptance |
+| `docs/boards/README.md:1` | Marked Phase 27 complete and Phase 28 active in spec-draft state. | Acceptance |
+| `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Recorded operator acceptance and Phase 28 draft handoff. | Acceptance |
+| `PROGRESS.md:1` | Added Phase 27 acceptance and Phase 28 spec-draft session log. | Acceptance |
 
 ---
 
@@ -146,6 +150,7 @@ _(No issues yet.)_
 | 5 | `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q` first failed with `ImportError: cannot import name 'PlanningRefusalError'`; `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q`; `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner.py -q`; `python3 -m py_compile src/extractor/planner/schema_fit.py src/extractor/planner/service.py src/extractor/planner/__init__.py tests/unit/test_planner_schema_fit_policy.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `git diff --check` | PASS | 2026-05-09 |
 | 6 | `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q` first failed with `ImportError: cannot import name 'write_refusal_report'`; `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q`; `python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_config.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_planner_schema_fit_policy.py -q`; `python3 -m compileall -q src/extractor/contracts src/extractor/audit src/extractor/reporter src/extractor/orchestrator src/extractor/cli scripts/prepare_failed_run_resume.py tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py`; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-09 |
 | 7 | `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-09 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`; `rg -n "Phase 28|phase_28_legal_contracts_domain_pack_v1.md|SPEC DRAFT|COMPLETE \\(2026-05-09\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-09 |
 
 ### Final Gate
 
@@ -164,6 +169,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-09 - Session 9
+
+- Resumed after operator accepted Phase 27 with `continue`.
+- Completed: marked Phase 27 complete in the board index, opened the draft Phase 28 spec for Legal Contracts Domain Pack v1, and updated `PROGRESS.md`.
+- Issues found: none.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md` returned no matches; `rg -n "Phase 28|phase_28_legal_contracts_domain_pack_v1.md|SPEC DRAFT|COMPLETE \\(2026-05-09\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator review of `docs/specs/phase_28_legal_contracts_domain_pack_v1.md`. Phase 28 implementation must not begin until the spec is approved and a board is created.
 
 ### 2026-05-09 - Session 8
 

@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 7 is complete and final verification passed. Phase 27 is ready for operator review and acceptance.
-- Next required work: Operator acceptance of Phase 27. Do not open Phase 28 or begin legal-contract domain-pack work without explicit operator continuation.
-- Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Phase 28 is planned as Legal Contracts Domain Pack v1 after Phase 27 is accepted.
+- Last completed phase: Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
+- Current status: Phase 28 spec draft is opened for Legal Contracts Domain Pack v1.
+- Next required work: Operator review and approval of `docs/specs/phase_28_legal_contracts_domain_pack_v1.md`. Do not create the Phase 28 board or begin implementation until the spec is approved.
+- Next-phase context: Phase 28 should prove the first legal-contract domain pack through artifacts, registry fixtures, and evaluation coverage while keeping runtime source code domain-neutral.
 
 ## Session Log
+
+### 2026-05-09 — Phase 27 Acceptance and Phase 28 Spec Draft
+
+- Accepted Phase 27 after operator continuation and kept the completed Phase 27 evidence on `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`.
+- Updated `docs/boards/README.md` so Phase 27 is complete and Phase 28 is active in `SPEC DRAFT` state.
+- Created `docs/specs/phase_28_legal_contracts_domain_pack_v1.md` from the Phase 26+ roadmap and `docs/PROJECT_OVERVIEW.md` target-domain/domain-pack guidance.
+- Scoped Phase 28 to legal-contract domain-pack artifacts, approved legal schema registry fixtures, legal evaluation fixture coverage, and source-neutrality guardrails.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
+  - `rg -n "Phase 28|phase_28_legal_contracts_domain_pack_v1.md|SPEC DRAFT|COMPLETE \\(2026-05-09\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-09 — Phase 27 Step 7 Final Verification and Handoff
 
