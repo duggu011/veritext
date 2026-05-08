@@ -5,11 +5,22 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 6 is complete. Planner refusals now propagate as terminal audited `refused` outcomes with planner-stage refusal payloads, refusal reports, CLI summaries, and resume guards.
-- Next required work: Step 7 - final verification, board/progress updates, and commit/handoff cleanly. Wait for operator readiness confirmation before implementation.
-- Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
+- Current status: Phase 27 Step 7 is complete and final verification passed. Phase 27 is ready for operator review and acceptance.
+- Next required work: Operator acceptance of Phase 27. Do not open Phase 28 or begin legal-contract domain-pack work without explicit operator continuation.
+- Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Phase 28 is planned as Legal Contracts Domain Pack v1 after Phase 27 is accepted.
 
 ## Session Log
+
+### 2026-05-09 — Phase 27 Step 7 Final Verification and Handoff
+
+- Ran the Phase 27 final gate from a clean working tree.
+- Updated the Phase 27 board to mark Step 7 complete, record final verification, fill the phase summary, and hand off for operator review.
+- Updated `docs/boards/README.md` to show Phase 27 as `FINAL GATE READY`; Phase 28 remains unopened.
+- Verification:
+  - `make test` (`247 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
 
 ### 2026-05-09 — Phase 27 Step 6 Terminal Refusal Propagation
 

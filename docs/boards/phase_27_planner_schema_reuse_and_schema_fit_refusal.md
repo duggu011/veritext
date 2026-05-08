@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 6 of 7
+Step: 7 of 7
 Branch: main
 Started: 2026-05-05
 Last session: 2026-05-09
 Spec: `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Step 6 complete. Planner refusals now propagate as terminal audited `refused` outcomes with planner-stage refusal payloads, refusal reports, CLI summaries, and resume guards that prevent treating refused runs as incomplete. Next up: Step 7 - final verification, board/progress updates, and commit/handoff cleanly.
+Step 7 complete. Final verification passed, Phase 27 tracking is updated, and the phase is ready for operator review and acceptance. Do not open Phase 28 or begin legal-contract domain-pack work without explicit operator continuation.
 
 ---
 
@@ -23,7 +23,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 4: Add planner approved-schema candidate matching and reuse path.
 - [x] Step 5: Add planner schema-fit refusal and fallback policy.
 - [x] Step 6: Propagate refusal through orchestrator, audit, resume, reporter, and CLI.
-- [ ] Step 7: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
+- [x] Step 7: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
 
 ---
 
@@ -109,6 +109,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_prepare_failed_run_resume.py:122` | Added resume-prep refusal coverage for terminal refused runs. | Step 6 |
 | `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Updated Step 6 status, references, tests, and work log. | Step 6 |
 | `PROGRESS.md:1` | Added Phase 27 Step 6 session log and next-step status. | Step 6 |
+| `docs/boards/README.md:1` | Updated Phase 27 status to final-gate-ready while leaving Phase 28 unopened. | Step 7 |
+| `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Marked Step 7 complete, recorded final gate results, and filled the phase summary. | Step 7 |
+| `PROGRESS.md:1` | Added Phase 27 Step 7 session log and operator-acceptance handoff. | Step 7 |
 
 ---
 
@@ -142,24 +145,33 @@ _(No issues yet.)_
 | 4 | `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` first failed with missing `select_schema_registry_candidates`; reran after selector and failed with missing `approved_schema_artifacts` planner input; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py -q`; `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/service.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py tests/unit/test_planner_schema_registry_reuse.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `git diff --check` | PASS | 2026-05-08 |
 | 5 | `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q` first failed with `ImportError: cannot import name 'PlanningRefusalError'`; `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q`; `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner.py -q`; `python3 -m py_compile src/extractor/planner/schema_fit.py src/extractor/planner/service.py src/extractor/planner/__init__.py tests/unit/test_planner_schema_fit_policy.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `git diff --check` | PASS | 2026-05-09 |
 | 6 | `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q` first failed with `ImportError: cannot import name 'write_refusal_report'`; `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q`; `python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_config.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_planner_schema_fit_policy.py -q`; `python3 -m compileall -q src/extractor/contracts src/extractor/audit src/extractor/reporter src/extractor/orchestrator src/extractor/cli scripts/prepare_failed_run_resume.py tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py`; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-09 |
+| 7 | `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-09 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-09 - Session 8
+
+- Resumed at Step 7 after operator confirmation.
+- Completed: ran fresh final verification, marked the final gate complete, updated the board index to `FINAL GATE READY`, filled the Phase 27 summary, and updated `PROGRESS.md` for operator-acceptance handoff.
+- Issues found: none.
+- Tests: `make test` passed with 247 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed.
+- Next: operator review and acceptance of Phase 27. Phase 28 must not open until the operator explicitly continues.
 
 ### 2026-05-09 - Session 7
 
@@ -227,14 +239,14 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: ...
-- Deferred: ...
-- Added beyond spec: ...
+- Built as specified: strict approved-schema registry contracts and validation; schema-registry config policy and coverage threshold; YAML-only registry loading with canonical hash enforcement; deterministic candidate matching; approved-schema reuse without category mutation or schema proposal/critique; policy-controlled planner-generated fallback; structured planner refusal; terminal audited `refused` outcomes; refusal reports; CLI refusal summaries; and resume safeguards for refused runs.
+- Deferred: legal contracts domain pack, broad per-field evaluation gates, diverse fixture corpus, proposed-schema governance queue, dedicated refusal audit tables or schema migrations, and any human-filled schema-fit prompt stage remain outside Phase 27 as specified.
+- Added beyond spec: focused `orchestrator/planning.py` and `orchestrator/refusal.py` helpers to keep the public orchestrator service cohesive and under the file-size convention.
 
 ### Lessons for downstream phases
 
-- ...
+- Phase 28 can prove the legal-contract domain pack by adding approved registry/domain-pack artifacts and fixtures without weakening the domain-neutral provenance, offset, audit, or invariant machinery.
+- Strict `require_approved_schema` now provides the safety rail for domain-pack rollout: no matching approved schema means an audited refusal instead of silent planner invention.
+- If future coverage estimation needs semantic judgment beyond the deterministic confidence proxy, add it as a human-authored forced-tool planner stage rather than embedding domain-specific prompt text or source-code heuristics.
