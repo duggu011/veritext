@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from extractor.audit import AuditStore
 from extractor.config import ChunkingConfig
 from extractor.contracts import (
+    ApprovedSchemaArtifact,
     CategoryDefinition,
     Chunk,
     ChunkPolicy,
@@ -26,6 +27,7 @@ from extractor.planner.models import (
     SchemaProposal,
     StrategySelection,
 )
+from extractor.planner.schema_registry import select_schema_registry_candidates
 
 
 OutputModelT = TypeVar("OutputModelT", bound=BaseModel)
@@ -44,6 +46,7 @@ async def create_extraction_plan(
     prompt_loader: PromptLoader,
     llm_client: LLMClient,
     domain_hints: tuple[str, ...] = (),
+    approved_schema_artifacts: tuple[ApprovedSchemaArtifact, ...] = (),
     audit_store: AuditStore | None = None,
 ) -> ExtractionPlan:
     _validate_chunk_inputs(document, chunks)
@@ -65,55 +68,72 @@ async def create_extraction_plan(
         ),
     )
     merged_domain_hints = _merge_domain_hints(domain_hints, classification.domain_hints)
-
-    schema_proposal = await _call_planning_stage(
-        run_id=run_id,
-        stage="planner.propose_schema",
-        tool_name="propose_schema",
-        tool_description="Propose extraction categories and fields.",
-        prompt_loader=prompt_loader,
-        llm_client=llm_client,
-        audit_store=audit_store,
-        output_model=SchemaProposal,
-        stage_input=PlanningStageInput(
-            run_id=run_id,
-            document=document,
-            chunks=chunks,
-            domain_hints=merged_domain_hints,
-            classification=classification,
-        ),
+    selected_schema = _select_reusable_schema(
+        approved_schema_artifacts=approved_schema_artifacts,
+        document_class=classification.document_type,
+        domain_hints=merged_domain_hints,
     )
 
-    schema_critique = await _call_planning_stage(
-        run_id=run_id,
-        stage="planner.critique_schema",
-        tool_name="critique_schema",
-        tool_description="Critique and approve the proposed extraction schema.",
-        prompt_loader=prompt_loader,
-        llm_client=llm_client,
-        audit_store=audit_store,
-        output_model=SchemaCritique,
-        stage_input=PlanningStageInput(
+    if selected_schema is None:
+        schema_proposal = await _call_planning_stage(
             run_id=run_id,
-            document=document,
-            chunks=chunks,
-            domain_hints=merged_domain_hints,
-            classification=classification,
-            schema_proposal=schema_proposal,
-        ),
-    )
-    if not schema_critique.accepted:
-        raise PlanningError(
-            "Schema critique rejected the proposed schema: "
-            + "; ".join(schema_critique.issues)
+            stage="planner.propose_schema",
+            tool_name="propose_schema",
+            tool_description="Propose extraction categories and fields.",
+            prompt_loader=prompt_loader,
+            llm_client=llm_client,
+            audit_store=audit_store,
+            output_model=SchemaProposal,
+            stage_input=PlanningStageInput(
+                run_id=run_id,
+                document=document,
+                chunks=chunks,
+                domain_hints=merged_domain_hints,
+                classification=classification,
+            ),
         )
-    schema_critique = schema_critique.model_copy(
-        update={
-            "approved_categories": _generalize_schema_descriptions(
-                schema_critique.approved_categories,
+
+        schema_critique = await _call_planning_stage(
+            run_id=run_id,
+            stage="planner.critique_schema",
+            tool_name="critique_schema",
+            tool_description="Critique and approve the proposed extraction schema.",
+            prompt_loader=prompt_loader,
+            llm_client=llm_client,
+            audit_store=audit_store,
+            output_model=SchemaCritique,
+            stage_input=PlanningStageInput(
+                run_id=run_id,
+                document=document,
+                chunks=chunks,
+                domain_hints=merged_domain_hints,
+                classification=classification,
+                schema_proposal=schema_proposal,
+            ),
+        )
+        if not schema_critique.accepted:
+            raise PlanningError(
+                "Schema critique rejected the proposed schema: "
+                + "; ".join(schema_critique.issues)
             )
-        },
-    )
+        schema_critique = schema_critique.model_copy(
+            update={
+                "approved_categories": _generalize_schema_descriptions(
+                    schema_critique.approved_categories,
+                )
+            },
+        )
+        plan_domain_hints = merged_domain_hints
+        schema_metadata = None
+    else:
+        schema_proposal = None
+        schema_critique = SchemaCritique(
+            accepted=True,
+            approved_categories=selected_schema.approved_categories,
+            issues=(),
+        )
+        plan_domain_hints = selected_schema.domain_hints
+        schema_metadata = selected_schema.schema_metadata
 
     strategy = await _call_planning_stage(
         run_id=run_id,
@@ -157,18 +177,21 @@ async def create_extraction_plan(
     )
 
     try:
-        plan = ExtractionPlan(
-            run_id=run_id,
-            doc_id=document.doc_id,
-            domain_hints=merged_domain_hints,
-            approved_categories=schema_critique.approved_categories,
-            enabled_lenses=strategy.enabled_lenses,
-            chunk_policy=ChunkPolicy(
+        plan_input = {
+            "run_id": run_id,
+            "doc_id": document.doc_id,
+            "domain_hints": plan_domain_hints,
+            "approved_categories": schema_critique.approved_categories,
+            "enabled_lenses": strategy.enabled_lenses,
+            "chunk_policy": ChunkPolicy(
                 window_tokens=chunking_config.window_tokens,
                 overlap_tokens=chunking_config.overlap_tokens,
             ),
-            budget=budget.budget,
-        )
+            "budget": budget.budget,
+        }
+        if schema_metadata is not None:
+            plan_input["schema_metadata"] = schema_metadata
+        plan = ExtractionPlan(**plan_input)
     except ValidationError as exc:
         raise PlanningError(f"Invalid extraction plan: {exc}") from exc
 
@@ -228,6 +251,22 @@ def _merge_domain_hints(
         if hint not in merged:
             merged.append(hint)
     return tuple(merged)
+
+
+def _select_reusable_schema(
+    *,
+    approved_schema_artifacts: tuple[ApprovedSchemaArtifact, ...],
+    document_class: str,
+    domain_hints: tuple[str, ...],
+) -> ApprovedSchemaArtifact | None:
+    candidates = select_schema_registry_candidates(
+        approved_schema_artifacts,
+        document_class=document_class,
+        domain_hints=domain_hints,
+    )
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
 
 
 def _generalize_schema_descriptions(

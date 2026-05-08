@@ -68,7 +68,9 @@ async def run_extraction_pipeline(
     try:
         # Phase 27 validates approved schema artifacts before planner reuse is
         # enabled so malformed governance input cannot be silently ignored.
-        load_schema_registry_artifacts(config.schema_registry.directory)
+        schema_registry_artifacts = load_schema_registry_artifacts(
+            config.schema_registry.directory
+        )
     except SchemaRegistryLoaderError as exc:
         raise OrchestratorError(f"Invalid schema-registry configuration: {exc}") from exc
 
@@ -156,6 +158,7 @@ async def run_extraction_pipeline(
                         prompt_loader=prompt_loader,
                         llm_client=actual_llm_client,
                         domain_hints=domain_hints,
+                        approved_schema_artifacts=schema_registry_artifacts,
                         audit_store=audit_store,
                     )
                 _print_stage(

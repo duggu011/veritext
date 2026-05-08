@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 3 of 7
+Step: 4 of 7
 Branch: main
 Started: 2026-05-05
 Last session: 2026-05-08
 Spec: `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Step 3 complete. Schema registry YAML artifacts now load through strict validation, canonical schema hash mismatches fail before use, duplicate schema IDs are rejected, and orchestrator startup rejects invalid configured registry input before any LLM stage. Next up: Step 4 - add planner approved-schema candidate matching and reuse path.
+Step 4 complete. Planner now deterministically matches approved schema registry artifacts by document class and domain hints, reuses exactly one matching approved schema without proposal/critique mutation, and orchestrator passes validated registry artifacts into planning. Next up: Step 5 - add planner schema-fit refusal and fallback policy.
 
 ---
 
@@ -20,7 +20,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 1: Add schema registry, selection policy, fit assessment, and refusal contracts.
 - [x] Step 2: Add config surface for schema registry policy and coverage threshold.
 - [x] Step 3: Add schema registry loader validation and hash enforcement.
-- [ ] Step 4: Add planner approved-schema candidate matching and reuse path.
+- [x] Step 4: Add planner approved-schema candidate matching and reuse path.
 - [ ] Step 5: Add planner schema-fit refusal and fallback policy.
 - [ ] Step 6: Propagate refusal through orchestrator, audit, resume, reporter, and CLI.
 - [ ] Step 7: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
@@ -73,6 +73,14 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_orchestrator.py:321` | Added orchestrator coverage proving invalid registry config stops before LLM calls. | Step 3 |
 | `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Updated Step 3 status, references, tests, and work log. | Step 3 |
 | `PROGRESS.md:1` | Added Phase 27 Step 3 session log and next-step status. | Step 3 |
+| `src/extractor/planner/schema_registry.py:45` | Added deterministic candidate selection by document class and domain hints. | Step 4 |
+| `src/extractor/planner/service.py:38` | Added approved registry artifact input and reuse branch that skips schema proposal/critique when exactly one candidate matches. | Step 4 |
+| `src/extractor/planner/__init__.py:16` | Exported schema registry candidate selection from the planner package. | Step 4 |
+| `src/extractor/orchestrator/service.py:68` | Passed validated registry artifacts into planner creation. | Step 4 |
+| `tests/unit/test_schema_registry_loader.py:158` | Added deterministic candidate matching coverage. | Step 4 |
+| `tests/unit/test_planner_schema_registry_reuse.py:1` | Added focused planner reuse test proving approved schema metadata/categories are preserved and proposal/critique calls are skipped. | Step 4 |
+| `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Updated Step 4 status, references, tests, and work log. | Step 4 |
+| `PROGRESS.md:1` | Added Phase 27 Step 4 session log and next-step status. | Step 4 |
 
 ---
 
@@ -103,6 +111,7 @@ _(No issues yet.)_
 | 1 | `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q` first failed with `ImportError: cannot import name 'ApprovedSchemaArtifact'`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py -q`; `python3 -m pytest tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_metadata.py tests/unit/test_contracts.py -q`; `python3 -m py_compile src/extractor/contracts/__init__.py src/extractor/contracts/base.py src/extractor/contracts/models.py src/extractor/contracts/schema_metadata.py src/extractor/contracts/schema_registry.py`; `python3 -m pytest tests/unit/test_planner.py tests/unit/test_domain_pack_loader.py -q`; `git diff --check` | PASS | 2026-05-05 |
 | 2 | `python3 -m pytest tests/unit/test_config.py -q` first failed on missing/extra `SchemaRegistryConfig` policy fields; `python3 -m pytest tests/unit/test_config.py -q`; `python3 -m py_compile src/extractor/config/__init__.py src/extractor/config/models.py src/extractor/config/loader.py`; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_orchestrator.py -q`; `git diff --check` | PASS | 2026-05-05 |
 | 3 | `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed on nested registry directories being silently ignored; `python3 -m pytest tests/unit/test_schema_registry_loader.py -q`; `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_domain_pack_loader.py tests/unit/test_orchestrator.py -q` first failed in sandbox because `tiktoken` attempted a tokenizer download, then passed with network access; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_domain_pack_loader.py tests/unit/test_orchestrator.py -q`; `git diff --check` | PASS | 2026-05-08 |
+| 4 | `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` first failed with missing `select_schema_registry_candidates`; reran after selector and failed with missing `approved_schema_artifacts` planner input; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py -q`; `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/service.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py tests/unit/test_planner_schema_registry_reuse.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `git diff --check` | PASS | 2026-05-08 |
 
 ### Final Gate
 
@@ -121,6 +130,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-08 - Session 5
+
+- Resumed at Step 4 after operator confirmation.
+- Completed: added deterministic approved-schema candidate selection by document class and domain hints; added planner reuse path that uses exactly one selected registry artifact, preserves approved schema metadata/categories, skips proposal and critique calls, and continues through strategy and budget stages; wired orchestrator to pass validated registry artifacts into planning.
+- Issues found: none.
+- Tests: `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` first failed with missing `select_schema_registry_candidates`; reran after selector and failed with missing `approved_schema_artifacts` planner input; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` passed; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py -q` passed; `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/service.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py tests/unit/test_planner_schema_registry_reuse.py` passed; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q` passed; `git diff --check` passed.
+- Next: Step 5 - add planner schema-fit refusal and fallback policy.
 
 ### 2026-05-08 - Session 4
 

@@ -16,6 +16,7 @@ from extractor.planner.domain_packs import (
 from extractor.planner.schema_registry import (
     SchemaRegistryLoaderError,
     load_schema_registry_artifacts,
+    select_schema_registry_candidates,
 )
 from extractor.planner.service import PlanningError, create_extraction_plan
 
@@ -33,4 +34,5 @@ __all__ = [
     "create_extraction_plan",
     "load_domain_pack_artifacts",
     "load_schema_registry_artifacts",
+    "select_schema_registry_candidates",
 ]

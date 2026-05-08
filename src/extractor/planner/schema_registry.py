@@ -45,6 +45,23 @@ def load_schema_registry_artifacts(directory: Path) -> tuple[ApprovedSchemaArtif
     return tuple(artifacts)
 
 
+def select_schema_registry_candidates(
+    artifacts: tuple[ApprovedSchemaArtifact, ...],
+    *,
+    document_class: str,
+    domain_hints: tuple[str, ...],
+) -> tuple[ApprovedSchemaArtifact, ...]:
+    hint_set = set(domain_hints)
+    candidates: list[ApprovedSchemaArtifact] = []
+    for artifact in artifacts:
+        if artifact.document_class != document_class:
+            continue
+        if artifact.domain_hints and not set(artifact.domain_hints).issubset(hint_set):
+            continue
+        candidates.append(artifact)
+    return tuple(candidates)
+
+
 def _load_schema_registry_artifact(path: Path) -> ApprovedSchemaArtifact:
     try:
         parsed = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -63,4 +80,5 @@ def _load_schema_registry_artifact(path: Path) -> ApprovedSchemaArtifact:
 __all__ = [
     "SchemaRegistryLoaderError",
     "load_schema_registry_artifacts",
+    "select_schema_registry_candidates",
 ]

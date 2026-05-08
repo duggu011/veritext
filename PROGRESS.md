@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 3 is complete. Schema registry YAML artifacts now load through strict validation, canonical schema hash mismatches fail before use, duplicate schema IDs are rejected, and invalid configured registry input is rejected before LLM stages.
-- Next required work: Step 4 - add planner approved-schema candidate matching and reuse path. Wait for operator readiness confirmation before implementation.
+- Current status: Phase 27 Step 4 is complete. Planner now deterministically matches approved schema registry artifacts by document class and domain hints, reuses exactly one matching approved schema without proposal/critique mutation, and orchestrator passes validated registry artifacts into planning.
+- Next required work: Step 5 - add planner schema-fit refusal and fallback policy. Wait for operator readiness confirmation before implementation.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-08 — Phase 27 Step 4 Approved Schema Reuse Path
+
+- Added deterministic approved-schema candidate selection by document class and domain hints.
+- Extended `create_extraction_plan(...)` with optional approved schema registry artifacts.
+- Added planner reuse behavior for exactly one matching artifact: preserve registry schema metadata and approved categories, skip schema proposal/critique calls, then continue through strategy selection and budget allocation.
+- Kept planner-generated fallback behavior unchanged when no single registry candidate matches.
+- Wired orchestrator startup-loaded registry artifacts into the planner.
+- Added focused planner reuse coverage in `tests/unit/test_planner_schema_registry_reuse.py` instead of growing the already oversized `tests/unit/test_planner.py`.
+- Verification:
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` first failed with missing `select_schema_registry_candidates`
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` then failed with missing `approved_schema_artifacts` planner input
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q`
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py -q`
+  - `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/service.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py tests/unit/test_planner_schema_registry_reuse.py`
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`
+  - `git diff --check`
 
 ### 2026-05-08 — Phase 27 Step 3 Schema Registry Loader Validation
 

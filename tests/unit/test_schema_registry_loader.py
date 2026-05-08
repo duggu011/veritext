@@ -10,6 +10,7 @@ from extractor.contracts import (
 from extractor.planner.schema_registry import (
     SchemaRegistryLoaderError,
     load_schema_registry_artifacts,
+    select_schema_registry_candidates,
 )
 
 
@@ -154,3 +155,40 @@ def test_load_schema_registry_artifacts_rejects_duplicate_schema_ids(tmp_path: P
 
     with pytest.raises(SchemaRegistryLoaderError, match="duplicate schema_id"):
         load_schema_registry_artifacts(registry_dir)
+
+
+def test_select_schema_registry_candidates_matches_class_and_domain_hints(
+    tmp_path: Path,
+) -> None:
+    registry_dir = tmp_path / "schema_registry"
+    registry_dir.mkdir()
+    write_registry_artifact(
+        registry_dir,
+        filename="financial.yaml",
+        schema_id="schema:financial-v1",
+        document_class="financial_update",
+        domain_hints=("finance",),
+    )
+    write_registry_artifact(
+        registry_dir,
+        filename="policy.yaml",
+        schema_id="schema:policy-v1",
+        document_class="policy_notice",
+        domain_hints=("policy",),
+    )
+    write_registry_artifact(
+        registry_dir,
+        filename="specific.yaml",
+        schema_id="schema:specific-v1",
+        document_class="financial_update",
+        domain_hints=("finance", "quarterly"),
+    )
+    artifacts = load_schema_registry_artifacts(registry_dir)
+
+    candidates = select_schema_registry_candidates(
+        artifacts,
+        document_class="financial_update",
+        domain_hints=("finance", "user_hint"),
+    )
+
+    assert tuple(artifact.schema_id for artifact in candidates) == ("schema:financial-v1",)
