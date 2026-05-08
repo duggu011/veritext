@@ -15,6 +15,8 @@ from extractor.contracts import (
     Document,
     ExtractionPlan,
     FieldDefinition,
+    PlanningRefusal,
+    SchemaSelectionPolicy,
 )
 from extractor.contracts.models import LLMStage
 from extractor.llm import LLMClient, PromptLoader, StructuredLLMRequest
@@ -27,7 +29,10 @@ from extractor.planner.models import (
     SchemaProposal,
     StrategySelection,
 )
-from extractor.planner.schema_registry import select_schema_registry_candidates
+from extractor.planner.schema_fit import (
+    DEFAULT_SCHEMA_SELECTION_POLICY,
+    decide_schema_fit,
+)
 
 
 OutputModelT = TypeVar("OutputModelT", bound=BaseModel)
@@ -35,6 +40,15 @@ OutputModelT = TypeVar("OutputModelT", bound=BaseModel)
 
 class PlanningError(RuntimeError):
     """Raised when extraction planning cannot produce a valid auditable plan."""
+
+
+class PlanningRefusalError(RuntimeError):
+    """Raised when planner policy produces a structured schema-fit refusal."""
+
+    def __init__(self, refusal: PlanningRefusal) -> None:
+        self.refusal = refusal
+        reason_text = ", ".join(refusal.reason_codes)
+        super().__init__(f"Planner refused extraction: {reason_text}")
 
 
 async def create_extraction_plan(
@@ -47,6 +61,7 @@ async def create_extraction_plan(
     llm_client: LLMClient,
     domain_hints: tuple[str, ...] = (),
     approved_schema_artifacts: tuple[ApprovedSchemaArtifact, ...] = (),
+    schema_selection_policy: SchemaSelectionPolicy | None = None,
     audit_store: AuditStore | None = None,
 ) -> ExtractionPlan:
     _validate_chunk_inputs(document, chunks)
@@ -68,13 +83,18 @@ async def create_extraction_plan(
         ),
     )
     merged_domain_hints = _merge_domain_hints(domain_hints, classification.domain_hints)
-    selected_schema = _select_reusable_schema(
-        approved_schema_artifacts=approved_schema_artifacts,
-        document_class=classification.document_type,
+    schema_fit = decide_schema_fit(
+        run_id=run_id,
+        document=document,
+        classification=classification,
         domain_hints=merged_domain_hints,
+        approved_schema_artifacts=approved_schema_artifacts,
+        policy=schema_selection_policy or DEFAULT_SCHEMA_SELECTION_POLICY,
     )
+    if schema_fit.refusal is not None:
+        raise PlanningRefusalError(schema_fit.refusal)
 
-    if selected_schema is None:
+    if schema_fit.selected_schema is None:
         schema_proposal = await _call_planning_stage(
             run_id=run_id,
             stage="planner.propose_schema",
@@ -126,6 +146,7 @@ async def create_extraction_plan(
         plan_domain_hints = merged_domain_hints
         schema_metadata = None
     else:
+        selected_schema = schema_fit.selected_schema
         schema_proposal = None
         schema_critique = SchemaCritique(
             accepted=True,
@@ -253,22 +274,6 @@ def _merge_domain_hints(
     return tuple(merged)
 
 
-def _select_reusable_schema(
-    *,
-    approved_schema_artifacts: tuple[ApprovedSchemaArtifact, ...],
-    document_class: str,
-    domain_hints: tuple[str, ...],
-) -> ApprovedSchemaArtifact | None:
-    candidates = select_schema_registry_candidates(
-        approved_schema_artifacts,
-        document_class=document_class,
-        domain_hints=domain_hints,
-    )
-    if len(candidates) == 1:
-        return candidates[0]
-    return None
-
-
 def _generalize_schema_descriptions(
     categories: tuple[CategoryDefinition, ...],
 ) -> tuple[CategoryDefinition, ...]:
@@ -351,4 +356,4 @@ def _append_description_sentence(description: str, sentence: str) -> str:
     return f"{description}{separator} {sentence}"
 
 
-__all__ = ["PlanningError", "create_extraction_plan"]
+__all__ = ["PlanningError", "PlanningRefusalError", "create_extraction_plan"]

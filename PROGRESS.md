@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 4 is complete. Planner now deterministically matches approved schema registry artifacts by document class and domain hints, reuses exactly one matching approved schema without proposal/critique mutation, and orchestrator passes validated registry artifacts into planning.
-- Next required work: Step 5 - add planner schema-fit refusal and fallback policy. Wait for operator readiness confirmation before implementation.
+- Current status: Phase 27 Step 5 is complete. Planner now applies typed schema-selection policy, emits structured `PlanningRefusal` payloads for strict schema-fit refusals, and preserves planner-generated fallback when policy allows it.
+- Next required work: Step 6 - propagate refusal through orchestrator, audit, resume, reporter, and CLI. Wait for operator readiness confirmation before implementation.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-09 — Phase 27 Step 5 Schema-Fit Refusal Policy
+
+- Added `src/extractor/planner/schema_fit.py` with deterministic schema-fit policy decisions, `SchemaSelection` construction, coverage-threshold assessments, and structured `PlanningRefusal` construction.
+- Added `PlanningRefusalError` and `schema_selection_policy` input to `create_extraction_plan(...)`.
+- Strict policy now refuses when no approved schema candidates exist or the selected approved schema falls below the configured coverage threshold.
+- Planner-generated fallback remains available when `SchemaSelectionPolicy.allow_planner_generated_fallback` is true.
+- Kept prompt governance unchanged for Step 5 by using planner classification confidence as the deterministic fit-coverage proxy rather than adding a new prompt body.
+- Added focused planner policy coverage in `tests/unit/test_planner_schema_fit_policy.py`.
+- Verification:
+  - `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q` first failed with `ImportError: cannot import name 'PlanningRefusalError'`
+  - `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q`
+  - `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner.py -q`
+  - `python3 -m py_compile src/extractor/planner/schema_fit.py src/extractor/planner/service.py src/extractor/planner/__init__.py tests/unit/test_planner_schema_fit_policy.py`
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`
+  - `git diff --check`
 
 ### 2026-05-08 — Phase 27 Step 4 Approved Schema Reuse Path
 

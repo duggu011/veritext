@@ -18,7 +18,11 @@ from extractor.planner.schema_registry import (
     load_schema_registry_artifacts,
     select_schema_registry_candidates,
 )
-from extractor.planner.service import PlanningError, create_extraction_plan
+from extractor.planner.service import (
+    PlanningError,
+    PlanningRefusalError,
+    create_extraction_plan,
+)
 
 __all__ = [
     "BudgetAllocation",
@@ -26,6 +30,7 @@ __all__ = [
     "DomainPackArtifact",
     "DomainPackLoaderError",
     "PlanningError",
+    "PlanningRefusalError",
     "PlanningStageInput",
     "SchemaRegistryLoaderError",
     "SchemaCritique",
