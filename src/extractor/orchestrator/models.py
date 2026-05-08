@@ -5,7 +5,13 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
 from extractor.audit import UsageSummary
-from extractor.contracts import Chunk, Document, ExtractionPlan, RunManifest
+from extractor.contracts import (
+    Chunk,
+    Document,
+    ExtractionPlan,
+    PlanningRefusal,
+    RunManifest,
+)
 from extractor.critic import CriticResult
 from extractor.executor import ExecutionResult
 from extractor.reconciler import ReconciliationResult
@@ -34,4 +40,17 @@ class PipelineRunResult(OrchestratorModel):
     usage_summary: UsageSummary
 
 
-__all__ = ["PipelineRunResult"]
+class PipelineRefusalResult(OrchestratorModel):
+    run_id: NonEmptyStr
+    document: Document
+    chunks: tuple[Chunk, ...]
+    refusal: PlanningRefusal
+    report: ReportWriteResult
+    completed_manifest: RunManifest
+    usage_summary: UsageSummary
+
+
+PipelineResult = PipelineRunResult | PipelineRefusalResult
+
+
+__all__ = ["PipelineRefusalResult", "PipelineResult", "PipelineRunResult"]

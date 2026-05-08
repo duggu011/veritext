@@ -89,9 +89,27 @@ async def async_main(argv: Sequence[str] | None = None) -> int:
 
 
 def render_summary(result: object) -> str:
+    if hasattr(result, "refusal"):
+        summary = {
+            "run_id": result.run_id,
+            "doc_id": result.document.doc_id,
+            "outcome_type": "schema_fit_refusal",
+            "status": result.completed_manifest.status,
+            "audit_db_path": result.completed_manifest.audit_db_path,
+            "output_path": result.report.output_path,
+            "output_sha256": result.report.output_sha256,
+            "output_byte_length": result.report.output_byte_length,
+            "data_point_count": 0,
+            "output_data_point_ids": result.completed_manifest.output_data_point_ids,
+            "refusal": result.refusal.model_dump(mode="json"),
+            "usage_summary": result.usage_summary,
+        }
+        return json.dumps(summary, sort_keys=True)
+
     summary = {
         "run_id": result.run_id,
         "doc_id": result.document.doc_id,
+        "outcome_type": "extraction_success",
         "schema_metadata": result.plan.schema_metadata.model_dump(mode="json"),
         "status": result.completed_manifest.status,
         "audit_db_path": result.completed_manifest.audit_db_path,

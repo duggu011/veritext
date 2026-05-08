@@ -5,7 +5,12 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from extractor.contracts import ApprovedSchemaMetadata, DataPoint, RunManifest
+from extractor.contracts import (
+    ApprovedSchemaMetadata,
+    DataPoint,
+    PlanningRefusal,
+    RunManifest,
+)
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
@@ -42,12 +47,29 @@ class ExtractionReport(ReporterModel):
         return self
 
 
+class ExtractionRefusalReport(ReporterModel):
+    report_schema_version: Literal["refusal.v1"]
+    outcome_type: Literal["schema_fit_refusal"]
+    run_id: NonEmptyStr
+    doc_id: NonEmptyStr
+    generated_at: Timestamp
+    refusal: PlanningRefusal
+
+    @model_validator(mode="after")
+    def validate_refusal_identity(self) -> ExtractionRefusalReport:
+        if self.refusal.run_id != self.run_id:
+            raise ValueError("refusal run_id must match report run_id")
+        if self.refusal.doc_id != self.doc_id:
+            raise ValueError("refusal doc_id must match report doc_id")
+        return self
+
+
 class ReportWriteResult(ReporterModel):
-    report: ExtractionReport
+    report: ExtractionReport | ExtractionRefusalReport
     output_path: NonEmptyStr
     output_sha256: Sha256Hex
     output_byte_length: NonNegativeInt
     completed_manifest: RunManifest
 
 
-__all__ = ["ExtractionReport", "ReportWriteResult"]
+__all__ = ["ExtractionRefusalReport", "ExtractionReport", "ReportWriteResult"]

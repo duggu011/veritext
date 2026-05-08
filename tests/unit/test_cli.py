@@ -90,6 +90,50 @@ def fake_pipeline_result() -> SimpleNamespace:
     )
 
 
+def fake_refusal_result() -> SimpleNamespace:
+    return SimpleNamespace(
+        run_id="run-1",
+        document=SimpleNamespace(doc_id="doc-1"),
+        refusal=SimpleNamespace(
+            reason_codes=("no_approved_schema_candidates",),
+            candidate_schema_ids=(),
+            model_dump=lambda mode="json": {
+                "run_id": "run-1",
+                "doc_id": "doc-1",
+                "document_class": "financial_update",
+                "domain_hints": ["finance"],
+                "reason_codes": ["no_approved_schema_candidates"],
+                "candidate_schema_ids": [],
+                "fit_assessments": [],
+                "policy": {
+                    "require_approved_schema": True,
+                    "minimum_schema_coverage": 0.65,
+                    "allow_planner_generated_fallback": False,
+                },
+            },
+        ),
+        completed_manifest=SimpleNamespace(
+            status="refused",
+            audit_db_path="/tmp/audit.sqlite3",
+            output_data_point_ids=(),
+        ),
+        report=SimpleNamespace(
+            output_path="/tmp/refusal.json",
+            output_sha256="b" * 64,
+            output_byte_length=456,
+        ),
+        usage_summary={
+            "planner.classify_document": {
+                "calls": 1,
+                "input_tokens": 10,
+                "output_tokens": 5,
+                "cache_read_tokens": 0,
+                "cache_creation_tokens": 0,
+            }
+        },
+    )
+
+
 def test_render_summary_outputs_stable_json() -> None:
     payload = json.loads(render_summary(fake_pipeline_result()))
 
@@ -97,6 +141,7 @@ def test_render_summary_outputs_stable_json() -> None:
         "audit_db_path": "/tmp/audit.sqlite3",
         "data_point_count": 1,
         "doc_id": "doc-1",
+        "outcome_type": "extraction_success",
         "output_byte_length": 123,
         "output_data_point_ids": ["dp-1"],
         "output_path": "/tmp/report.json",
@@ -120,6 +165,46 @@ def test_render_summary_outputs_stable_json() -> None:
                 "calls": 2,
                 "input_tokens": 160,
                 "output_tokens": 35,
+            }
+        },
+    }
+
+
+def test_render_summary_outputs_refusal_identity() -> None:
+    payload = json.loads(render_summary(fake_refusal_result()))
+
+    assert payload == {
+        "audit_db_path": "/tmp/audit.sqlite3",
+        "data_point_count": 0,
+        "doc_id": "doc-1",
+        "outcome_type": "schema_fit_refusal",
+        "output_byte_length": 456,
+        "output_data_point_ids": [],
+        "output_path": "/tmp/refusal.json",
+        "output_sha256": "b" * 64,
+        "refusal": {
+            "candidate_schema_ids": [],
+            "doc_id": "doc-1",
+            "document_class": "financial_update",
+            "domain_hints": ["finance"],
+            "fit_assessments": [],
+            "policy": {
+                "allow_planner_generated_fallback": False,
+                "minimum_schema_coverage": 0.65,
+                "require_approved_schema": True,
+            },
+            "reason_codes": ["no_approved_schema_candidates"],
+            "run_id": "run-1",
+        },
+        "run_id": "run-1",
+        "status": "refused",
+        "usage_summary": {
+            "planner.classify_document": {
+                "cache_creation_tokens": 0,
+                "cache_read_tokens": 0,
+                "calls": 1,
+                "input_tokens": 10,
+                "output_tokens": 5,
             }
         },
     }

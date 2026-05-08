@@ -8,8 +8,17 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from extractor.audit import AuditStore
-from extractor.contracts import ApprovedSchemaMetadata, DataPoint, RunManifest
-from extractor.reporter.models import ExtractionReport, ReportWriteResult
+from extractor.contracts import (
+    ApprovedSchemaMetadata,
+    DataPoint,
+    PlanningRefusal,
+    RunManifest,
+)
+from extractor.reporter.models import (
+    ExtractionRefusalReport,
+    ExtractionReport,
+    ReportWriteResult,
+)
 
 
 class ReporterError(RuntimeError):
@@ -81,6 +90,78 @@ def render_report_json(report: ExtractionReport) -> str:
     return json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
 
 
+async def write_refusal_report(
+    *,
+    manifest: RunManifest,
+    refusal: PlanningRefusal,
+    output_path: str | Path,
+    audit_store: AuditStore | None = None,
+    generated_at: datetime | None = None,
+) -> ReportWriteResult:
+    _validate_refusal_report_inputs(manifest, refusal)
+
+    if audit_store is not None:
+        stored_manifest = await audit_store.get_run_manifest(manifest.run_id)
+        if stored_manifest is None:
+            raise ReporterError(f"Run manifest is missing from audit store: {manifest.run_id}")
+        if stored_manifest != manifest:
+            raise ReporterError(
+                "Run manifest must match the current audit store state before reporting"
+            )
+
+    completed_at = generated_at or datetime.now(timezone.utc)
+    try:
+        completed_manifest = RunManifest(
+            run_id=manifest.run_id,
+            doc_id=manifest.doc_id,
+            audit_db_path=manifest.audit_db_path,
+            status="refused",
+            started_at=manifest.started_at,
+            completed_at=completed_at,
+            output_data_point_ids=(),
+        )
+        report = ExtractionRefusalReport(
+            report_schema_version="refusal.v1",
+            outcome_type="schema_fit_refusal",
+            run_id=manifest.run_id,
+            doc_id=manifest.doc_id,
+            generated_at=completed_at,
+            refusal=refusal,
+        )
+    except ValidationError as exc:
+        raise ReporterError(f"Invalid refusal report state: {exc}") from exc
+
+    rendered = render_report_json(report)
+    output = Path(output_path)
+    _write_output(output, rendered)
+
+    if audit_store is not None:
+        await audit_store.update_run_manifest(completed_manifest)
+
+    output_bytes = rendered.encode("utf-8")
+    return ReportWriteResult(
+        report=report,
+        output_path=str(output),
+        output_sha256=hashlib.sha256(output_bytes).hexdigest(),
+        output_byte_length=len(output_bytes),
+        completed_manifest=completed_manifest,
+    )
+
+
+def _validate_refusal_report_inputs(
+    manifest: RunManifest,
+    refusal: PlanningRefusal,
+) -> None:
+    if manifest.status == "failed":
+        raise ReporterError("failed runs cannot be refused by the reporter")
+    if manifest.status == "completed":
+        raise ReporterError("completed runs cannot be refused by the reporter")
+    if refusal.run_id != manifest.run_id:
+        raise ReporterError("refusal run_id must match run manifest run_id")
+    if refusal.doc_id != manifest.doc_id:
+        raise ReporterError("refusal doc_id must match run manifest doc_id")
+
+
 async def _validate_audit_state(
     *,
     audit_store: AuditStore,
@@ -148,4 +229,4 @@ def _write_output(output_path: Path, rendered: str) -> None:
     temp_path.replace(output_path)
 
 
-__all__ = ["ReporterError", "render_report_json", "write_report"]
+__all__ = ["ReporterError", "render_report_json", "write_refusal_report", "write_report"]

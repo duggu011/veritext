@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 5 of 7
+Step: 6 of 7
 Branch: main
 Started: 2026-05-05
 Last session: 2026-05-09
 Spec: `docs/specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Improvement Roadmap - Accuracy, Generalization, and Provenance`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Step 5 complete. Planner now applies a typed schema-selection policy, produces structured `PlanningRefusal` payloads for strict no-candidate or below-threshold schema fit, and preserves planner-generated fallback when policy allows it. Next up: Step 6 - propagate refusal through orchestrator, audit, resume, reporter, and CLI.
+Step 6 complete. Planner refusals now propagate as terminal audited `refused` outcomes with planner-stage refusal payloads, refusal reports, CLI summaries, and resume guards that prevent treating refused runs as incomplete. Next up: Step 7 - final verification, board/progress updates, and commit/handoff cleanly.
 
 ---
 
@@ -22,7 +22,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Add schema registry loader validation and hash enforcement.
 - [x] Step 4: Add planner approved-schema candidate matching and reuse path.
 - [x] Step 5: Add planner schema-fit refusal and fallback policy.
-- [ ] Step 6: Propagate refusal through orchestrator, audit, resume, reporter, and CLI.
+- [x] Step 6: Propagate refusal through orchestrator, audit, resume, reporter, and CLI.
 - [ ] Step 7: Run final verification, update board and `PROGRESS.md`, and commit/handoff cleanly.
 
 ---
@@ -88,6 +88,27 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_planner_schema_fit_policy.py:1` | Added planner tests for strict no-candidate refusal, strict below-threshold refusal, and explicit planner-generated fallback. | Step 5 |
 | `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Updated Step 5 status, gate interpretation, references, tests, and work log. | Step 5 |
 | `PROGRESS.md:1` | Added Phase 27 Step 5 session log and next-step status. | Step 5 |
+| `src/extractor/contracts/base.py:17` | Added `refused` to terminal run statuses. | Step 6 |
+| `src/extractor/contracts/models.py:343` | Required `completed_at` for refused manifests. | Step 6 |
+| `src/extractor/audit/models.py:6` | Added typed planner refusal payloads to planner run-stage state. | Step 6 |
+| `src/extractor/reporter/models.py:5` | Added strict `ExtractionRefusalReport` and allowed report write results to hold success or refusal reports. | Step 6 |
+| `src/extractor/reporter/service.py:8` | Added deterministic refusal report serialization and refused manifest updates. | Step 6 |
+| `src/extractor/reporter/__init__.py:1` | Exported refusal report model and writer. | Step 6 |
+| `src/extractor/orchestrator/models.py:5` | Added `PipelineRefusalResult` and `PipelineResult` union. | Step 6 |
+| `src/extractor/orchestrator/refusal.py:1` | Added schema policy construction and terminal planner-refusal completion helper. | Step 6 |
+| `src/extractor/orchestrator/planning.py:1` | Moved planner resume/reuse/refusal control flow out of the oversized service module. | Step 6 |
+| `src/extractor/orchestrator/service.py:20` | Routed planner execution through the refusal-aware planning helper and returned refusal results before downstream stages. | Step 6 |
+| `src/extractor/orchestrator/lifecycle.py:31` | Rejected resume attempts for terminal refused runs. | Step 6 |
+| `src/extractor/orchestrator/__init__.py:1` | Exported refusal-capable orchestrator result types. | Step 6 |
+| `src/extractor/cli/main.py:92` | Added refusal-aware CLI JSON summary with outcome type and refusal identity. | Step 6 |
+| `scripts/prepare_failed_run_resume.py:88` | Refused to prepare terminal refused runs for resume cleanup. | Step 6 |
+| `tests/unit/test_audit_refusal.py:1` | Added audit round-trip coverage for planner refusal stage-state payloads. | Step 6 |
+| `tests/unit/test_reporter_refusal.py:1` | Added refusal report serialization and refused manifest coverage. | Step 6 |
+| `tests/unit/test_orchestrator_refusal.py:1` | Added pipeline refusal coverage proving downstream stages are skipped and resume is blocked. | Step 6 |
+| `tests/unit/test_cli.py:36` | Added refusal summary coverage and success outcome type expectation. | Step 6 |
+| `tests/unit/test_prepare_failed_run_resume.py:122` | Added resume-prep refusal coverage for terminal refused runs. | Step 6 |
+| `docs/boards/phase_27_planner_schema_reuse_and_schema_fit_refusal.md:1` | Updated Step 6 status, references, tests, and work log. | Step 6 |
+| `PROGRESS.md:1` | Added Phase 27 Step 6 session log and next-step status. | Step 6 |
 
 ---
 
@@ -120,6 +141,7 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed on nested registry directories being silently ignored; `python3 -m pytest tests/unit/test_schema_registry_loader.py -q`; `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_domain_pack_loader.py tests/unit/test_orchestrator.py -q` first failed in sandbox because `tiktoken` attempted a tokenizer download, then passed with network access; `python3 -m pytest tests/unit/test_config.py tests/unit/test_cli.py tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_domain_pack_loader.py tests/unit/test_orchestrator.py -q`; `git diff --check` | PASS | 2026-05-08 |
 | 4 | `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q` first failed with missing `select_schema_registry_candidates`; reran after selector and failed with missing `approved_schema_artifacts` planner input; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py -q`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py -q`; `python3 -m py_compile src/extractor/planner/schema_registry.py src/extractor/planner/service.py src/extractor/planner/__init__.py src/extractor/orchestrator/service.py tests/unit/test_planner_schema_registry_reuse.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `git diff --check` | PASS | 2026-05-08 |
 | 5 | `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q` first failed with `ImportError: cannot import name 'PlanningRefusalError'`; `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py -q`; `python3 -m pytest tests/unit/test_planner_schema_fit_policy.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner.py -q`; `python3 -m py_compile src/extractor/planner/schema_fit.py src/extractor/planner/service.py src/extractor/planner/__init__.py tests/unit/test_planner_schema_fit_policy.py`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_orchestrator.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `git diff --check` | PASS | 2026-05-09 |
+| 6 | `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q` first failed with `ImportError: cannot import name 'write_refusal_report'`; `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q`; `python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_config.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_planner_schema_fit_policy.py -q`; `python3 -m compileall -q src/extractor/contracts src/extractor/audit src/extractor/reporter src/extractor/orchestrator src/extractor/cli scripts/prepare_failed_run_resume.py tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py`; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`; `make test`; `make lint`; `make smoke`; `git diff --check` | PASS | 2026-05-09 |
 
 ### Final Gate
 
@@ -138,6 +160,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-09 - Session 7
+
+- Resumed at Step 6 after operator confirmation.
+- Completed: propagated planner refusals through the pipeline as terminal `refused` outcomes; stored the typed refusal payload on planner stage state; added refusal report serialization; added CLI refusal summaries; blocked resume of terminal refused runs in orchestrator and resume-prep tooling; moved planner/refusal orchestration into focused helper modules so `orchestrator/service.py` stays under 400 lines.
+- Issues found: none.
+- Tests: `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q` first failed with missing `write_refusal_report`; `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q` passed; `python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_config.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_planner_schema_fit_policy.py -q` passed; `python3 -m compileall -q src/extractor/contracts src/extractor/audit src/extractor/reporter src/extractor/orchestrator src/extractor/cli scripts/prepare_failed_run_resume.py tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py` passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q` passed; `make test` passed with 247 passed and 2 skipped; `make lint` passed; `make smoke` passed; `git diff --check` passed.
+- Next: Step 7 - final verification, board/progress updates, and commit/handoff cleanly.
 
 ### 2026-05-09 - Session 6
 

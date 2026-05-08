@@ -85,8 +85,11 @@ def main() -> int:
         if manifest is None:
             parser.error(f"run_id not found in run_manifests: {args.run_id}")
         completed_run = manifest[0] == "completed"
+        refused_run = manifest[0] == "refused"
         if completed_run and not args.allow_completed:
             parser.error(f"refusing to prepare completed run: {args.run_id}")
+        if refused_run:
+            parser.error(f"refusing to prepare refused run: {args.run_id}")
 
         counts = _counts(conn, args.run_id, from_stage=args.from_stage)
         print(f"run_id={args.run_id}")

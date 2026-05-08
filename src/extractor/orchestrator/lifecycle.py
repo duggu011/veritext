@@ -35,6 +35,10 @@ async def start_or_resume_run(
         raise OrchestratorError(
             f"Cannot resume run_id {run_id!r}: the run is already completed."
         )
+    if existing_manifest is not None and existing_manifest.status == "refused":
+        raise OrchestratorError(
+            f"Cannot resume run_id {run_id!r}: the run is already refused."
+        )
 
     running_manifest: RunManifest | None = None
     try:

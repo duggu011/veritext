@@ -133,6 +133,40 @@ def test_prepare_resume_refuses_completed_run_without_explicit_allow(
     assert status == "completed"
 
 
+def test_prepare_resume_refuses_refused_run_even_with_apply(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    audit_path = tmp_path / "audit.sqlite3"
+    make_audit_db(audit_path, status="refused")
+    module = load_script_module()
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prepare_failed_run_resume.py",
+            "--run-id",
+            "run-1",
+            "--audit",
+            str(audit_path),
+            "--apply",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as exc:
+        module.main()
+
+    assert exc.value.code == 2
+    conn = sqlite3.connect(audit_path)
+    try:
+        status = conn.execute(
+            "SELECT status FROM run_manifests WHERE run_id = 'run-1'"
+        ).fetchone()[0]
+    finally:
+        conn.close()
+    assert status == "refused"
+
+
 def test_prepare_resume_allow_completed_resets_manifest_and_clears_downstream(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

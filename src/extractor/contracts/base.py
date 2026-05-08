@@ -14,7 +14,7 @@ PositiveInt = Annotated[int, Field(strict=True, ge=1)]
 Timestamp = Annotated[datetime, Field(strict=True)]
 
 LensName = Literal["entity", "event", "claim", "number"]
-RunStatus = Literal["created", "running", "completed", "failed"]
+RunStatus = Literal["created", "running", "completed", "failed", "refused"]
 DocumentFormat = Literal["plain_text", "markdown", "pdf"]
 LLMStage = Literal[
     "planner.classify_document",

@@ -343,8 +343,8 @@ class RunManifest(ContractModel):
     def validate_completion_time(self) -> RunManifest:
         if self.completed_at is not None and self.completed_at < self.started_at:
             raise ValueError("completed_at must not be earlier than started_at")
-        if self.status == "completed" and self.completed_at is None:
-            raise ValueError("completed runs must include completed_at")
+        if self.status in {"completed", "refused"} and self.completed_at is None:
+            raise ValueError("completed or refused runs must include completed_at")
         return self
 
 

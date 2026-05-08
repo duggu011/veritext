@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from extractor.contracts import RejectionReason
+from extractor.contracts import PlanningRefusal, RejectionReason
 
 
 NonEmptyStr = Annotated[str, Field(strict=True, min_length=1, pattern=r".*\S.*")]
@@ -48,6 +48,17 @@ class RunStageState(AuditModel):
     run_id: NonEmptyStr
     stage: RunStageName
     completed_at: Timestamp
+    planning_refusal: PlanningRefusal | None = None
+
+    @model_validator(mode="after")
+    def validate_planner_refusal(self) -> RunStageState:
+        if self.planning_refusal is None:
+            return self
+        if self.stage != "planner":
+            raise ValueError("planning_refusal can only be attached to planner stage state")
+        if self.planning_refusal.run_id != self.run_id:
+            raise ValueError("planning_refusal run_id must match stage state run_id")
+        return self
 
 
 __all__ = [

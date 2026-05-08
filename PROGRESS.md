@@ -5,11 +5,33 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 26 - Domain Pack and Schema Registry Foundation
-- Current status: Phase 27 Step 5 is complete. Planner now applies typed schema-selection policy, emits structured `PlanningRefusal` payloads for strict schema-fit refusals, and preserves planner-generated fallback when policy allows it.
-- Next required work: Step 6 - propagate refusal through orchestrator, audit, resume, reporter, and CLI. Wait for operator readiness confirmation before implementation.
+- Current status: Phase 27 Step 6 is complete. Planner refusals now propagate as terminal audited `refused` outcomes with planner-stage refusal payloads, refusal reports, CLI summaries, and resume guards.
+- Next required work: Step 7 - final verification, board/progress updates, and commit/handoff cleanly. Wait for operator readiness confirmation before implementation.
 - Next-phase context: Future sessions should start at `docs/boards/README.md`, then read the active Phase 27 board and approved spec. Preserve the completed LLM provider adapter boundary when future work touches provider routing.
 
 ## Session Log
+
+### 2026-05-09 — Phase 27 Step 6 Terminal Refusal Propagation
+
+- Added `refused` as a terminal run status and required `completed_at` for refused manifests.
+- Added typed planner refusal payloads to audited planner `RunStageState` records.
+- Added `ExtractionRefusalReport` and `write_refusal_report(...)` so schema-fit refusal output is machine-readable and does not fabricate empty data points.
+- Added `PipelineRefusalResult` / `PipelineResult` and propagated planner refusal through orchestrator without running executor, dedup, critic, verifier, reconciler, or success reporting.
+- Passed configured schema-registry policy into planning from orchestrator.
+- Added refusal-aware CLI summaries with `outcome_type`, refusal identity, and usage summary.
+- Blocked terminal refused runs from normal resume and from `scripts/prepare_failed_run_resume.py`.
+- Split planner/refusal orchestration into `src/extractor/orchestrator/planning.py` and `src/extractor/orchestrator/refusal.py` so `src/extractor/orchestrator/service.py` stays under the 400-line limit.
+- Added focused coverage in `tests/unit/test_audit_refusal.py`, `tests/unit/test_reporter_refusal.py`, and `tests/unit/test_orchestrator_refusal.py`, plus CLI and resume-prep assertions.
+- Verification:
+  - `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q` first failed with `ImportError: cannot import name 'write_refusal_report'`
+  - `python3 -m pytest tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_prepare_failed_run_resume.py -q`
+  - `python3 -m pytest tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_cli.py tests/unit/test_config.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_planner_schema_fit_policy.py -q`
+  - `python3 -m compileall -q src/extractor/contracts src/extractor/audit src/extractor/reporter src/extractor/orchestrator src/extractor/cli scripts/prepare_failed_run_resume.py tests/unit/test_audit_refusal.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator_refusal.py`
+  - `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_schema_registry_contracts.py tests/unit/test_schema_registry_loader.py tests/unit/test_planner.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py tests/unit/test_audit_store.py tests/unit/test_audit_refusal.py tests/unit/test_reporter.py tests/unit/test_reporter_refusal.py tests/unit/test_orchestrator.py tests/unit/test_orchestrator_refusal.py tests/unit/test_prepare_failed_run_resume.py tests/unit/test_config.py tests/unit/test_cli.py -q`
+  - `make test` (`247 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke`
+  - `git diff --check`
 
 ### 2026-05-09 — Phase 27 Step 5 Schema-Fit Refusal Policy
 

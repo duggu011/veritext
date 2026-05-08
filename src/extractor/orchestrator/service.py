@@ -20,7 +20,12 @@ from extractor.orchestrator.lifecycle import (
     mark_run_failed as _mark_run_failed,
     start_or_resume_run as _start_or_resume_run,
 )
-from extractor.orchestrator.models import PipelineRunResult
+from extractor.orchestrator.models import (
+    PipelineRefusalResult,
+    PipelineResult,
+    PipelineRunResult,
+)
+from extractor.orchestrator.planning import plan_or_refuse as _plan_or_refuse
 from extractor.orchestrator.state import (
     critic_complete as _critic_complete,
     critic_result_from_audit as _critic_result_from_audit,
@@ -29,7 +34,6 @@ from extractor.orchestrator.state import (
     reconciliation_result_from_audit as _reconciliation_result_from_audit,
     reconciler_complete as _reconciler_complete,
     validate_resume_chunks as _validate_resume_chunks,
-    validate_resume_plan as _validate_resume_plan,
     verification_result_from_audit as _verification_result_from_audit,
     verifier_complete as _verifier_complete,
 )
@@ -37,7 +41,6 @@ from extractor.orchestrator.trace import print_stage as _print_stage
 from extractor.planner import (
     DomainPackLoaderError,
     SchemaRegistryLoaderError,
-    create_extraction_plan,
     load_domain_pack_artifacts,
     load_schema_registry_artifacts,
 )
@@ -55,7 +58,7 @@ async def run_extraction_pipeline(
     run_id: str | None = None,
     domain_hints: tuple[str, ...] = (),
     resume: bool = False,
-) -> PipelineRunResult:
+) -> PipelineResult:
     if resume and run_id is None:
         raise OrchestratorError("--resume requires an explicit --run-id")
 
@@ -131,36 +134,23 @@ async def run_extraction_pipeline(
                     stage="chunker",
                 )
 
-                stored_plan = await audit_store.get_extraction_plan(actual_run_id)
-                planner_state = await audit_store.get_run_stage_state(
-                    actual_run_id,
-                    "planner",
+                planning = await _plan_or_refuse(
+                    run_id=actual_run_id,
+                    document=document,
+                    chunks=chunks,
+                    chunking_config=config.chunking,
+                    prompt_loader=prompt_loader,
+                    llm_client=actual_llm_client,
+                    domain_hints=domain_hints,
+                    approved_schema_artifacts=schema_registry_artifacts,
+                    schema_registry_config=config.schema_registry,
+                    output_path=output_path,
+                    running_manifest=running_manifest,
+                    audit_store=audit_store,
                 )
-                if stored_plan is not None:
-                    plan = _validate_resume_plan(
-                        plan=stored_plan,
-                        document=document,
-                        chunking_config=config.chunking,
-                    )
-                    _print_stage("planner.resume", f"lenses={list(plan.enabled_lenses)}")
-                elif planner_state is not None:
-                    raise OrchestratorError(
-                        "Cannot resume: planner is marked complete but no extraction "
-                        f"plan exists for run {actual_run_id}."
-                    )
-                else:
-                    _print_stage("planner", f"domain_hints={list(domain_hints) or 'none'}")
-                    plan = await create_extraction_plan(
-                        run_id=actual_run_id,
-                        document=document,
-                        chunks=chunks,
-                        chunking_config=config.chunking,
-                        prompt_loader=prompt_loader,
-                        llm_client=actual_llm_client,
-                        domain_hints=domain_hints,
-                        approved_schema_artifacts=schema_registry_artifacts,
-                        audit_store=audit_store,
-                    )
+                if isinstance(planning, PipelineRefusalResult):
+                    return planning
+                plan = planning
                 _print_stage(
                     "planner.done",
                     f"categories={[c.name for c in plan.approved_categories]} lenses={list(plan.enabled_lenses)}",
