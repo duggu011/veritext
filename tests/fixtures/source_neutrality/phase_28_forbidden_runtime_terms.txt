@@ -1,0 +1,14 @@
+# Phase 28 legal-pack identifiers that may appear in artifacts, fixtures,
+# tests, docs, boards, and progress logs, but must not enter runtime source or prompts.
+legal_contract
+legal-contract
+legal-contracts-v1
+legal-contract-core-v1
+ContractParty
+ContractObligation
+TerminationRight
+GoverningLaw
+NoticeProvision
+ContractDefinition
+party_name
+governing_law

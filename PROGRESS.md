@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
-- Current status: Phase 28 Step 3 is complete for Legal Contracts Domain Pack v1.
-- Next required work: Phase 28 Step 4 - add source-neutrality guard and final verification.
+- Current status: Phase 28 final gate is ready for operator review.
+- Next required work: Operator review and acceptance of Phase 28. Do not open Phase 29 until the operator explicitly continues.
 - Next-phase context: Phase 28 should prove the first legal-contract domain pack through artifacts, registry fixtures, and evaluation coverage while keeping runtime source code domain-neutral.
 
 ## Session Log
+
+### 2026-05-10 — Phase 28 Step 4 Source Neutrality and Final Gate
+
+- Added `tests/unit/test_phase28_source_neutrality.py` with a fixture-backed scan that rejects Phase 28-specific legal identifiers in runtime `src/` and prompt files.
+- Confirmed prompt bodies were not modified for Phase 28.
+- Updated the Phase 28 board to mark Steps 1-4 complete, fill the phase summary, and mark final gate ready.
+- Updated `docs/boards/README.md` to show Phase 28 as `FINAL GATE READY`.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` first failed with missing forbidden-terms fixture
+  - `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q`
+  - `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_loader.py tests/unit/test_evals.py tests/unit/test_phase28_source_neutrality.py -q`
+  - `git diff --exit-code -- prompts`
+  - `git diff --check`
+  - `make test` (`252 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
 
 ### 2026-05-10 — Phase 28 Step 3 Legal Evaluation Fixture
 

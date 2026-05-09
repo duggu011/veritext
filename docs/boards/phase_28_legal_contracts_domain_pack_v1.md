@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 3 of 4
+Step: 4 of 4
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_28_legal_contracts_domain_pack_v1.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Target Domains, Non-Targets, and Market Sizing`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Phase 28 spec approved by the operator on 2026-05-10. Steps 1-3 are complete and committed after verification. Next step is Step 4: add source-neutrality guard and final verification.
+Phase 28 final gate is ready for operator review. Steps 1-4 are complete with matching commits, narrow tests pass, project-level verification passes, and no OPEN issues remain.
 
 ---
 
@@ -20,7 +20,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 1: Add legal-contract domain-pack artifact and loader coverage.
 - [x] Step 2: Add approved legal schema registry fixture and schema-selection coverage.
 - [x] Step 3: Add legal-contract evaluation fixture and report-schema coverage.
-- [ ] Step 4: Add source-neutrality guard and final verification.
+- [x] Step 4: Add source-neutrality guard and final verification.
 
 ---
 
@@ -62,6 +62,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `evals/fixtures/legal_contracts_core/source.txt:1` | Added synthetic legal-contract source text with multiple contract-style clauses. | Step 3 |
 | `evals/fixtures/legal_contracts_core/expected.json:1` | Added exact expected legal data points with character and byte offsets. | Step 3 |
 | `evals/fixtures/legal_contracts_core/report.example.json:1` | Added deterministic example report using the approved legal schema metadata. | Step 3 |
+| `tests/unit/test_phase28_source_neutrality.py:1` | Added guard scanning runtime source and prompt files for Phase 28-specific legal identifiers. | Step 4 |
+| `tests/fixtures/source_neutrality/phase_28_forbidden_runtime_terms.txt:1` | Added Phase 28 forbidden runtime identifier list for the source-neutrality guard. | Step 4 |
+| `docs/boards/README.md:1` | Updated active Phase 28 status to final-gate-ready. | Step 4 |
 
 ---
 
@@ -92,18 +95,19 @@ _(No issues yet.)_
 | 1 | `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` first failed with missing `legal-contracts-v1` pack; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_config.py tests/unit/test_orchestrator.py -q`; `git diff --check` | PASS | 2026-05-10 |
 | 2 | `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed with missing `schema:legal-contract-core-v1` fixture; `python3 -m pytest tests/unit/test_schema_registry_loader.py -q`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py -q`; `git diff --check` | PASS | 2026-05-10 |
 | 3 | `python3 -m pytest tests/unit/test_evals.py -q` first failed with missing `legal_contracts_core` fixture files; `python3 -m pytest tests/unit/test_evals.py -q`; `python3 -m pytest tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_schema_registry_loader.py tests/unit/test_domain_pack_loader.py -q`; `git diff --check` | PASS | 2026-05-10 |
+| 4 | `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` first failed with missing forbidden-terms fixture; `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_loader.py tests/unit/test_evals.py tests/unit/test_phase28_source_neutrality.py -q`; `git diff --exit-code -- prompts`; `git diff --check`; `make test`; `make lint`; `make smoke` | PASS | 2026-05-10 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -114,10 +118,10 @@ Reverse chronological. Log every session.
 ### 2026-05-10 - Session 1
 
 - Resumed after operator approved the Phase 28 spec with `continue`.
-- Completed: opened this board, pinned Phase 28 implementation open-question resolutions, updated tracking references, added the legal-contract config domain-pack artifact, added loader coverage for that artifact, added the approved legal schema-registry fixture, added registry loading and candidate-selection coverage for it, added the legal-contract evaluation fixture, and added report-schema metadata coverage.
+- Completed: opened this board, pinned Phase 28 implementation open-question resolutions, updated tracking references, added the legal-contract config domain-pack artifact, added loader coverage for that artifact, added the approved legal schema-registry fixture, added registry loading and candidate-selection coverage for it, added the legal-contract evaluation fixture, added report-schema metadata coverage, added source-neutrality guard coverage, and ran final verification.
 - Issues found: none.
-- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` returned no matches; `rg -n "phase_28_legal_contracts_domain_pack_v1.md|approved|BOARD OPEN|Step 1" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` first failed with missing `legal-contracts-v1` pack, then passed with 5 passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_config.py tests/unit/test_orchestrator.py -q` passed with 29 passed; `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed with missing `schema:legal-contract-core-v1` fixture, then passed with 11 passed; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py -q` passed with 20 passed; `python3 -m pytest tests/unit/test_evals.py -q` first failed with missing `legal_contracts_core` fixture files, then passed with 12 passed; `python3 -m pytest tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_schema_registry_loader.py tests/unit/test_domain_pack_loader.py -q` passed with 32 passed; `git diff --check` passed.
-- Next: Step 4 - add source-neutrality guard and final verification.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` returned no matches; `rg -n "phase_28_legal_contracts_domain_pack_v1.md|approved|BOARD OPEN|Step 1" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` first failed with missing `legal-contracts-v1` pack, then passed with 5 passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_config.py tests/unit/test_orchestrator.py -q` passed with 29 passed; `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed with missing `schema:legal-contract-core-v1` fixture, then passed with 11 passed; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py -q` passed with 20 passed; `python3 -m pytest tests/unit/test_evals.py -q` first failed with missing `legal_contracts_core` fixture files, then passed with 12 passed; `python3 -m pytest tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_schema_registry_loader.py tests/unit/test_domain_pack_loader.py -q` passed with 32 passed; `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` first failed with missing forbidden-terms fixture, then passed with 1 passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_loader.py tests/unit/test_evals.py tests/unit/test_phase28_source_neutrality.py -q` passed with 29 passed; `git diff --exit-code -- prompts` passed; `make test` passed with 252 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed.
+- Next: operator review and acceptance of Phase 28. Phase 29 must not open until the operator explicitly continues.
 
 ---
 
@@ -129,14 +133,13 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: ...
-- Deferred: ...
-- Added beyond spec: ...
+- Built as specified: legal-contract domain pack artifact; approved legal schema registry fixture with canonical hash enforcement; schema-selection coverage; legal-contract evaluation fixture with exact provenance; report-schema metadata coverage; source-neutrality guard; final verification.
+- Deferred: broad per-field evaluation gates, diverse fixture corpus, legal-specific runtime logic, prompt-body legal customization, UI/export, and ingestion-format expansion remain outside Phase 28 as specified.
+- Added beyond spec: source-neutrality guard terms are fixture-backed so future legal-pack identifiers can be added without editing runtime source.
 
 ### Lessons for downstream phases
 
-- ...
+- Phase 29 can use `legal_contracts_core` as one strict fixture, but should add per-field gates before expanding this into a broader legal corpus.
+- Domain-pack assumptions remain auditable as YAML/test/eval artifacts; no runtime source branch was needed for the first pack.
