@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
-- Current status: Phase 28 Step 1 is complete for Legal Contracts Domain Pack v1.
-- Next required work: Phase 28 Step 2 - add approved legal schema registry fixture and schema-selection coverage.
+- Current status: Phase 28 Step 2 is complete for Legal Contracts Domain Pack v1.
+- Next required work: Phase 28 Step 3 - add legal-contract evaluation fixture and report-schema coverage.
 - Next-phase context: Phase 28 should prove the first legal-contract domain pack through artifacts, registry fixtures, and evaluation coverage while keeping runtime source code domain-neutral.
 
 ## Session Log
+
+### 2026-05-10 — Phase 28 Step 2 Approved Legal Schema Fixture
+
+- Added `tests/fixtures/schema_registry/legal_contract_core_v1.yaml` as the approved legal-contract schema registry fixture.
+- The fixture links to `legal-contracts-v1`, uses `document_class: legal_contract`, carries legal domain hints and match basis, and validates through canonical schema-hash enforcement.
+- Added loader and candidate-selection coverage proving the legal schema is selected by document class and domain hints.
+- Runtime source code remained unchanged.
+- Verification:
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed with missing `schema:legal-contract-core-v1` fixture
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py -q`
+  - `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py -q`
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 28 Step 1 Domain Pack Artifact
 

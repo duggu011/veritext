@@ -1,0 +1,141 @@
+schema_metadata:
+  schema_id: schema:legal-contract-core-v1
+  schema_version: 1.0.0
+  schema_hash: 4d4c5da3c52962339a2cedfa246ecf22ad2be0f003e8de62f5d3a162d2f62dc4
+  source_kind: schema_registry
+  domain_pack_id: legal-contracts-v1
+  document_class: legal_contract
+  created_from: schema_registry
+approved_categories:
+  - name: ContractParty
+    description: A named party or signatory identified by the contract.
+    fields:
+      - name: party_name
+        description: Exact party name as stated in the source.
+        value_type: text
+        required: true
+      - name: party_role
+        description: Contract role such as provider, customer, buyer, seller, landlord, tenant, lender, or borrower as stated or directly supported.
+        value_type: text
+        required: false
+  - name: EffectiveDate
+    description: A date that controls contract effectiveness or commencement.
+    fields:
+      - name: effective_date
+        description: Exact effective or commencement date as stated in the source.
+        value_type: date
+        required: true
+      - name: trigger_text
+        description: Source text explaining what makes the date operative.
+        value_type: text
+        required: false
+  - name: ContractObligation
+    description: A duty, covenant, restriction, or required action created by the contract.
+    fields:
+      - name: obligated_party
+        description: Party that must perform or refrain from the action.
+        value_type: text
+        required: true
+      - name: duty
+        description: Exact obligation, covenant, restriction, or required action stated in the source.
+        value_type: text
+        required: true
+      - name: beneficiary
+        description: Party that receives the benefit of the obligation when stated.
+        value_type: text
+        required: false
+      - name: condition
+        description: Condition that limits when the obligation applies when stated.
+        value_type: text
+        required: false
+      - name: exception
+        description: Exception or carve-out to the obligation when stated.
+        value_type: text
+        required: false
+  - name: PaymentTerm
+    description: A payment amount, fee, timing requirement, or economic term stated in the contract.
+    fields:
+      - name: fee_description
+        description: Source-backed description of the payment, fee, or economic term.
+        value_type: text
+        required: true
+      - name: payer
+        description: Party responsible for payment when stated.
+        value_type: text
+        required: false
+      - name: payee
+        description: Party receiving payment when stated.
+        value_type: text
+        required: false
+      - name: amount
+        description: Exact monetary amount, rate, or formula when stated.
+        value_type: text
+        required: false
+      - name: payment_timing
+        description: Due date, schedule, or timing condition when stated.
+        value_type: text
+        required: false
+  - name: TerminationRight
+    description: A right or trigger allowing contract termination, suspension, or expiration.
+    fields:
+      - name: trigger
+        description: Event, condition, or breach that permits termination.
+        value_type: text
+        required: true
+      - name: holder
+        description: Party holding the termination right when stated.
+        value_type: text
+        required: false
+      - name: notice_period
+        description: Required notice period or cure period when stated.
+        value_type: text
+        required: false
+      - name: effect
+        description: Source-backed consequence of termination when stated.
+        value_type: text
+        required: false
+  - name: GoverningLaw
+    description: A jurisdiction or law clause controlling contract interpretation.
+    fields:
+      - name: jurisdiction
+        description: Exact governing-law jurisdiction stated in the source.
+        value_type: text
+        required: true
+  - name: NoticeProvision
+    description: A notice method, recipient, address, or timing requirement.
+    fields:
+      - name: recipient
+        description: Party or role designated to receive notices when stated.
+        value_type: text
+        required: false
+      - name: method
+        description: Permitted or required notice method when stated.
+        value_type: text
+        required: false
+      - name: address
+        description: Notice address or delivery location when stated.
+        value_type: text
+        required: false
+      - name: timing
+        description: Notice timing rule when stated.
+        value_type: text
+        required: false
+  - name: ContractDefinition
+    description: A defined term and its source-backed meaning.
+    fields:
+      - name: term
+        description: Defined term exactly as stated.
+        value_type: text
+        required: true
+      - name: definition_text
+        description: Text that defines the term.
+        value_type: text
+        required: true
+document_class: legal_contract
+domain_hints:
+  - legal_contract
+  - contract_review
+  - commercial_agreement
+match_basis:
+  - document_class
+  - domain_hints

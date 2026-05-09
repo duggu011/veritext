@@ -14,6 +14,9 @@ from extractor.planner.schema_registry import (
 )
 
 
+SCHEMA_REGISTRY_FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "schema_registry"
+
+
 def make_category(name: str = "Finding") -> CategoryDefinition:
     return CategoryDefinition(
         name=name,
@@ -86,6 +89,52 @@ def test_load_schema_registry_artifacts_validates_yaml_and_hash(tmp_path: Path) 
     assert artifact.schema_metadata.source_kind == "schema_registry"
     assert artifact.document_class == "generic_notice"
     assert artifact.approved_categories[0].name == "Finding"
+
+
+def test_load_schema_registry_artifacts_validates_legal_contract_fixture() -> None:
+    artifacts = load_schema_registry_artifacts(SCHEMA_REGISTRY_FIXTURES)
+
+    legal_artifacts = [
+        artifact
+        for artifact in artifacts
+        if artifact.schema_id == "schema:legal-contract-core-v1"
+    ]
+    assert len(legal_artifacts) == 1
+
+    artifact = legal_artifacts[0]
+    assert artifact.schema_metadata.source_kind == "schema_registry"
+    assert artifact.schema_metadata.domain_pack_id == "legal-contracts-v1"
+    assert artifact.document_class == "legal_contract"
+    assert artifact.domain_hints == (
+        "legal_contract",
+        "contract_review",
+        "commercial_agreement",
+    )
+    assert artifact.match_basis == ("document_class", "domain_hints")
+    assert tuple(category.name for category in artifact.approved_categories) == (
+        "ContractParty",
+        "EffectiveDate",
+        "ContractObligation",
+        "PaymentTerm",
+        "TerminationRight",
+        "GoverningLaw",
+        "NoticeProvision",
+        "ContractDefinition",
+    )
+
+    candidates = select_schema_registry_candidates(
+        artifacts,
+        document_class="legal_contract",
+        domain_hints=(
+            "legal_contract",
+            "contract_review",
+            "commercial_agreement",
+            "operator_hint",
+        ),
+    )
+    assert tuple(candidate.schema_id for candidate in candidates) == (
+        "schema:legal-contract-core-v1",
+    )
 
 
 def test_load_schema_registry_artifacts_returns_empty_for_missing_directory(
