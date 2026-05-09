@@ -1,6 +1,6 @@
 # Phase 28 - Legal Contracts Domain Pack v1
 
-Status: draft opened after Phase 27 operator acceptance on 2026-05-09. Implementation starts only after operator approval and creation of `docs/boards/phase_28_legal_contracts_domain_pack_v1.md`.
+Status: approved by operator on 2026-05-10. Implementation starts only from `docs/boards/phase_28_legal_contracts_domain_pack_v1.md`.
 
 Date opened: 2026-05-09
 

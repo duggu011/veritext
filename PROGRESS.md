@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
-- Current status: Phase 28 spec draft is opened for Legal Contracts Domain Pack v1.
-- Next required work: Operator review and approval of `docs/specs/phase_28_legal_contracts_domain_pack_v1.md`. Do not create the Phase 28 board or begin implementation until the spec is approved.
+- Current status: Phase 28 board is open for Legal Contracts Domain Pack v1.
+- Next required work: Phase 28 Step 1 - add legal-contract domain-pack artifact and loader coverage.
 - Next-phase context: Phase 28 should prove the first legal-contract domain pack through artifacts, registry fixtures, and evaluation coverage while keeping runtime source code domain-neutral.
 
 ## Session Log
+
+### 2026-05-10 — Phase 28 Board Opening
+
+- Marked `docs/specs/phase_28_legal_contracts_domain_pack_v1.md` approved after operator approval.
+- Created active board `docs/boards/phase_28_legal_contracts_domain_pack_v1.md`.
+- Pinned Phase 28 implementation open-question resolutions:
+  - Keep the legal approved schema fixture under `tests/fixtures/schema_registry/`.
+  - Use `legal_contract` as the first document class.
+  - Keep the first legal schema small while including limited definitions and notices.
+  - Do not add duplicate `pack_id` rejection unless Step 1 exposes an existing generic loader gap.
+- Updated `docs/boards/README.md` to show Phase 28 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`
+  - `rg -n "phase_28_legal_contracts_domain_pack_v1.md|approved|BOARD OPEN|Step 1" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-09 — Phase 27 Acceptance and Phase 28 Spec Draft
 
