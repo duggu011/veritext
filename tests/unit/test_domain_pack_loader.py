@@ -9,6 +9,8 @@ from extractor.planner.domain_packs import (
 
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "domain_packs"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CONFIG_DOMAIN_PACKS = REPO_ROOT / "config" / "domain_packs"
 
 
 def test_load_domain_pack_artifacts_validates_synthetic_yaml_fixture() -> None:
@@ -21,6 +23,35 @@ def test_load_domain_pack_artifacts_validates_synthetic_yaml_fixture() -> None:
     assert artifact.metadata.schema_template_ids == ("generic-notice-template",)
     assert artifact.schema_templates[0].schema_id == "generic-notice-template"
     assert artifact.schema_templates[0].domain_pack_id == "generic-metadata-pack"
+
+
+def test_load_domain_pack_artifacts_validates_legal_contracts_config_pack() -> None:
+    artifacts = load_domain_pack_artifacts(CONFIG_DOMAIN_PACKS)
+
+    legal_packs = [
+        artifact
+        for artifact in artifacts
+        if artifact.metadata.pack_id == "legal-contracts-v1"
+    ]
+    assert len(legal_packs) == 1
+
+    legal_pack = legal_packs[0]
+    assert legal_pack.path == CONFIG_DOMAIN_PACKS / "legal_contracts.yaml"
+    assert legal_pack.metadata.display_name == "Legal Contracts Domain Pack v1"
+    assert legal_pack.metadata.version == "1.0.0"
+    assert legal_pack.metadata.schema_template_ids == ("legal-contract-core-v1",)
+    assert legal_pack.metadata.supported_document_classes == ("legal_contract",)
+    assert legal_pack.metadata.default_lenses == ("entity", "event", "claim", "number")
+    assert "cite_schema_identity" in legal_pack.metadata.reporting_expectations
+
+    template = legal_pack.schema_templates[0]
+    assert template.schema_id == "legal-contract-core-v1"
+    assert template.domain_pack_id == legal_pack.metadata.pack_id
+    assert template.document_class == "legal_contract"
+    assert template.enabled_lenses == legal_pack.metadata.default_lenses
+    assert {"party", "date", "obligation", "condition", "exception"}.issubset(
+        set(template.field_roles)
+    )
 
 
 def test_load_domain_pack_artifacts_returns_empty_for_missing_directory(

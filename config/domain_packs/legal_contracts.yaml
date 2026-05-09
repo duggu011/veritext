@@ -1,0 +1,48 @@
+metadata:
+  pack_id: legal-contracts-v1
+  display_name: Legal Contracts Domain Pack v1
+  version: 1.0.0
+  domain_hints:
+    - legal_contract
+    - contract_review
+    - commercial_agreement
+  schema_template_ids:
+    - legal-contract-core-v1
+  supported_document_classes:
+    - legal_contract
+  default_lenses:
+    - entity
+    - event
+    - claim
+    - number
+  reporting_expectations:
+    - cite_schema_identity
+    - preserve_clause_provenance
+    - preserve_defined_terms
+schema_templates:
+  - schema_id: legal-contract-core-v1
+    schema_version: 1.0.0
+    display_name: Legal Contract Core Template v1
+    domain_pack_id: legal-contracts-v1
+    document_class: legal_contract
+    field_roles:
+      - party
+      - date
+      - obligation
+      - payment_term
+      - termination_right
+      - governing_law
+      - notice
+      - condition
+      - exception
+      - definition
+      - renewal_term
+    enabled_lenses:
+      - entity
+      - event
+      - claim
+      - number
+    reporting_expectations:
+      - cite_schema_identity
+      - preserve_clause_provenance
+      - preserve_defined_terms

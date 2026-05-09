@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 4
+Step: 1 of 4
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_28_legal_contracts_domain_pack_v1.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Target Domains, Non-Targets, and Market Sizing`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Phase 28 spec approved by the operator on 2026-05-10. Board opened for implementation. Next step is Step 1: add legal-contract domain-pack artifact and loader coverage.
+Phase 28 spec approved by the operator on 2026-05-10. Step 1 is complete and committed after verification. Next step is Step 2: add approved legal schema registry fixture and schema-selection coverage.
 
 ---
 
@@ -17,7 +17,7 @@ Phase 28 spec approved by the operator on 2026-05-10. Board opened for implement
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add legal-contract domain-pack artifact and loader coverage.
+- [x] Step 1: Add legal-contract domain-pack artifact and loader coverage.
 - [ ] Step 2: Add approved legal schema registry fixture and schema-selection coverage.
 - [ ] Step 3: Add legal-contract evaluation fixture and report-schema coverage.
 - [ ] Step 4: Add source-neutrality guard and final verification.
@@ -54,6 +54,8 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_28_legal_contracts_domain_pack_v1.md:1` | Active Phase 28 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_domain_pack_loader.py:11` | Added config-domain-pack fixture path and loader assertions for the legal contracts pack. | Step 1 |
+| `config/domain_packs/legal_contracts.yaml:1` | Added the legal-contract domain-pack artifact and core schema template metadata. | Step 1 |
 
 ---
 
@@ -81,6 +83,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`; `rg -n "phase_28_legal_contracts_domain_pack_v1.md|approved|BOARD OPEN|Step 1" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
+| 1 | `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` first failed with missing `legal-contracts-v1` pack; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_config.py tests/unit/test_orchestrator.py -q`; `git diff --check` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -103,10 +106,10 @@ Reverse chronological. Log every session.
 ### 2026-05-10 - Session 1
 
 - Resumed after operator approved the Phase 28 spec with `continue`.
-- Completed: opened this board, pinned Phase 28 implementation open-question resolutions, and updated tracking references.
+- Completed: opened this board, pinned Phase 28 implementation open-question resolutions, updated tracking references, added the legal-contract config domain-pack artifact, and added loader coverage for that artifact.
 - Issues found: none.
-- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` returned no matches; `rg -n "phase_28_legal_contracts_domain_pack_v1.md|approved|BOARD OPEN|Step 1" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
-- Next: Step 1 - add legal-contract domain-pack artifact and loader coverage.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` returned no matches; `rg -n "phase_28_legal_contracts_domain_pack_v1.md|approved|BOARD OPEN|Step 1" docs/boards/README.md PROGRESS.md docs/specs/phase_28_legal_contracts_domain_pack_v1.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py -q` first failed with missing `legal-contracts-v1` pack, then passed with 5 passed; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_config.py tests/unit/test_orchestrator.py -q` passed with 29 passed; `git diff --check` passed.
+- Next: Step 2 - add approved legal schema registry fixture and schema-selection coverage.
 
 ---
 
