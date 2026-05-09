@@ -1,0 +1,10 @@
+MASTER SERVICES AGREEMENT
+
+This Agreement is made by Acme Analytics LLC as Provider and Beta Retail Inc. as Customer.
+The Effective Date is May 1, 2026.
+Provider shall deliver monthly sales dashboards to Customer, except for delays caused by Customer data unavailability.
+Customer shall pay Provider $12,000 per month within 15 days after invoice receipt.
+Either party may terminate this Agreement for material breach if the breach remains uncured for 30 days after written notice.
+This Agreement is governed by the laws of New York.
+Notices must be sent by email and overnight courier to the addresses listed in Exhibit A.
+"Confidential Information" means non-public business, technical, or financial information disclosed under this Agreement.

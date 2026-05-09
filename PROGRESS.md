@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
-- Current status: Phase 28 Step 2 is complete for Legal Contracts Domain Pack v1.
-- Next required work: Phase 28 Step 3 - add legal-contract evaluation fixture and report-schema coverage.
+- Current status: Phase 28 Step 3 is complete for Legal Contracts Domain Pack v1.
+- Next required work: Phase 28 Step 4 - add source-neutrality guard and final verification.
 - Next-phase context: Phase 28 should prove the first legal-contract domain pack through artifacts, registry fixtures, and evaluation coverage while keeping runtime source code domain-neutral.
 
 ## Session Log
+
+### 2026-05-10 — Phase 28 Step 3 Legal Evaluation Fixture
+
+- Added `evals/fixtures/legal_contracts_core/` with synthetic source text covering parties, effective date, obligation, payment term, termination trigger, governing law, notice method, and a definition.
+- Added exact expected data points with source text, character offsets, and byte offsets.
+- Added an example `report.v2` that cites approved legal schema metadata from `schema:legal-contract-core-v1`.
+- Added eval coverage so the legal fixture passes existing precision, recall, F1, provenance recall, and invariant gates.
+- Verification:
+  - `python3 -m pytest tests/unit/test_evals.py -q` first failed with missing `legal_contracts_core` fixture files
+  - `python3 -m pytest tests/unit/test_evals.py -q`
+  - `python3 -m pytest tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_schema_registry_loader.py tests/unit/test_domain_pack_loader.py -q`
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 28 Step 2 Approved Legal Schema Fixture
 

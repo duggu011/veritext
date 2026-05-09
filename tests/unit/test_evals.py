@@ -17,6 +17,7 @@ FIXTURE_DIRS = (
     ROOT / "evals" / "fixtures" / "minimal_contract_obligation",
     ROOT / "evals" / "fixtures" / "minimal_policy_controls",
     ROOT / "evals" / "fixtures" / "hard_mixed_distractors",
+    ROOT / "evals" / "fixtures" / "legal_contracts_core",
 )
 
 
@@ -120,6 +121,23 @@ def test_hard_mixed_fixture_contains_unexpected_distractors() -> None:
     assert "sample customer Alpha LLC" in case.source_text
     assert all("15%" not in point.value for point in case.expected_data_points)
     assert all("Alpha LLC" not in point.value for point in case.expected_data_points)
+
+
+def test_legal_contract_fixture_report_cites_approved_schema_metadata() -> None:
+    fixture_dir = ROOT / "evals" / "fixtures" / "legal_contracts_core"
+    report = ExtractionReport.model_validate_json(
+        (fixture_dir / "report.example.json").read_text(encoding="utf-8")
+    )
+
+    assert report.schema_metadata.schema_id == "schema:legal-contract-core-v1"
+    assert report.schema_metadata.schema_version == "1.0.0"
+    assert (
+        report.schema_metadata.schema_hash
+        == "4d4c5da3c52962339a2cedfa246ecf22ad2be0f003e8de62f5d3a162d2f62dc4"
+    )
+    assert report.schema_metadata.source_kind == "schema_registry"
+    assert report.schema_metadata.domain_pack_id == "legal-contracts-v1"
+    assert report.schema_metadata.document_class == "legal_contract"
 
 
 def test_eval_cli_returns_zero_for_passing_fixture(capsys: pytest.CaptureFixture[str]) -> None:

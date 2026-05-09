@@ -1,0 +1,281 @@
+{
+  "data_points": [
+    {
+      "category": "ContractParty",
+      "confidence": 0.98,
+      "contributing_candidate_ids": [
+        "candidate-provider-party"
+      ],
+      "critic_report_ids": [
+        "critic-provider-party"
+      ],
+      "data_point_id": "dp-provider-party",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "party_name",
+      "reconciliation_decision_id": "decision-provider-party",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 71,
+        "end_char": 71,
+        "start_byte": 53,
+        "start_char": 53,
+        "text": "Acme Analytics LLC"
+      },
+      "value": "Acme Analytics LLC",
+      "verifier_report_ids": [
+        "verifier-provider-party"
+      ]
+    },
+    {
+      "category": "ContractParty",
+      "confidence": 0.98,
+      "contributing_candidate_ids": [
+        "candidate-customer-party"
+      ],
+      "critic_report_ids": [
+        "critic-customer-party"
+      ],
+      "data_point_id": "dp-customer-party",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "party_name",
+      "reconciliation_decision_id": "decision-customer-party",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 104,
+        "end_char": 104,
+        "start_byte": 88,
+        "start_char": 88,
+        "text": "Beta Retail Inc."
+      },
+      "value": "Beta Retail Inc.",
+      "verifier_report_ids": [
+        "verifier-customer-party"
+      ]
+    },
+    {
+      "category": "EffectiveDate",
+      "confidence": 0.97,
+      "contributing_candidate_ids": [
+        "candidate-effective-date"
+      ],
+      "critic_report_ids": [
+        "critic-effective-date"
+      ],
+      "data_point_id": "dp-effective-date",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "effective_date",
+      "reconciliation_decision_id": "decision-effective-date",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 151,
+        "end_char": 151,
+        "start_byte": 140,
+        "start_char": 140,
+        "text": "May 1, 2026"
+      },
+      "value": "May 1, 2026",
+      "verifier_report_ids": [
+        "verifier-effective-date"
+      ]
+    },
+    {
+      "category": "ContractObligation",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-dashboard-obligation"
+      ],
+      "critic_report_ids": [
+        "critic-dashboard-obligation"
+      ],
+      "data_point_id": "dp-dashboard-obligation",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "duty",
+      "reconciliation_decision_id": "decision-dashboard-obligation",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 270,
+        "end_char": 270,
+        "start_byte": 153,
+        "start_char": 153,
+        "text": "Provider shall deliver monthly sales dashboards to Customer, except for delays caused by Customer data unavailability"
+      },
+      "value": "Provider shall deliver monthly sales dashboards to Customer, except for delays caused by Customer data unavailability",
+      "verifier_report_ids": [
+        "verifier-dashboard-obligation"
+      ]
+    },
+    {
+      "category": "PaymentTerm",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-monthly-payment"
+      ],
+      "critic_report_ids": [
+        "critic-monthly-payment"
+      ],
+      "data_point_id": "dp-monthly-payment",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "fee_description",
+      "reconciliation_decision_id": "decision-monthly-payment",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 354,
+        "end_char": 354,
+        "start_byte": 272,
+        "start_char": 272,
+        "text": "Customer shall pay Provider $12,000 per month within 15 days after invoice receipt"
+      },
+      "value": "Customer shall pay Provider $12,000 per month within 15 days after invoice receipt",
+      "verifier_report_ids": [
+        "verifier-monthly-payment"
+      ]
+    },
+    {
+      "category": "TerminationRight",
+      "confidence": 0.94,
+      "contributing_candidate_ids": [
+        "candidate-breach-termination"
+      ],
+      "critic_report_ids": [
+        "critic-breach-termination"
+      ],
+      "data_point_id": "dp-breach-termination",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "trigger",
+      "reconciliation_decision_id": "decision-breach-termination",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 480,
+        "end_char": 480,
+        "start_byte": 402,
+        "start_char": 402,
+        "text": "material breach if the breach remains uncured for 30 days after written notice"
+      },
+      "value": "material breach if the breach remains uncured for 30 days after written notice",
+      "verifier_report_ids": [
+        "verifier-breach-termination"
+      ]
+    },
+    {
+      "category": "GoverningLaw",
+      "confidence": 0.96,
+      "contributing_candidate_ids": [
+        "candidate-governing-law"
+      ],
+      "critic_report_ids": [
+        "critic-governing-law"
+      ],
+      "data_point_id": "dp-governing-law",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "jurisdiction",
+      "reconciliation_decision_id": "decision-governing-law",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 532,
+        "end_char": 532,
+        "start_byte": 524,
+        "start_char": 524,
+        "text": "New York"
+      },
+      "value": "New York",
+      "verifier_report_ids": [
+        "verifier-governing-law"
+      ]
+    },
+    {
+      "category": "NoticeProvision",
+      "confidence": 0.93,
+      "contributing_candidate_ids": [
+        "candidate-notice-method"
+      ],
+      "critic_report_ids": [
+        "critic-notice-method"
+      ],
+      "data_point_id": "dp-notice-method",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "method",
+      "reconciliation_decision_id": "decision-notice-method",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 585,
+        "end_char": 585,
+        "start_byte": 558,
+        "start_char": 558,
+        "text": "email and overnight courier"
+      },
+      "value": "email and overnight courier",
+      "verifier_report_ids": [
+        "verifier-notice-method"
+      ]
+    },
+    {
+      "category": "ContractDefinition",
+      "confidence": 0.94,
+      "contributing_candidate_ids": [
+        "candidate-confidential-information-definition"
+      ],
+      "critic_report_ids": [
+        "critic-confidential-information-definition"
+      ],
+      "data_point_id": "dp-confidential-information-definition",
+      "doc_id": "doc-legal-contracts-core",
+      "field_name": "definition_text",
+      "reconciliation_decision_id": "decision-confidential-information-definition",
+      "run_id": "run-legal-contracts-core",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-legal-contracts-core",
+        "end_byte": 744,
+        "end_char": 744,
+        "start_byte": 624,
+        "start_char": 624,
+        "text": "\"Confidential Information\" means non-public business, technical, or financial information disclosed under this Agreement"
+      },
+      "value": "\"Confidential Information\" means non-public business, technical, or financial information disclosed under this Agreement",
+      "verifier_report_ids": [
+        "verifier-confidential-information-definition"
+      ]
+    }
+  ],
+  "doc_id": "doc-legal-contracts-core",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-provider-party",
+    "dp-customer-party",
+    "dp-effective-date",
+    "dp-dashboard-obligation",
+    "dp-monthly-payment",
+    "dp-breach-termination",
+    "dp-governing-law",
+    "dp-notice-method",
+    "dp-confidential-information-definition"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-legal-contracts-core",
+  "schema_metadata": {
+    "schema_id": "schema:legal-contract-core-v1",
+    "schema_version": "1.0.0",
+    "schema_hash": "4d4c5da3c52962339a2cedfa246ecf22ad2be0f003e8de62f5d3a162d2f62dc4",
+    "source_kind": "schema_registry",
+    "domain_pack_id": "legal-contracts-v1",
+    "document_class": "legal_contract",
+    "created_from": "schema_registry",
+    "refined_from_schema_id": null
+  }
+}

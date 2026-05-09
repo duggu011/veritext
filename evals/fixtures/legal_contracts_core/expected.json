@@ -1,0 +1,112 @@
+{
+  "case_id": "legal_contracts_core",
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  },
+  "expected_data_points": [
+    {
+      "category": "ContractParty",
+      "end_byte": 71,
+      "end_char": 71,
+      "expected_id": "expected-provider-party",
+      "field_name": "party_name",
+      "source_text": "Acme Analytics LLC",
+      "start_byte": 53,
+      "start_char": 53,
+      "value": "Acme Analytics LLC"
+    },
+    {
+      "category": "ContractParty",
+      "end_byte": 104,
+      "end_char": 104,
+      "expected_id": "expected-customer-party",
+      "field_name": "party_name",
+      "source_text": "Beta Retail Inc.",
+      "start_byte": 88,
+      "start_char": 88,
+      "value": "Beta Retail Inc."
+    },
+    {
+      "category": "EffectiveDate",
+      "end_byte": 151,
+      "end_char": 151,
+      "expected_id": "expected-effective-date",
+      "field_name": "effective_date",
+      "source_text": "May 1, 2026",
+      "start_byte": 140,
+      "start_char": 140,
+      "value": "May 1, 2026"
+    },
+    {
+      "category": "ContractObligation",
+      "end_byte": 270,
+      "end_char": 270,
+      "expected_id": "expected-dashboard-obligation",
+      "field_name": "duty",
+      "source_text": "Provider shall deliver monthly sales dashboards to Customer, except for delays caused by Customer data unavailability",
+      "start_byte": 153,
+      "start_char": 153,
+      "value": "Provider shall deliver monthly sales dashboards to Customer, except for delays caused by Customer data unavailability"
+    },
+    {
+      "category": "PaymentTerm",
+      "end_byte": 354,
+      "end_char": 354,
+      "expected_id": "expected-monthly-payment",
+      "field_name": "fee_description",
+      "source_text": "Customer shall pay Provider $12,000 per month within 15 days after invoice receipt",
+      "start_byte": 272,
+      "start_char": 272,
+      "value": "Customer shall pay Provider $12,000 per month within 15 days after invoice receipt"
+    },
+    {
+      "category": "TerminationRight",
+      "end_byte": 480,
+      "end_char": 480,
+      "expected_id": "expected-breach-termination",
+      "field_name": "trigger",
+      "source_text": "material breach if the breach remains uncured for 30 days after written notice",
+      "start_byte": 402,
+      "start_char": 402,
+      "value": "material breach if the breach remains uncured for 30 days after written notice"
+    },
+    {
+      "category": "GoverningLaw",
+      "end_byte": 532,
+      "end_char": 532,
+      "expected_id": "expected-governing-law",
+      "field_name": "jurisdiction",
+      "source_text": "New York",
+      "start_byte": 524,
+      "start_char": 524,
+      "value": "New York"
+    },
+    {
+      "category": "NoticeProvision",
+      "end_byte": 585,
+      "end_char": 585,
+      "expected_id": "expected-notice-method",
+      "field_name": "method",
+      "source_text": "email and overnight courier",
+      "start_byte": 558,
+      "start_char": 558,
+      "value": "email and overnight courier"
+    },
+    {
+      "category": "ContractDefinition",
+      "end_byte": 744,
+      "end_char": 744,
+      "expected_id": "expected-confidential-information-definition",
+      "field_name": "definition_text",
+      "source_text": "\"Confidential Information\" means non-public business, technical, or financial information disclosed under this Agreement",
+      "start_byte": 624,
+      "start_char": 624,
+      "value": "\"Confidential Information\" means non-public business, technical, or financial information disclosed under this Agreement"
+    }
+  ]
+}
