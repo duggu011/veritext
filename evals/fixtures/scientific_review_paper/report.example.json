@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "StudyObjective",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-objective"
+      ],
+      "critic_report_ids": [
+        "critic-objective"
+      ],
+      "data_point_id": "dp-objective",
+      "doc_id": "doc-scientific-review-paper",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-objective",
+      "run_id": "run-scientific-review-paper",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-scientific-review-paper",
+        "end_byte": 121,
+        "end_char": 121,
+        "start_byte": 44,
+        "start_char": 44,
+        "text": "evaluate whether home blood-pressure monitoring improves hypertension control"
+      },
+      "value": "evaluate whether home blood-pressure monitoring improves hypertension control",
+      "verifier_report_ids": [
+        "verifier-objective"
+      ]
+    },
+    {
+      "category": "Population",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-population"
+      ],
+      "critic_report_ids": [
+        "critic-population"
+      ],
+      "data_point_id": "dp-population",
+      "doc_id": "doc-scientific-review-paper",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-population",
+      "run_id": "run-scientific-review-paper",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-scientific-review-paper",
+        "end_byte": 197,
+        "end_char": 197,
+        "start_byte": 135,
+        "start_char": 135,
+        "text": "randomized trials involving adults with diagnosed hypertension"
+      },
+      "value": "randomized trials involving adults with diagnosed hypertension",
+      "verifier_report_ids": [
+        "verifier-population"
+      ]
+    },
+    {
+      "category": "Outcome",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-outcome"
+      ],
+      "critic_report_ids": [
+        "critic-outcome"
+      ],
+      "data_point_id": "dp-outcome",
+      "doc_id": "doc-scientific-review-paper",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-outcome",
+      "run_id": "run-scientific-review-paper",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-scientific-review-paper",
+        "end_byte": 245,
+        "end_char": 245,
+        "start_byte": 208,
+        "start_char": 208,
+        "text": "systolic blood pressure at six months"
+      },
+      "value": "systolic blood pressure at six months",
+      "verifier_report_ids": [
+        "verifier-outcome"
+      ]
+    },
+    {
+      "category": "EvidenceFinding",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-main-finding"
+      ],
+      "critic_report_ids": [
+        "critic-main-finding"
+      ],
+      "data_point_id": "dp-main-finding",
+      "doc_id": "doc-scientific-review-paper",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-main-finding",
+      "run_id": "run-scientific-review-paper",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-scientific-review-paper",
+        "end_byte": 332,
+        "end_char": 332,
+        "start_byte": 261,
+        "start_char": 261,
+        "text": "home monitoring reduced systolic blood pressure by an average of 4 mmHg"
+      },
+      "value": "home monitoring reduced systolic blood pressure by an average of 4 mmHg",
+      "verifier_report_ids": [
+        "verifier-main-finding"
+      ]
+    },
+    {
+      "category": "Limitation",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-limitation"
+      ],
+      "critic_report_ids": [
+        "critic-limitation"
+      ],
+      "data_point_id": "dp-limitation",
+      "doc_id": "doc-scientific-review-paper",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-limitation",
+      "run_id": "run-scientific-review-paper",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-scientific-review-paper",
+        "end_byte": 411,
+        "end_char": 411,
+        "start_byte": 346,
+        "start_char": 346,
+        "text": "most included trials followed participants for less than one year"
+      },
+      "value": "most included trials followed participants for less than one year",
+      "verifier_report_ids": [
+        "verifier-limitation"
+      ]
+    }
+  ],
+  "doc_id": "doc-scientific-review-paper",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-objective",
+    "dp-population",
+    "dp-outcome",
+    "dp-main-finding",
+    "dp-limitation"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-scientific-review-paper",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "scientific_review_paper",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "8888888888888888888888888888888888888888888888888888888888888888",
+    "schema_id": "schema:scientific-review-paper-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

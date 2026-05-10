@@ -215,6 +215,10 @@ def test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds() -
         "regulatory_order_compliance",
         "standards_security_controls",
         "procurement_rfp_requirements",
+        "clinical_trial_protocol",
+        "fda_label_safety",
+        "insurance_policy_coverage",
+        "scientific_review_paper",
     } <= fixture_ids
     assert all(
         fixture.report_path.endswith("report.example.json")

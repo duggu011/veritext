@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "Entity",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-insurer"
+      ],
+      "critic_report_ids": [
+        "critic-insurer"
+      ],
+      "data_point_id": "dp-insurer",
+      "doc_id": "doc-insurance-policy-coverage",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-insurer",
+      "run_id": "run-insurance-policy-coverage",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-insurance-policy-coverage",
+        "end_byte": 75,
+        "end_char": 75,
+        "start_byte": 44,
+        "start_char": 44,
+        "text": "Harbor Mutual Insurance Company"
+      },
+      "value": "Harbor Mutual Insurance Company",
+      "verifier_report_ids": [
+        "verifier-insurer"
+      ]
+    },
+    {
+      "category": "Identifier",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-policy-number"
+      ],
+      "critic_report_ids": [
+        "critic-policy-number"
+      ],
+      "data_point_id": "dp-policy-number",
+      "doc_id": "doc-insurance-policy-coverage",
+      "field_name": "identifier",
+      "reconciliation_decision_id": "decision-policy-number",
+      "run_id": "run-insurance-policy-coverage",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-insurance-policy-coverage",
+        "end_byte": 103,
+        "end_char": 103,
+        "start_byte": 92,
+        "start_char": 92,
+        "text": "HMI-GL-7781"
+      },
+      "value": "HMI-GL-7781",
+      "verifier_report_ids": [
+        "verifier-policy-number"
+      ]
+    },
+    {
+      "category": "CoverageLimit",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-coverage-limit"
+      ],
+      "critic_report_ids": [
+        "critic-coverage-limit"
+      ],
+      "data_point_id": "dp-coverage-limit",
+      "doc_id": "doc-insurance-policy-coverage",
+      "field_name": "amount",
+      "reconciliation_decision_id": "decision-coverage-limit",
+      "run_id": "run-insurance-policy-coverage",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-insurance-policy-coverage",
+        "end_byte": 170,
+        "end_char": 170,
+        "start_byte": 145,
+        "start_char": 145,
+        "text": "$2,000,000 per occurrence"
+      },
+      "value": "$2,000,000 per occurrence",
+      "verifier_report_ids": [
+        "verifier-coverage-limit"
+      ]
+    },
+    {
+      "category": "Deductible",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-deductible"
+      ],
+      "critic_report_ids": [
+        "critic-deductible"
+      ],
+      "data_point_id": "dp-deductible",
+      "doc_id": "doc-insurance-policy-coverage",
+      "field_name": "amount",
+      "reconciliation_decision_id": "decision-deductible",
+      "run_id": "run-insurance-policy-coverage",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-insurance-policy-coverage",
+        "end_byte": 244,
+        "end_char": 244,
+        "start_byte": 201,
+        "start_char": 201,
+        "text": "$25,000 deductible for each pollution claim"
+      },
+      "value": "$25,000 deductible for each pollution claim",
+      "verifier_report_ids": [
+        "verifier-deductible"
+      ]
+    },
+    {
+      "category": "Exclusion",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-exclusion"
+      ],
+      "critic_report_ids": [
+        "critic-exclusion"
+      ],
+      "data_point_id": "dp-exclusion",
+      "doc_id": "doc-insurance-policy-coverage",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-exclusion",
+      "run_id": "run-insurance-policy-coverage",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-insurance-policy-coverage",
+        "end_byte": 322,
+        "end_char": 322,
+        "start_byte": 258,
+        "start_char": 258,
+        "text": "excludes loss arising from intentional discharge of contaminants"
+      },
+      "value": "excludes loss arising from intentional discharge of contaminants",
+      "verifier_report_ids": [
+        "verifier-exclusion"
+      ]
+    }
+  ],
+  "doc_id": "doc-insurance-policy-coverage",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-insurer",
+    "dp-policy-number",
+    "dp-coverage-limit",
+    "dp-deductible",
+    "dp-exclusion"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-insurance-policy-coverage",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "insurance_policy",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "7777777777777777777777777777777777777777777777777777777777777777",
+    "schema_id": "schema:insurance-policy-coverage-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

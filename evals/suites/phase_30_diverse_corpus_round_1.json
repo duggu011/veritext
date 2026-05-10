@@ -1,5 +1,5 @@
 {
-  "description": "Phase 30 diverse corpus suite. Step 2 includes legal-contract, SEC disclosure, regulatory order, standards, and procurement static fixtures under strict global, category, field, provenance, and invariant gates.",
+  "description": "Phase 30 diverse corpus suite. Steps 2-3 include legal-contract, SEC disclosure, regulatory order, standards, procurement, clinical trial, FDA safety label, insurance coverage, and scientific-review static fixtures under strict global, category, field, provenance, and invariant gates.",
   "fixtures": [
     {
       "case_path": "evals/fixtures/legal_contracts_core/expected.json",
@@ -25,11 +25,41 @@
       "case_path": "evals/fixtures/procurement_rfp_requirements/expected.json",
       "fixture_id": "procurement_rfp_requirements",
       "report_path": "evals/fixtures/procurement_rfp_requirements/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/clinical_trial_protocol/expected.json",
+      "fixture_id": "clinical_trial_protocol",
+      "report_path": "evals/fixtures/clinical_trial_protocol/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/fda_label_safety/expected.json",
+      "fixture_id": "fda_label_safety",
+      "report_path": "evals/fixtures/fda_label_safety/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/insurance_policy_coverage/expected.json",
+      "fixture_id": "insurance_policy_coverage",
+      "report_path": "evals/fixtures/insurance_policy_coverage/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/scientific_review_paper/expected.json",
+      "fixture_id": "scientific_review_paper",
+      "report_path": "evals/fixtures/scientific_review_paper/report.example.json"
     }
   ],
   "suite_id": "phase_30_diverse_corpus_round_1",
   "thresholds": {
     "categories": [
+      {
+        "category": "AdverseReaction",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
       {
         "category": "Amount",
         "thresholds": {
@@ -71,6 +101,26 @@
         }
       },
       {
+        "category": "Contraindication",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "CoverageLimit",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "Deadline",
         "thresholds": {
           "max_invariant_violations": 0,
@@ -81,7 +131,37 @@
         }
       },
       {
+        "category": "Deductible",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "DosageInstruction",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "EffectiveDate",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Endpoint",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -102,6 +182,26 @@
       },
       {
         "category": "EvaluationCriterion",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "EvidenceFinding",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Exclusion",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -141,6 +241,26 @@
         }
       },
       {
+        "category": "Intervention",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Limitation",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "NoticeProvision",
         "thresholds": {
           "max_invariant_violations": 0,
@@ -151,7 +271,47 @@
         }
       },
       {
+        "category": "Outcome",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "ParticipantCriterion",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "PaymentTerm",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Population",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Product",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -201,6 +361,16 @@
         }
       },
       {
+        "category": "StudyObjective",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "TerminationRight",
         "thresholds": {
           "max_invariant_violations": 0,
@@ -229,9 +399,30 @@
           "min_provenance_recall": 1.0,
           "min_recall": 1.0
         }
+      },
+      {
+        "category": "Warning",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
       }
     ],
     "fields": [
+      {
+        "category": "AdverseReaction",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
       {
         "category": "Amount",
         "field_name": "amount",
@@ -277,6 +468,28 @@
         }
       },
       {
+        "category": "Contraindication",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "CoverageLimit",
+        "field_name": "amount",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "Deadline",
         "field_name": "date",
         "thresholds": {
@@ -288,8 +501,41 @@
         }
       },
       {
+        "category": "Deductible",
+        "field_name": "amount",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "DosageInstruction",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "EffectiveDate",
         "field_name": "effective_date",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Endpoint",
+        "field_name": "description",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -311,6 +557,28 @@
       },
       {
         "category": "EvaluationCriterion",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "EvidenceFinding",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Exclusion",
         "field_name": "summary",
         "thresholds": {
           "max_invariant_violations": 0,
@@ -354,6 +622,28 @@
         }
       },
       {
+        "category": "Intervention",
+        "field_name": "description",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Limitation",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "NoticeProvision",
         "field_name": "method",
         "thresholds": {
@@ -365,8 +655,52 @@
         }
       },
       {
+        "category": "Outcome",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "ParticipantCriterion",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "PaymentTerm",
         "field_name": "fee_description",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Population",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Product",
+        "field_name": "name",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -420,6 +754,17 @@
         }
       },
       {
+        "category": "StudyObjective",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "TerminationRight",
         "field_name": "trigger",
         "thresholds": {
@@ -443,6 +788,17 @@
       },
       {
         "category": "VerificationMethod",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Warning",
         "field_name": "summary",
         "thresholds": {
           "max_invariant_violations": 0,

@@ -1,0 +1,7 @@
+CLINICAL TRIAL PROTOCOL EXCERPT
+
+Sponsor: Northlake Research Institute.
+Protocol ID: NRI-CARD-204.
+Eligible participants are adults age 45 to 80 with stable chronic heart failure.
+The study intervention is once-daily oral cardiorin 20 mg for 24 weeks.
+The primary endpoint is change in six-minute walk distance at week 24.

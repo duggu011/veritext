@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "Entity",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-sponsor"
+      ],
+      "critic_report_ids": [
+        "critic-sponsor"
+      ],
+      "data_point_id": "dp-sponsor",
+      "doc_id": "doc-clinical-trial-protocol",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-sponsor",
+      "run_id": "run-clinical-trial-protocol",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-clinical-trial-protocol",
+        "end_byte": 70,
+        "end_char": 70,
+        "start_byte": 42,
+        "start_char": 42,
+        "text": "Northlake Research Institute"
+      },
+      "value": "Northlake Research Institute",
+      "verifier_report_ids": [
+        "verifier-sponsor"
+      ]
+    },
+    {
+      "category": "Identifier",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-protocol-id"
+      ],
+      "critic_report_ids": [
+        "critic-protocol-id"
+      ],
+      "data_point_id": "dp-protocol-id",
+      "doc_id": "doc-clinical-trial-protocol",
+      "field_name": "identifier",
+      "reconciliation_decision_id": "decision-protocol-id",
+      "run_id": "run-clinical-trial-protocol",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-clinical-trial-protocol",
+        "end_byte": 97,
+        "end_char": 97,
+        "start_byte": 85,
+        "start_char": 85,
+        "text": "NRI-CARD-204"
+      },
+      "value": "NRI-CARD-204",
+      "verifier_report_ids": [
+        "verifier-protocol-id"
+      ]
+    },
+    {
+      "category": "ParticipantCriterion",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-eligibility"
+      ],
+      "critic_report_ids": [
+        "critic-eligibility"
+      ],
+      "data_point_id": "dp-eligibility",
+      "doc_id": "doc-clinical-trial-protocol",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-eligibility",
+      "run_id": "run-clinical-trial-protocol",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-clinical-trial-protocol",
+        "end_byte": 179,
+        "end_char": 179,
+        "start_byte": 99,
+        "start_char": 99,
+        "text": "Eligible participants are adults age 45 to 80 with stable chronic heart failure."
+      },
+      "value": "Eligible participants are adults age 45 to 80 with stable chronic heart failure.",
+      "verifier_report_ids": [
+        "verifier-eligibility"
+      ]
+    },
+    {
+      "category": "Intervention",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-intervention"
+      ],
+      "critic_report_ids": [
+        "critic-intervention"
+      ],
+      "data_point_id": "dp-intervention",
+      "doc_id": "doc-clinical-trial-protocol",
+      "field_name": "description",
+      "reconciliation_decision_id": "decision-intervention",
+      "run_id": "run-clinical-trial-protocol",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-clinical-trial-protocol",
+        "end_byte": 250,
+        "end_char": 250,
+        "start_byte": 206,
+        "start_char": 206,
+        "text": "once-daily oral cardiorin 20 mg for 24 weeks"
+      },
+      "value": "once-daily oral cardiorin 20 mg for 24 weeks",
+      "verifier_report_ids": [
+        "verifier-intervention"
+      ]
+    },
+    {
+      "category": "Endpoint",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-primary-endpoint"
+      ],
+      "critic_report_ids": [
+        "critic-primary-endpoint"
+      ],
+      "data_point_id": "dp-primary-endpoint",
+      "doc_id": "doc-clinical-trial-protocol",
+      "field_name": "description",
+      "reconciliation_decision_id": "decision-primary-endpoint",
+      "run_id": "run-clinical-trial-protocol",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-clinical-trial-protocol",
+        "end_byte": 321,
+        "end_char": 321,
+        "start_byte": 276,
+        "start_char": 276,
+        "text": "change in six-minute walk distance at week 24"
+      },
+      "value": "change in six-minute walk distance at week 24",
+      "verifier_report_ids": [
+        "verifier-primary-endpoint"
+      ]
+    }
+  ],
+  "doc_id": "doc-clinical-trial-protocol",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-sponsor",
+    "dp-protocol-id",
+    "dp-eligibility",
+    "dp-intervention",
+    "dp-primary-endpoint"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-clinical-trial-protocol",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "clinical_trial_protocol",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "5555555555555555555555555555555555555555555555555555555555555555",
+    "schema_id": "schema:clinical-trial-protocol-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

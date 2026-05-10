@@ -1,0 +1,68 @@
+{
+  "case_id": "clinical_trial_protocol",
+  "expected_data_points": [
+    {
+      "category": "Entity",
+      "end_byte": 70,
+      "end_char": 70,
+      "expected_id": "expected-sponsor",
+      "field_name": "name",
+      "source_text": "Northlake Research Institute",
+      "start_byte": 42,
+      "start_char": 42,
+      "value": "Northlake Research Institute"
+    },
+    {
+      "category": "Identifier",
+      "end_byte": 97,
+      "end_char": 97,
+      "expected_id": "expected-protocol-id",
+      "field_name": "identifier",
+      "source_text": "NRI-CARD-204",
+      "start_byte": 85,
+      "start_char": 85,
+      "value": "NRI-CARD-204"
+    },
+    {
+      "category": "ParticipantCriterion",
+      "end_byte": 179,
+      "end_char": 179,
+      "expected_id": "expected-eligibility",
+      "field_name": "summary",
+      "source_text": "Eligible participants are adults age 45 to 80 with stable chronic heart failure.",
+      "start_byte": 99,
+      "start_char": 99,
+      "value": "Eligible participants are adults age 45 to 80 with stable chronic heart failure."
+    },
+    {
+      "category": "Intervention",
+      "end_byte": 250,
+      "end_char": 250,
+      "expected_id": "expected-intervention",
+      "field_name": "description",
+      "source_text": "once-daily oral cardiorin 20 mg for 24 weeks",
+      "start_byte": 206,
+      "start_char": 206,
+      "value": "once-daily oral cardiorin 20 mg for 24 weeks"
+    },
+    {
+      "category": "Endpoint",
+      "end_byte": 321,
+      "end_char": 321,
+      "expected_id": "expected-primary-endpoint",
+      "field_name": "description",
+      "source_text": "change in six-minute walk distance at week 24",
+      "start_byte": 276,
+      "start_char": 276,
+      "value": "change in six-minute walk distance at week 24"
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}

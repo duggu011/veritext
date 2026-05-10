@@ -6,10 +6,28 @@ Running log for repository sessions and accepted phase gates.
 
 - Last completed phase: Phase 29 - Evaluation Harness: Per-Field Gates
 - Current status: Phase 30 board is open.
-- Next required work: Phase 30 Step 3 - add clinical, FDA-label, insurance, and scientific fixtures.
+- Next required work: Phase 30 Step 4 - add complete suite thresholds, prompt-neutrality verification, and final project verification.
 - Next-phase context: Phase 30 should add the first diverse static fixture corpus using Phase 29 suite, category, and field gates without tuning runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 30 Step 3 Clinical FDA Insurance Scientific Fixtures
+
+- Added synthetic static fixture sources, expected exact-span annotations, and static report examples for:
+  - `clinical_trial_protocol`
+  - `fda_label_safety`
+  - `insurance_policy_coverage`
+  - `scientific_review_paper`
+- Expanded `evals/suites/phase_30_diverse_corpus_round_1.json` to include all Step 3 fixtures.
+- Added strict suite thresholds for every category and field introduced by the Step 3 fixtures.
+- Extended Phase 30 suite validation to require the Step 3 fixture IDs and to keep category and field thresholds aligned with scored results.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 3 fixture IDs
+  - `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`
+  - `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` (`25 passed`)
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 30 Step 2 SEC Regulatory Standards Procurement Fixtures
 

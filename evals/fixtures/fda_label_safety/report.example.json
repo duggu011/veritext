@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "Product",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-product-name"
+      ],
+      "critic_report_ids": [
+        "critic-product-name"
+      ],
+      "data_point_id": "dp-product-name",
+      "doc_id": "doc-fda-label-safety",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-product-name",
+      "run_id": "run-fda-label-safety",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-fda-label-safety",
+        "end_byte": 55,
+        "end_char": 55,
+        "start_byte": 39,
+        "start_char": 39,
+        "text": "Glucorin tablets"
+      },
+      "value": "Glucorin tablets",
+      "verifier_report_ids": [
+        "verifier-product-name"
+      ]
+    },
+    {
+      "category": "Warning",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-boxed-warning"
+      ],
+      "critic_report_ids": [
+        "critic-boxed-warning"
+      ],
+      "data_point_id": "dp-boxed-warning",
+      "doc_id": "doc-fda-label-safety",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-boxed-warning",
+      "run_id": "run-fda-label-safety",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-fda-label-safety",
+        "end_byte": 150,
+        "end_char": 150,
+        "start_byte": 72,
+        "start_char": 72,
+        "text": "severe hypoglycemia may occur when Glucorin is used with insulin secretagogues"
+      },
+      "value": "severe hypoglycemia may occur when Glucorin is used with insulin secretagogues",
+      "verifier_report_ids": [
+        "verifier-boxed-warning"
+      ]
+    },
+    {
+      "category": "Contraindication",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-contraindication"
+      ],
+      "critic_report_ids": [
+        "critic-contraindication"
+      ],
+      "data_point_id": "dp-contraindication",
+      "doc_id": "doc-fda-label-safety",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-contraindication",
+      "run_id": "run-fda-label-safety",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-fda-label-safety",
+        "end_byte": 232,
+        "end_char": 232,
+        "start_byte": 170,
+        "start_char": 170,
+        "text": "do not use in patients with known hypersensitivity to glucorin"
+      },
+      "value": "do not use in patients with known hypersensitivity to glucorin",
+      "verifier_report_ids": [
+        "verifier-contraindication"
+      ]
+    },
+    {
+      "category": "DosageInstruction",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-dosage"
+      ],
+      "critic_report_ids": [
+        "critic-dosage"
+      ],
+      "data_point_id": "dp-dosage",
+      "doc_id": "doc-fda-label-safety",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-dosage",
+      "run_id": "run-fda-label-safety",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-fda-label-safety",
+        "end_byte": 304,
+        "end_char": 304,
+        "start_byte": 242,
+        "start_char": 242,
+        "text": "take one 5 mg tablet by mouth once daily with the morning meal"
+      },
+      "value": "take one 5 mg tablet by mouth once daily with the morning meal",
+      "verifier_report_ids": [
+        "verifier-dosage"
+      ]
+    },
+    {
+      "category": "AdverseReaction",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-adverse-reactions"
+      ],
+      "critic_report_ids": [
+        "critic-adverse-reactions"
+      ],
+      "data_point_id": "dp-adverse-reactions",
+      "doc_id": "doc-fda-label-safety",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-adverse-reactions",
+      "run_id": "run-fda-label-safety",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-fda-label-safety",
+        "end_byte": 372,
+        "end_char": 372,
+        "start_byte": 352,
+        "start_char": 352,
+        "text": "dizziness and nausea"
+      },
+      "value": "dizziness and nausea",
+      "verifier_report_ids": [
+        "verifier-adverse-reactions"
+      ]
+    }
+  ],
+  "doc_id": "doc-fda-label-safety",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-product-name",
+    "dp-boxed-warning",
+    "dp-contraindication",
+    "dp-dosage",
+    "dp-adverse-reactions"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-fda-label-safety",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "regulated_safety_label",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "6666666666666666666666666666666666666666666666666666666666666666",
+    "schema_id": "schema:fda-label-safety-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

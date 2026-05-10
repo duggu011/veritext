@@ -1,0 +1,68 @@
+{
+  "case_id": "fda_label_safety",
+  "expected_data_points": [
+    {
+      "category": "Product",
+      "end_byte": 55,
+      "end_char": 55,
+      "expected_id": "expected-product-name",
+      "field_name": "name",
+      "source_text": "Glucorin tablets",
+      "start_byte": 39,
+      "start_char": 39,
+      "value": "Glucorin tablets"
+    },
+    {
+      "category": "Warning",
+      "end_byte": 150,
+      "end_char": 150,
+      "expected_id": "expected-boxed-warning",
+      "field_name": "summary",
+      "source_text": "severe hypoglycemia may occur when Glucorin is used with insulin secretagogues",
+      "start_byte": 72,
+      "start_char": 72,
+      "value": "severe hypoglycemia may occur when Glucorin is used with insulin secretagogues"
+    },
+    {
+      "category": "Contraindication",
+      "end_byte": 232,
+      "end_char": 232,
+      "expected_id": "expected-contraindication",
+      "field_name": "summary",
+      "source_text": "do not use in patients with known hypersensitivity to glucorin",
+      "start_byte": 170,
+      "start_char": 170,
+      "value": "do not use in patients with known hypersensitivity to glucorin"
+    },
+    {
+      "category": "DosageInstruction",
+      "end_byte": 304,
+      "end_char": 304,
+      "expected_id": "expected-dosage",
+      "field_name": "summary",
+      "source_text": "take one 5 mg tablet by mouth once daily with the morning meal",
+      "start_byte": 242,
+      "start_char": 242,
+      "value": "take one 5 mg tablet by mouth once daily with the morning meal"
+    },
+    {
+      "category": "AdverseReaction",
+      "end_byte": 372,
+      "end_char": 372,
+      "expected_id": "expected-adverse-reactions",
+      "field_name": "summary",
+      "source_text": "dizziness and nausea",
+      "start_byte": 352,
+      "start_char": 352,
+      "value": "dizziness and nausea"
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}

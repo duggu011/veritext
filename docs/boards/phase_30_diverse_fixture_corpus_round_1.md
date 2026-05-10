@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 2 of 4
+Step: 3 of 4
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_30_diverse_fixture_corpus_round_1.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Step 2 complete. Next: Step 3 - add clinical, FDA-label, insurance, and scientific fixtures.
+Step 3 complete. Next: Step 4 - add complete suite thresholds, prompt-neutrality verification, and final project verification.
 
 ---
 
@@ -19,7 +19,7 @@ From the approved spec. Check off only after verification and commit or explicit
 
 - [x] Step 1: Add corpus inventory validation and Phase 30 suite skeleton.
 - [x] Step 2: Add SEC, regulatory, standards, and procurement fixtures.
-- [ ] Step 3: Add clinical, FDA-label, insurance, and scientific fixtures.
+- [x] Step 3: Add clinical, FDA-label, insurance, and scientific fixtures.
 - [ ] Step 4: Add complete suite thresholds, prompt-neutrality verification, and final project verification.
 
 ---
@@ -56,9 +56,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_30_diverse_fixture_corpus_round_1.md:1` | Active Phase 30 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
-| `tests/unit/test_eval_suites.py:206` | Added Phase 30 suite scoring, required-fixture, and threshold-coverage validation. | Steps 1-2 |
+| `tests/unit/test_eval_suites.py:206` | Added Phase 30 suite scoring, required-fixture, and threshold-coverage validation. | Steps 1-3 |
 | `evals/suites/phase_30_diverse_corpus_round_1.json:1` | Added strict Phase 30 suite skeleton with `legal_contracts_core`. | Step 1 |
 | `evals/suites/phase_30_diverse_corpus_round_1.json:1` | Expanded Phase 30 suite with SEC, regulatory, standards, and procurement fixtures plus strict thresholds for introduced categories and fields. | Step 2 |
+| `evals/suites/phase_30_diverse_corpus_round_1.json:1` | Expanded Phase 30 suite with clinical, FDA-label, insurance, and scientific fixtures plus strict thresholds for introduced categories and fields. | Step 3 |
 | `evals/fixtures/sec_market_disclosure/source.txt:1` | Added synthetic SEC market-disclosure fixture source. | Step 2 |
 | `evals/fixtures/sec_market_disclosure/expected.json:1` | Added expected exact-span annotations for SEC market disclosure. | Step 2 |
 | `evals/fixtures/sec_market_disclosure/report.example.json:1` | Added static report example for SEC market disclosure. | Step 2 |
@@ -71,6 +72,18 @@ Every file this phase creates or modifies. Updated as work happens.
 | `evals/fixtures/procurement_rfp_requirements/source.txt:1` | Added synthetic procurement-RFP fixture source. | Step 2 |
 | `evals/fixtures/procurement_rfp_requirements/expected.json:1` | Added expected exact-span annotations for procurement RFP requirements. | Step 2 |
 | `evals/fixtures/procurement_rfp_requirements/report.example.json:1` | Added static report example for procurement RFP requirements. | Step 2 |
+| `evals/fixtures/clinical_trial_protocol/source.txt:1` | Added synthetic clinical-trial protocol fixture source. | Step 3 |
+| `evals/fixtures/clinical_trial_protocol/expected.json:1` | Added expected exact-span annotations for clinical trial protocol. | Step 3 |
+| `evals/fixtures/clinical_trial_protocol/report.example.json:1` | Added static report example for clinical trial protocol. | Step 3 |
+| `evals/fixtures/fda_label_safety/source.txt:1` | Added synthetic regulated drug-label safety fixture source. | Step 3 |
+| `evals/fixtures/fda_label_safety/expected.json:1` | Added expected exact-span annotations for FDA-label safety. | Step 3 |
+| `evals/fixtures/fda_label_safety/report.example.json:1` | Added static report example for FDA-label safety. | Step 3 |
+| `evals/fixtures/insurance_policy_coverage/source.txt:1` | Added synthetic insurance-policy coverage fixture source. | Step 3 |
+| `evals/fixtures/insurance_policy_coverage/expected.json:1` | Added expected exact-span annotations for insurance policy coverage. | Step 3 |
+| `evals/fixtures/insurance_policy_coverage/report.example.json:1` | Added static report example for insurance policy coverage. | Step 3 |
+| `evals/fixtures/scientific_review_paper/source.txt:1` | Added synthetic scientific-review paper fixture source. | Step 3 |
+| `evals/fixtures/scientific_review_paper/expected.json:1` | Added expected exact-span annotations for scientific review paper. | Step 3 |
+| `evals/fixtures/scientific_review_paper/report.example.json:1` | Added static report example for scientific review paper. | Step 3 |
 
 ---
 
@@ -100,6 +113,7 @@ _(No issues yet.)_
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`; `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 | 1 | `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing `phase_30_diverse_corpus_round_1.json`; `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`; `python3 -m pytest tests/unit/test_eval_suites.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `git diff --check` | PASS | 2026-05-10 |
 | 2 | `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 2 fixture IDs; `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `git diff --check` | PASS | 2026-05-10 |
+| 3 | `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 3 fixture IDs; `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `git diff --check` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -125,12 +139,15 @@ Reverse chronological. Log every session.
 - Completed: opened this board, pinned Phase 30 open-question resolutions, and updated active phase tracking.
 - Completed Step 1: added Phase 30 suite skeleton validation, added `evals/suites/phase_30_diverse_corpus_round_1.json` with strict `legal_contracts_core` thresholds, and verified both Phase 29 and Phase 30 suite CLIs.
 - Completed Step 2: added synthetic SEC disclosure, regulatory order, standards security-control, and procurement RFP fixtures with exact expected spans and static report examples.
+- Completed Step 3: added synthetic clinical-trial protocol, regulated drug-label safety, insurance policy coverage, and scientific review paper fixtures with exact expected spans and static report examples.
 - Expanded the Phase 30 suite to include the Step 2 fixtures and strict thresholds for every introduced category and field.
+- Expanded the Phase 30 suite to include the Step 3 fixtures and strict thresholds for every introduced category and field.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md` returned no matches; `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Tests for Step 1: `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing `phase_30_diverse_corpus_round_1.json`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py -q` passed with 11 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 9 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `git diff --check` passed.
 - Tests for Step 2: `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 2 fixture IDs, then passed; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 25 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 29 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with zero threshold failures; `git diff --check` passed.
-- Next: Step 3 - add clinical, FDA-label, insurance, and scientific fixtures.
+- Tests for Step 3: `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 3 fixture IDs, then passed; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 25 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `git diff --check` passed.
+- Next: Step 4 - add complete suite thresholds, prompt-neutrality verification, and final project verification.
 
 ---
 

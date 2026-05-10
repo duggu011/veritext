@@ -1,0 +1,7 @@
+SCIENTIFIC REVIEW PAPER EXCERPT
+
+Objective: evaluate whether home blood-pressure monitoring improves hypertension control.
+Population: randomized trials involving adults with diagnosed hypertension.
+Outcome: systolic blood pressure at six months.
+Main finding: home monitoring reduced systolic blood pressure by an average of 4 mmHg.
+Limitation: most included trials followed participants for less than one year.

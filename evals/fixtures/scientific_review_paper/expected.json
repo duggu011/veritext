@@ -1,0 +1,68 @@
+{
+  "case_id": "scientific_review_paper",
+  "expected_data_points": [
+    {
+      "category": "StudyObjective",
+      "end_byte": 121,
+      "end_char": 121,
+      "expected_id": "expected-objective",
+      "field_name": "summary",
+      "source_text": "evaluate whether home blood-pressure monitoring improves hypertension control",
+      "start_byte": 44,
+      "start_char": 44,
+      "value": "evaluate whether home blood-pressure monitoring improves hypertension control"
+    },
+    {
+      "category": "Population",
+      "end_byte": 197,
+      "end_char": 197,
+      "expected_id": "expected-population",
+      "field_name": "summary",
+      "source_text": "randomized trials involving adults with diagnosed hypertension",
+      "start_byte": 135,
+      "start_char": 135,
+      "value": "randomized trials involving adults with diagnosed hypertension"
+    },
+    {
+      "category": "Outcome",
+      "end_byte": 245,
+      "end_char": 245,
+      "expected_id": "expected-outcome",
+      "field_name": "summary",
+      "source_text": "systolic blood pressure at six months",
+      "start_byte": 208,
+      "start_char": 208,
+      "value": "systolic blood pressure at six months"
+    },
+    {
+      "category": "EvidenceFinding",
+      "end_byte": 332,
+      "end_char": 332,
+      "expected_id": "expected-main-finding",
+      "field_name": "summary",
+      "source_text": "home monitoring reduced systolic blood pressure by an average of 4 mmHg",
+      "start_byte": 261,
+      "start_char": 261,
+      "value": "home monitoring reduced systolic blood pressure by an average of 4 mmHg"
+    },
+    {
+      "category": "Limitation",
+      "end_byte": 411,
+      "end_char": 411,
+      "expected_id": "expected-limitation",
+      "field_name": "summary",
+      "source_text": "most included trials followed participants for less than one year",
+      "start_byte": 346,
+      "start_char": 346,
+      "value": "most included trials followed participants for less than one year"
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}
