@@ -9,7 +9,7 @@ Last session: 2026-05-10
 Spec: `docs/specs/phase_29_evaluation_harness_per_field_gates.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Final gate ready for operator review. Do not begin Phase 30 until the operator accepts Phase 29 and explicitly continues.
+Phase 29 accepted by the operator on 2026-05-10. Matching commits exist through `0f3c3a1`. Phase 30 spec draft is opened; do not begin Phase 30 implementation until its spec is approved and a board is created.
 
 ---
 
@@ -73,6 +73,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Marked Phase 29 final-gate-ready. | Step 5 |
 | `docs/boards/phase_29_evaluation_harness_per_field_gates.md:1` | Recorded final verification, final gate status, and phase summary. | Step 5 |
 | `PROGRESS.md:1` | Recorded Phase 29 final verification handoff. | Step 5 |
+| `docs/specs/phase_30_diverse_fixture_corpus_round_1.md:1` | Opened draft Phase 30 spec after operator acceptance. | Acceptance |
+| `docs/boards/README.md:1` | Marked Phase 29 complete and Phase 30 active in spec-draft state. | Acceptance |
+| `PROGRESS.md:1` | Recorded Phase 29 acceptance and Phase 30 spec-draft handoff. | Acceptance |
 
 ---
 
@@ -105,6 +108,7 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_eval_suites.py::test_load_suite_manifest_accepts_valid_manifest -q` first failed with missing `extractor.evals.suites`; `python3 -m pytest tests/unit/test_eval_suites.py -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 | 4 | `python3 -m pytest tests/unit/test_eval_suites.py::test_evaluate_suite_manifest_scores_static_core_suite -q` first failed with missing `evaluate_suite_manifest`; `python3 -m pytest tests/unit/test_eval_suites.py -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 | 5 | `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `make test`; `make lint`; `make smoke`; `git diff --check`; `git diff --exit-code -- prompts` | PASS | 2026-05-10 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`; `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -123,6 +127,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-10 - Session 2
+
+- Resumed after operator accepted Phase 29 with `continue`.
+- Completed: marked Phase 29 complete in the board index, opened the draft Phase 30 spec for Diverse Fixture Corpus Round 1, and updated `PROGRESS.md`.
+- Issues found: none.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` returned no matches; `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator review of `docs/specs/phase_30_diverse_fixture_corpus_round_1.md`. Phase 30 implementation must not begin until the spec is approved and a board is created.
 
 ### 2026-05-10 - Session 1
 

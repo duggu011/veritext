@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 29 - Evaluation Harness: Per-Field Gates** | Status: FINAL GATE READY | Spec: [approved](../specs/phase_29_evaluation_harness_per_field_gates.md) | Board: [board](phase_29_evaluation_harness_per_field_gates.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 30 - Diverse Fixture Corpus Round 1** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_30_diverse_fixture_corpus_round_1.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -27,8 +27,8 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 26 - Domain Pack and Schema Registry Foundation | [approved](../specs/phase_26_domain_pack_and_schema_registry_foundation.md) | [board](phase_26_domain_pack_and_schema_registry_foundation.md) | COMPLETE (2026-05-05) |
 | 27 - Planner Schema Reuse and Schema-Fit Refusal | [approved](../specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md) | [board](phase_27_planner_schema_reuse_and_schema_fit_refusal.md) | COMPLETE (2026-05-09) |
 | 28 - Legal Contracts Domain Pack v1 | [approved](../specs/phase_28_legal_contracts_domain_pack_v1.md) | [board](phase_28_legal_contracts_domain_pack_v1.md) | COMPLETE (2026-05-10) |
-| 29 - Evaluation Harness: Per-Field Gates | [approved](../specs/phase_29_evaluation_harness_per_field_gates.md) | [board](phase_29_evaluation_harness_per_field_gates.md) | ACTIVE - FINAL GATE READY |
-| 30 - Diverse Fixture Corpus Round 1 | _(not opened)_ | _(not opened)_ | PLANNED |
+| 29 - Evaluation Harness: Per-Field Gates | [approved](../specs/phase_29_evaluation_harness_per_field_gates.md) | [board](phase_29_evaluation_harness_per_field_gates.md) | COMPLETE (2026-05-10) |
+| 30 - Diverse Fixture Corpus Round 1 | [draft](../specs/phase_30_diverse_fixture_corpus_round_1.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
 | 31 - Adversarial, Mutation, and Calibration Evaluation | _(not opened)_ | _(not opened)_ | PLANNED |
 | 32 - Boundary-Preserving Ingestion Model | _(not opened)_ | _(not opened)_ | PLANNED |
 | 33 - PDF and Table Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |

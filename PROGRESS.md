@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 final gate is ready for operator review.
-- Next required work: Operator review and acceptance of Phase 29. Do not begin Phase 30 until the operator explicitly continues.
-- Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
+- Last completed phase: Phase 29 - Evaluation Harness: Per-Field Gates
+- Current status: Phase 30 spec draft is open for operator review.
+- Next required work: Operator review and approval of the Phase 30 spec. Do not begin Phase 30 implementation until the spec is approved and a board is created.
+- Next-phase context: Phase 30 should add the first diverse static fixture corpus using Phase 29 suite, category, and field gates without tuning runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Acceptance and Phase 30 Spec Draft
+
+- Accepted Phase 29 after operator continuation and kept the completed Phase 29 evidence on `docs/boards/phase_29_evaluation_harness_per_field_gates.md`.
+- Updated `docs/boards/README.md` so Phase 29 is complete and Phase 30 is active in `SPEC DRAFT` state.
+- Created `docs/specs/phase_30_diverse_fixture_corpus_round_1.md` from the Phase 26+ roadmap and `docs/PROJECT_OVERVIEW.md` evaluation and target-domain guidance.
+- Scoped Phase 30 to checked-in static fixtures, exact annotation discipline, a strict diverse-corpus suite manifest, and category/field gates while preserving existing extraction behavior.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`
+  - `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 29 Final Verification
 
