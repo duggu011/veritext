@@ -9,7 +9,7 @@ Last session: 2026-05-10
 Spec: `docs/specs/phase_28_legal_contracts_domain_pack_v1.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:Target Domains, Non-Targets, and Market Sizing`; `docs/PROJECT_OVERVIEW.md:Planner`; `docs/phase_26_plus_roadmap.md`
 
-Phase 28 final gate is ready for operator review. Steps 1-4 are complete with matching commits, narrow tests pass, project-level verification passes, and no OPEN issues remain.
+Phase 28 accepted by the operator on 2026-05-10. Matching commits exist through `47a350d`. Phase 29 spec draft is opened; do not begin Phase 29 implementation until its spec is approved and a board is created.
 
 ---
 
@@ -65,6 +65,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_phase28_source_neutrality.py:1` | Added guard scanning runtime source and prompt files for Phase 28-specific legal identifiers. | Step 4 |
 | `tests/fixtures/source_neutrality/phase_28_forbidden_runtime_terms.txt:1` | Added Phase 28 forbidden runtime identifier list for the source-neutrality guard. | Step 4 |
 | `docs/boards/README.md:1` | Updated active Phase 28 status to final-gate-ready. | Step 4 |
+| `docs/specs/phase_29_evaluation_harness_per_field_gates.md:1` | Opened draft Phase 29 spec after operator acceptance. | Acceptance |
+| `docs/boards/README.md:1` | Marked Phase 28 complete and Phase 29 active in spec-draft state. | Acceptance |
+| `PROGRESS.md:1` | Recorded Phase 28 acceptance and Phase 29 spec-draft handoff. | Acceptance |
 
 ---
 
@@ -96,6 +99,7 @@ _(No issues yet.)_
 | 2 | `python3 -m pytest tests/unit/test_schema_registry_loader.py -q` first failed with missing `schema:legal-contract-core-v1` fixture; `python3 -m pytest tests/unit/test_schema_registry_loader.py -q`; `python3 -m pytest tests/unit/test_schema_registry_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_planner_schema_registry_reuse.py tests/unit/test_planner_schema_fit_policy.py -q`; `git diff --check` | PASS | 2026-05-10 |
 | 3 | `python3 -m pytest tests/unit/test_evals.py -q` first failed with missing `legal_contracts_core` fixture files; `python3 -m pytest tests/unit/test_evals.py -q`; `python3 -m pytest tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_schema_registry_loader.py tests/unit/test_domain_pack_loader.py -q`; `git diff --check` | PASS | 2026-05-10 |
 | 4 | `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` first failed with missing forbidden-terms fixture; `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q`; `python3 -m pytest tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_loader.py tests/unit/test_evals.py tests/unit/test_phase28_source_neutrality.py -q`; `git diff --exit-code -- prompts`; `git diff --check`; `make test`; `make lint`; `make smoke` | PASS | 2026-05-10 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -114,6 +118,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-10 - Session 2
+
+- Resumed after operator accepted Phase 28 with `continue`.
+- Completed: marked Phase 28 complete in the board index, opened the draft Phase 29 spec for Evaluation Harness: Per-Field Gates, and updated `PROGRESS.md`.
+- Issues found: none.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` returned no matches; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator review of `docs/specs/phase_29_evaluation_harness_per_field_gates.md`. Phase 29 implementation must not begin until the spec is approved and a board is created.
 
 ### 2026-05-10 - Session 1
 

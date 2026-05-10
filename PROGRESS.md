@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 27 - Planner Schema Reuse and Schema-Fit Refusal
-- Current status: Phase 28 final gate is ready for operator review.
-- Next required work: Operator review and acceptance of Phase 28. Do not open Phase 29 until the operator explicitly continues.
-- Next-phase context: Phase 28 should prove the first legal-contract domain pack through artifacts, registry fixtures, and evaluation coverage while keeping runtime source code domain-neutral.
+- Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
+- Current status: Phase 29 spec draft is opened for Evaluation Harness: Per-Field Gates.
+- Next required work: Operator review and approval of `docs/specs/phase_29_evaluation_harness_per_field_gates.md`. Do not create the Phase 29 board or begin implementation until the spec is approved.
+- Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 28 Acceptance and Phase 29 Spec Draft
+
+- Accepted Phase 28 after operator continuation and kept the completed Phase 28 evidence on `docs/boards/phase_28_legal_contracts_domain_pack_v1.md`.
+- Updated `docs/boards/README.md` so Phase 28 is complete and Phase 29 is active in `SPEC DRAFT` state.
+- Created `docs/specs/phase_29_evaluation_harness_per_field_gates.md` from the Phase 26+ roadmap and `docs/PROJECT_OVERVIEW.md` evaluation guidance.
+- Scoped Phase 29 to suite manifests, per-category and per-field metrics, grouped provenance/invariant breakdowns, threshold failure reporting, and CLI output while preserving existing exact-match evaluation behavior.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`
+  - `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_28_legal_contracts_domain_pack_v1.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 28 Step 4 Source Neutrality and Final Gate
 
