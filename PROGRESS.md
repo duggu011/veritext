@@ -5,11 +5,30 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 spec draft open.
-- Next required work: Review the Phase 32 boundary-preserving ingestion model spec. Do not start implementation until the spec is approved and the board is opened.
+- Current status: Phase 32 board open.
+- Next required work: Phase 32 Step 1 - add ingestion-boundary contract tests and models.
 - Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Board Opening
+
+- Approved Phase 32 for implementation after operator continuation with `continue`.
+- Created active board `docs/boards/phase_32_boundary_preserving_ingestion_model.md`.
+- Pinned Phase 32 implementation open-question resolutions:
+  - Add boundary contracts as a focused contracts module and expose them through `extractor.contracts`.
+  - Keep `Document` changes additive and defaulted so existing constructors and audit payloads remain compatible.
+  - Represent generated separators and parser-introduced text as explicit generated source-map segments.
+  - Define OCR confidence span shape in Phase 32 but do not add OCR execution.
+  - Keep full PDF table extraction, DOCX, HTML, email, and layout-aware chunking out of Phase 32.
+- Updated `docs/boards/README.md` to show Phase 32 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` returned no matches
+  - `sed -n '261,263p' docs/specs/phase_32_boundary_preserving_ingestion_model.md` confirmed the Open Questions section is `_(None...)`
+  - `rg -n "Phase 32|phase_32_boundary_preserving_ingestion_model.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` found the expected pointers
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 31 Acceptance and Phase 32 Spec Draft
 

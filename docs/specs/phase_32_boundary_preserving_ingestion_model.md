@@ -1,6 +1,6 @@
 # Phase 32 - Boundary-Preserving Ingestion Model
 
-Status: draft awaiting operator approval. Board not opened.
+Status: approved for implementation after operator continuation on 2026-05-10. Board: `docs/boards/phase_32_boundary_preserving_ingestion_model.md`.
 
 Date opened: 2026-05-10
 
