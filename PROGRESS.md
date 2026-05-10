@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 Step 2 complete for Evaluation Harness: Per-Field Gates.
-- Next required work: Phase 29 Step 3 - add suite manifest contracts, loader, and core suite artifact.
+- Current status: Phase 29 Step 3 complete for Evaluation Harness: Per-Field Gates.
+- Next required work: Phase 29 Step 4 - add suite scoring, threshold failure reporting, and CLI output.
 - Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Step 3 Suite Manifest Loader
+
+- Added strict Pydantic suite manifest contracts for fixture entries, global/category/field thresholds, duplicate key rejection, and documented invariant allowances.
+- Added repo-local JSON manifest loading that rejects external paths, path traversal, and missing case/report files.
+- Added `evals/suites/phase_29_core.json` covering the checked-in static report fixtures, including `legal_contracts_core`, while excluding `medium_research_brief` because it has no checked-in report.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_suites.py::test_load_suite_manifest_accepts_valid_manifest -q` first failed with missing `extractor.evals.suites`
+  - `python3 -m pytest tests/unit/test_eval_suites.py -q` (`7 passed`)
+  - `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` (`23 passed, 2 skipped`)
+  - `git diff --check`
+  - `make lint`
 
 ### 2026-05-10 — Phase 29 Step 2 Provenance and Invariant Breakdowns
 
