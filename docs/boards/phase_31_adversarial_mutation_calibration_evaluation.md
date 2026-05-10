@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 3 of 6
+Step: 4 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Step 3 complete. Next: Step 4 - add mutation fixtures and strict source-sensitivity gates.
+Step 4 complete. Next: Step 5 - add calibration report generation and CLI JSON output.
 
 ---
 
@@ -20,7 +20,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 1: Add adversarial manifest contracts, loader validation, and suite skeleton.
 - [x] Step 2: Add adversarial fixture variants and strict suite gates.
 - [x] Step 3: Add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
-- [ ] Step 4: Add mutation fixtures and strict source-sensitivity gates.
+- [x] Step 4: Add mutation fixtures and strict source-sensitivity gates.
 - [ ] Step 5: Add calibration report generation and CLI JSON output.
 - [ ] Step 6: Add prompt-neutrality verification and final project verification.
 
@@ -87,6 +87,22 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_eval_robustness.py:1` | Added mutation manifest skeleton, duplicate ID, path, empty-change, absent-retired-value, and source-sensitivity failure coverage. | Step 3 |
 | `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 3 complete and recorded verification. | Step 3 |
 | `PROGRESS.md:1` | Recorded Phase 31 Step 3 completion and next step. | Step 3 |
+| `evals/fixtures/sec_market_disclosure_mutated_revenue/source.txt:1` | Added SEC disclosure source mutation for revenue and growth-rate sensitivity. | Step 4 |
+| `evals/fixtures/sec_market_disclosure_mutated_revenue/expected.json:1` | Added SEC mutation expected spans with unchanged offsets and updated source-backed value. | Step 4 |
+| `evals/fixtures/sec_market_disclosure_mutated_revenue/report.example.json:1` | Added SEC mutation static report example. | Step 4 |
+| `evals/fixtures/regulatory_order_compliance_mutated_penalty/source.txt:1` | Added regulatory-order source mutation for civil-penalty sensitivity. | Step 4 |
+| `evals/fixtures/regulatory_order_compliance_mutated_penalty/expected.json:1` | Added regulatory mutation expected spans with unchanged offsets and updated source-backed value. | Step 4 |
+| `evals/fixtures/regulatory_order_compliance_mutated_penalty/report.example.json:1` | Added regulatory mutation static report example. | Step 4 |
+| `evals/fixtures/insurance_policy_coverage_mutated_limit/source.txt:1` | Added insurance-policy source mutation for coverage-limit sensitivity. | Step 4 |
+| `evals/fixtures/insurance_policy_coverage_mutated_limit/expected.json:1` | Added insurance mutation expected spans with unchanged offsets and updated source-backed value. | Step 4 |
+| `evals/fixtures/insurance_policy_coverage_mutated_limit/report.example.json:1` | Added insurance mutation static report example. | Step 4 |
+| `evals/fixtures/procurement_rfp_requirements_mutated_weight/source.txt:1` | Added procurement-RFP source mutation for evaluation-weight sensitivity. | Step 4 |
+| `evals/fixtures/procurement_rfp_requirements_mutated_weight/expected.json:1` | Added procurement mutation expected spans with unchanged offsets and updated source-backed value. | Step 4 |
+| `evals/fixtures/procurement_rfp_requirements_mutated_weight/report.example.json:1` | Added procurement mutation static report example. | Step 4 |
+| `evals/suites/phase_31_mutation.json:1` | Added four declared mutation entries with retired and introduced source values. | Step 4 |
+| `tests/unit/test_eval_robustness.py:1` | Added strict checked-in mutation manifest scoring and source-sensitivity assertions. | Step 4 |
+| `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 4 complete and recorded verification. | Step 4 |
+| `PROGRESS.md:1` | Recorded Phase 31 Step 4 completion and next step. | Step 4 |
 
 ---
 
@@ -117,6 +133,7 @@ _(No issues yet.)_
 | 1 | `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 | 2 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_adversarial_manifest_covers_variant_domains_and_scores -q` first failed with no variant pairs; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 | 3 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_loads tests/unit/test_eval_robustness.py::test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_reports_source_sensitivity tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value -q` first failed with missing mutation loader/scorer, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
+| 4 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_covers_mutated_domains_and_scores -q` first failed with no checked-in mutation entries, then passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -143,12 +160,14 @@ Reverse chronological. Log every session.
 - Completed Step 1: added adversarial manifest contracts, loader validation, an empty Phase 31 adversarial suite skeleton, and test coverage for duplicate pair IDs, bad paths, unsupported modes, and copied offsets with changed variant text.
 - Completed Step 2: added SEC disclosure, regulatory order, insurance policy, and procurement RFP distractor-insertion adversarial variants; updated the adversarial manifest with four pairs; and added strict static report scoring assertions for every variant.
 - Completed Step 3: added mutation manifest contracts, an empty mutation suite skeleton, declared-change validation, mutation result models, source-sensitivity scoring, and tests for retained retired values and missing introduced values.
+- Completed Step 4: added SEC disclosure, regulatory order, insurance policy, and procurement RFP mutation fixtures; updated the mutation manifest with retired and introduced source values; and added strict source-sensitivity scoring assertions for every mutation.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` returned no matches; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Tests for Step 1: `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 29 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
 - Tests for Step 2: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_adversarial_manifest_covers_variant_domains_and_scores -q` first failed with no variant pairs, then passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 5 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 30 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; Phase 31 adversarial summary reported 4 pairs and each variant had 5 expected data points with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, and zero invariant violations; `make lint` passed; `git diff --check` passed.
 - Tests for Step 3: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_loads tests/unit/test_eval_robustness.py::test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_reports_source_sensitivity tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value -q` first failed with missing mutation loader/scorer, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 34 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
-- Next: Step 4 - add mutation fixtures and strict source-sensitivity gates.
+- Tests for Step 4: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_covers_mutated_domains_and_scores -q` first failed with no checked-in mutation entries, then passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 10 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 35 passed; Phase 31 mutation summary reported 4 mutations, source-sensitivity 1.0, each mutation with 5 expected data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero source-sensitivity failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
+- Next: Step 5 - add calibration report generation and CLI JSON output.
 
 ---
 

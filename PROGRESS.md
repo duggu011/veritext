@@ -5,11 +5,30 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 Step 3 complete.
-- Next required work: Phase 31 Step 4 - add mutation fixtures and strict source-sensitivity gates.
+- Current status: Phase 31 Step 4 complete.
+- Next required work: Phase 31 Step 5 - add calibration report generation and CLI JSON output.
 - Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Step 4 Mutation Fixtures and Strict Gates
+
+- Added four checked-in source mutation fixtures across Phase 30 target domains:
+  - `sec_market_disclosure_mutated_revenue`
+  - `regulatory_order_compliance_mutated_penalty`
+  - `insurance_policy_coverage_mutated_limit`
+  - `procurement_rfp_requirements_mutated_weight`
+- Updated `evals/suites/phase_31_mutation.json` with four declared mutations, each naming a changed expected ID plus retired and introduced source values.
+- Added strict checked-in mutation scoring assertions requiring exact metrics, zero invariant violations, source-sensitivity 1.0, and zero source-sensitivity failures.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_covers_mutated_domains_and_scores -q` first failed with no checked-in mutation entries, then passed
+  - `python3 -m pytest tests/unit/test_eval_robustness.py -q` (`10 passed`)
+  - `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` (`35 passed`)
+  - Phase 31 mutation summary reported 4 mutations, source-sensitivity 1.0, each mutation with 5 expected data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero source-sensitivity failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 31 Step 3 Mutation Contracts and Source Sensitivity
 

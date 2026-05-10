@@ -1,0 +1,68 @@
+{
+  "case_id": "sec_market_disclosure_mutated_revenue",
+  "expected_data_points": [
+    {
+      "category": "Entity",
+      "end_byte": 54,
+      "end_char": 54,
+      "expected_id": "expected-reporting-entity",
+      "field_name": "name",
+      "source_text": "Northstar Robotics Inc.",
+      "start_byte": 31,
+      "start_char": 31,
+      "value": "Northstar Robotics Inc."
+    },
+    {
+      "category": "ReportingPeriod",
+      "end_byte": 109,
+      "end_char": 109,
+      "expected_id": "expected-reporting-period",
+      "field_name": "period",
+      "source_text": "quarter ended March 31, 2026",
+      "start_byte": 81,
+      "start_char": 81,
+      "value": "quarter ended March 31, 2026"
+    },
+    {
+      "category": "FinancialMetric",
+      "end_byte": 189,
+      "end_char": 189,
+      "expected_id": "expected-quarterly-revenue",
+      "field_name": "statement",
+      "source_text": "Revenue for the quarter was $52.4 million, up 18% from the prior-year quarter.",
+      "start_byte": 111,
+      "start_char": 111,
+      "value": "Revenue for the quarter was $52.4 million, up 18% from the prior-year quarter."
+    },
+    {
+      "category": "RiskFactor",
+      "end_byte": 300,
+      "end_char": 300,
+      "expected_id": "expected-supplier-risk",
+      "field_name": "summary",
+      "source_text": "The company disclosed supply-chain concentration risk because one supplier provides 62% of navigation sensors.",
+      "start_byte": 190,
+      "start_char": 190,
+      "value": "The company disclosed supply-chain concentration risk because one supplier provides 62% of navigation sensors."
+    },
+    {
+      "category": "Transaction",
+      "end_byte": 398,
+      "end_char": 398,
+      "expected_id": "expected-related-party-lease",
+      "field_name": "summary",
+      "source_text": "A related-party lease with Harbor Ventures requires $1.6 million of annual payments through 2028.",
+      "start_byte": 301,
+      "start_char": 301,
+      "value": "A related-party lease with Harbor Ventures requires $1.6 million of annual payments through 2028."
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "case_id": "procurement_rfp_requirements_mutated_weight",
+  "expected_data_points": [
+    {
+      "category": "Entity",
+      "end_byte": 72,
+      "end_char": 72,
+      "expected_id": "expected-procuring-agency",
+      "field_name": "name",
+      "source_text": "Department of Coastal Infrastructure",
+      "start_byte": 36,
+      "start_char": 36,
+      "value": "Department of Coastal Infrastructure"
+    },
+    {
+      "category": "Identifier",
+      "end_byte": 95,
+      "end_char": 95,
+      "expected_id": "expected-solicitation-id",
+      "field_name": "identifier",
+      "source_text": "RFP DCI-2026-08",
+      "start_byte": 80,
+      "start_char": 80,
+      "value": "RFP DCI-2026-08"
+    },
+    {
+      "category": "Deadline",
+      "end_byte": 185,
+      "end_char": 185,
+      "expected_id": "expected-proposal-deadline",
+      "field_name": "date",
+      "source_text": "4:00 p.m. Eastern on August 12, 2026",
+      "start_byte": 149,
+      "start_char": 149,
+      "value": "4:00 p.m. Eastern on August 12, 2026"
+    },
+    {
+      "category": "Requirement",
+      "end_byte": 294,
+      "end_char": 294,
+      "expected_id": "expected-bridge-report-deliverable",
+      "field_name": "summary",
+      "source_text": "The contractor shall deliver a condition assessment report for each bridge within 45 days after inspection.",
+      "start_byte": 187,
+      "start_char": 187,
+      "value": "The contractor shall deliver a condition assessment report for each bridge within 45 days after inspection."
+    },
+    {
+      "category": "EvaluationCriterion",
+      "end_byte": 389,
+      "end_char": 389,
+      "expected_id": "expected-evaluation-weights",
+      "field_name": "summary",
+      "source_text": "Technical approach is weighted 50 percent in the evaluation, and price is weighted 30 percent.",
+      "start_byte": 295,
+      "start_char": 295,
+      "value": "Technical approach is weighted 50 percent in the evaluation, and price is weighted 30 percent."
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}

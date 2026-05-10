@@ -1,5 +1,70 @@
 {
-  "description": "Phase 31 mutation robustness suite. Step 4 adds source mutation fixtures and declared source-sensitivity changes across four Phase 30 target-domain fixtures.",
-  "mutations": [],
+  "description": "Phase 31 mutation robustness suite. Step 4 adds source mutations for four Phase 30 target-domain fixtures and requires source-sensitivity score 1.0 for checked-in static reports.",
+  "mutations": [
+    {
+      "base_case_path": "evals/fixtures/sec_market_disclosure/expected.json",
+      "base_fixture_id": "sec_market_disclosure",
+      "base_report_path": "evals/fixtures/sec_market_disclosure/report.example.json",
+      "changes": [
+        {
+          "expected_id": "expected-quarterly-revenue",
+          "introduced_source_value": "Revenue for the quarter was $52.4 million, up 18% from the prior-year quarter.",
+          "retired_source_value": "Revenue for the quarter was $48.2 million, up 14% from the prior-year quarter."
+        }
+      ],
+      "mutated_case_path": "evals/fixtures/sec_market_disclosure_mutated_revenue/expected.json",
+      "mutated_fixture_id": "sec_market_disclosure_mutated_revenue",
+      "mutated_report_path": "evals/fixtures/sec_market_disclosure_mutated_revenue/report.example.json",
+      "mutation_id": "sec-market-disclosure-revenue-mutation"
+    },
+    {
+      "base_case_path": "evals/fixtures/regulatory_order_compliance/expected.json",
+      "base_fixture_id": "regulatory_order_compliance",
+      "base_report_path": "evals/fixtures/regulatory_order_compliance/report.example.json",
+      "changes": [
+        {
+          "expected_id": "expected-civil-penalty",
+          "introduced_source_value": "$325,000",
+          "retired_source_value": "$275,000"
+        }
+      ],
+      "mutated_case_path": "evals/fixtures/regulatory_order_compliance_mutated_penalty/expected.json",
+      "mutated_fixture_id": "regulatory_order_compliance_mutated_penalty",
+      "mutated_report_path": "evals/fixtures/regulatory_order_compliance_mutated_penalty/report.example.json",
+      "mutation_id": "regulatory-order-compliance-penalty-mutation"
+    },
+    {
+      "base_case_path": "evals/fixtures/insurance_policy_coverage/expected.json",
+      "base_fixture_id": "insurance_policy_coverage",
+      "base_report_path": "evals/fixtures/insurance_policy_coverage/report.example.json",
+      "changes": [
+        {
+          "expected_id": "expected-coverage-limit",
+          "introduced_source_value": "$3,500,000 per occurrence",
+          "retired_source_value": "$2,000,000 per occurrence"
+        }
+      ],
+      "mutated_case_path": "evals/fixtures/insurance_policy_coverage_mutated_limit/expected.json",
+      "mutated_fixture_id": "insurance_policy_coverage_mutated_limit",
+      "mutated_report_path": "evals/fixtures/insurance_policy_coverage_mutated_limit/report.example.json",
+      "mutation_id": "insurance-policy-coverage-limit-mutation"
+    },
+    {
+      "base_case_path": "evals/fixtures/procurement_rfp_requirements/expected.json",
+      "base_fixture_id": "procurement_rfp_requirements",
+      "base_report_path": "evals/fixtures/procurement_rfp_requirements/report.example.json",
+      "changes": [
+        {
+          "expected_id": "expected-evaluation-weights",
+          "introduced_source_value": "Technical approach is weighted 50 percent in the evaluation, and price is weighted 30 percent.",
+          "retired_source_value": "Technical approach is weighted 45 percent in the evaluation, and price is weighted 30 percent."
+        }
+      ],
+      "mutated_case_path": "evals/fixtures/procurement_rfp_requirements_mutated_weight/expected.json",
+      "mutated_fixture_id": "procurement_rfp_requirements_mutated_weight",
+      "mutated_report_path": "evals/fixtures/procurement_rfp_requirements_mutated_weight/report.example.json",
+      "mutation_id": "procurement-rfp-requirements-weight-mutation"
+    }
+  ],
   "suite_id": "phase_31_mutation"
 }

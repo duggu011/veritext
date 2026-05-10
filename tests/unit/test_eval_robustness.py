@@ -198,7 +198,7 @@ def test_phase_31_mutation_manifest_loads() -> None:
 
     assert manifest.suite_id == "phase_31_mutation"
     assert "Phase 31 mutation robustness suite" in manifest.description
-    assert manifest.mutations == ()
+    assert len(manifest.mutations) == 4
 
 
 def test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value(
@@ -309,6 +309,35 @@ def test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value(
         "retired_value_retained",
         "introduced_value_missing",
     }
+
+
+def test_phase_31_mutation_manifest_covers_mutated_domains_and_scores() -> None:
+    from extractor.evals.robustness import evaluate_mutation_manifest
+
+    result = evaluate_mutation_manifest(
+        ROOT / "evals" / "suites" / "phase_31_mutation.json",
+        repo_root=ROOT,
+    )
+
+    assert result.passed is True
+    assert result.source_sensitivity == 1.0
+    assert [mutation.mutated_fixture_id for mutation in result.mutations] == [
+        "sec_market_disclosure_mutated_revenue",
+        "regulatory_order_compliance_mutated_penalty",
+        "insurance_policy_coverage_mutated_limit",
+        "procurement_rfp_requirements_mutated_weight",
+    ]
+    assert len({mutation.base_fixture_id for mutation in result.mutations}) == 4
+
+    for mutation in result.mutations:
+        assert mutation.result.passed is True
+        assert mutation.result.metrics.precision == 1.0
+        assert mutation.result.metrics.recall == 1.0
+        assert mutation.result.metrics.f1 == 1.0
+        assert mutation.result.metrics.provenance_recall == 1.0
+        assert mutation.result.metrics.invariant_violation_count == 0
+        assert mutation.source_sensitivity == 1.0
+        assert mutation.source_sensitivity_failures == ()
 
 
 def test_load_adversarial_manifest_rejects_duplicate_pair_ids(
