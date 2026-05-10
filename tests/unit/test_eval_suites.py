@@ -209,7 +209,13 @@ def test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds() -
 
     manifest = suites.load_suite_manifest(manifest_path, repo_root=ROOT)
     fixture_ids = {fixture.fixture_id for fixture in manifest.fixtures}
-    assert "legal_contracts_core" in fixture_ids
+    assert {
+        "legal_contracts_core",
+        "sec_market_disclosure",
+        "regulatory_order_compliance",
+        "standards_security_controls",
+        "procurement_rfp_requirements",
+    } <= fixture_ids
     assert all(
         fixture.report_path.endswith("report.example.json")
         for fixture in manifest.fixtures

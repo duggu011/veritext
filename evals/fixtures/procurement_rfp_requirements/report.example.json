@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "Entity",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-procuring-agency"
+      ],
+      "critic_report_ids": [
+        "critic-procuring-agency"
+      ],
+      "data_point_id": "dp-procuring-agency",
+      "doc_id": "doc-procurement-rfp-requirements",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-procuring-agency",
+      "run_id": "run-procurement-rfp-requirements",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-procurement-rfp-requirements",
+        "end_byte": 72,
+        "end_char": 72,
+        "start_byte": 36,
+        "start_char": 36,
+        "text": "Department of Coastal Infrastructure"
+      },
+      "value": "Department of Coastal Infrastructure",
+      "verifier_report_ids": [
+        "verifier-procuring-agency"
+      ]
+    },
+    {
+      "category": "Identifier",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-solicitation-id"
+      ],
+      "critic_report_ids": [
+        "critic-solicitation-id"
+      ],
+      "data_point_id": "dp-solicitation-id",
+      "doc_id": "doc-procurement-rfp-requirements",
+      "field_name": "identifier",
+      "reconciliation_decision_id": "decision-solicitation-id",
+      "run_id": "run-procurement-rfp-requirements",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-procurement-rfp-requirements",
+        "end_byte": 95,
+        "end_char": 95,
+        "start_byte": 80,
+        "start_char": 80,
+        "text": "RFP DCI-2026-08"
+      },
+      "value": "RFP DCI-2026-08",
+      "verifier_report_ids": [
+        "verifier-solicitation-id"
+      ]
+    },
+    {
+      "category": "Deadline",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-proposal-deadline"
+      ],
+      "critic_report_ids": [
+        "critic-proposal-deadline"
+      ],
+      "data_point_id": "dp-proposal-deadline",
+      "doc_id": "doc-procurement-rfp-requirements",
+      "field_name": "date",
+      "reconciliation_decision_id": "decision-proposal-deadline",
+      "run_id": "run-procurement-rfp-requirements",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-procurement-rfp-requirements",
+        "end_byte": 185,
+        "end_char": 185,
+        "start_byte": 149,
+        "start_char": 149,
+        "text": "4:00 p.m. Eastern on August 12, 2026"
+      },
+      "value": "4:00 p.m. Eastern on August 12, 2026",
+      "verifier_report_ids": [
+        "verifier-proposal-deadline"
+      ]
+    },
+    {
+      "category": "Requirement",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-bridge-report-deliverable"
+      ],
+      "critic_report_ids": [
+        "critic-bridge-report-deliverable"
+      ],
+      "data_point_id": "dp-bridge-report-deliverable",
+      "doc_id": "doc-procurement-rfp-requirements",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-bridge-report-deliverable",
+      "run_id": "run-procurement-rfp-requirements",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-procurement-rfp-requirements",
+        "end_byte": 294,
+        "end_char": 294,
+        "start_byte": 187,
+        "start_char": 187,
+        "text": "The contractor shall deliver a condition assessment report for each bridge within 45 days after inspection."
+      },
+      "value": "The contractor shall deliver a condition assessment report for each bridge within 45 days after inspection.",
+      "verifier_report_ids": [
+        "verifier-bridge-report-deliverable"
+      ]
+    },
+    {
+      "category": "EvaluationCriterion",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-evaluation-weights"
+      ],
+      "critic_report_ids": [
+        "critic-evaluation-weights"
+      ],
+      "data_point_id": "dp-evaluation-weights",
+      "doc_id": "doc-procurement-rfp-requirements",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-evaluation-weights",
+      "run_id": "run-procurement-rfp-requirements",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-procurement-rfp-requirements",
+        "end_byte": 389,
+        "end_char": 389,
+        "start_byte": 295,
+        "start_char": 295,
+        "text": "Technical approach is weighted 45 percent in the evaluation, and price is weighted 30 percent."
+      },
+      "value": "Technical approach is weighted 45 percent in the evaluation, and price is weighted 30 percent.",
+      "verifier_report_ids": [
+        "verifier-evaluation-weights"
+      ]
+    }
+  ],
+  "doc_id": "doc-procurement-rfp-requirements",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-procuring-agency",
+    "dp-solicitation-id",
+    "dp-proposal-deadline",
+    "dp-bridge-report-deliverable",
+    "dp-evaluation-weights"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-procurement-rfp-requirements",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "government_procurement",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+    "schema_id": "schema:procurement-rfp-requirements-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

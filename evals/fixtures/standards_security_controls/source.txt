@@ -1,0 +1,6 @@
+SECURITY STANDARD EXCERPT
+
+Control AC-07 requires administrators to review privileged access every 90 days.
+Systems handling audit logs shall retain immutable records for seven years.
+The verification method is quarterly sampling of access tickets and log-retention evidence.
+Exceptions must be documented with compensating controls approved by the security officer.

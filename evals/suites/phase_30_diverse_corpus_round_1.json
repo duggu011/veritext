@@ -1,22 +1,45 @@
 {
-  "suite_id": "phase_30_diverse_corpus_round_1",
-  "description": "Phase 30 diverse corpus suite skeleton. Step 1 starts with the legal-contract baseline; later steps add new cross-domain fixtures under the same strict gates.",
+  "description": "Phase 30 diverse corpus suite. Step 2 includes legal-contract, SEC disclosure, regulatory order, standards, and procurement static fixtures under strict global, category, field, provenance, and invariant gates.",
   "fixtures": [
     {
-      "fixture_id": "legal_contracts_core",
       "case_path": "evals/fixtures/legal_contracts_core/expected.json",
+      "fixture_id": "legal_contracts_core",
       "report_path": "evals/fixtures/legal_contracts_core/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/sec_market_disclosure/expected.json",
+      "fixture_id": "sec_market_disclosure",
+      "report_path": "evals/fixtures/sec_market_disclosure/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/regulatory_order_compliance/expected.json",
+      "fixture_id": "regulatory_order_compliance",
+      "report_path": "evals/fixtures/regulatory_order_compliance/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/standards_security_controls/expected.json",
+      "fixture_id": "standards_security_controls",
+      "report_path": "evals/fixtures/standards_security_controls/report.example.json"
+    },
+    {
+      "case_path": "evals/fixtures/procurement_rfp_requirements/expected.json",
+      "fixture_id": "procurement_rfp_requirements",
+      "report_path": "evals/fixtures/procurement_rfp_requirements/report.example.json"
     }
   ],
+  "suite_id": "phase_30_diverse_corpus_round_1",
   "thresholds": {
-    "global": {
-      "max_invariant_violations": 0,
-      "min_f1": 1.0,
-      "min_precision": 1.0,
-      "min_provenance_recall": 1.0,
-      "min_recall": 1.0
-    },
     "categories": [
+      {
+        "category": "Amount",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
       {
         "category": "ContractDefinition",
         "thresholds": {
@@ -48,6 +71,16 @@
         }
       },
       {
+        "category": "Deadline",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "EffectiveDate",
         "thresholds": {
           "max_invariant_violations": 0,
@@ -58,7 +91,47 @@
         }
       },
       {
+        "category": "Entity",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "EvaluationCriterion",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "FinancialMetric",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "GoverningLaw",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Identifier",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -88,7 +161,67 @@
         }
       },
       {
+        "category": "ReportingPeriod",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Requirement",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "RiskFactor",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "StandardControl",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "TerminationRight",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Transaction",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "VerificationMethod",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -99,6 +232,17 @@
       }
     ],
     "fields": [
+      {
+        "category": "Amount",
+        "field_name": "amount",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
       {
         "category": "ContractDefinition",
         "field_name": "definition_text",
@@ -133,6 +277,17 @@
         }
       },
       {
+        "category": "Deadline",
+        "field_name": "date",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "EffectiveDate",
         "field_name": "effective_date",
         "thresholds": {
@@ -144,8 +299,52 @@
         }
       },
       {
+        "category": "Entity",
+        "field_name": "name",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "EvaluationCriterion",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "FinancialMetric",
+        "field_name": "statement",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "GoverningLaw",
         "field_name": "jurisdiction",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Identifier",
+        "field_name": "identifier",
         "thresholds": {
           "max_invariant_violations": 0,
           "min_f1": 1.0,
@@ -177,6 +376,50 @@
         }
       },
       {
+        "category": "ReportingPeriod",
+        "field_name": "period",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "Requirement",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "RiskFactor",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "StandardControl",
+        "field_name": "control_id",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
         "category": "TerminationRight",
         "field_name": "trigger",
         "thresholds": {
@@ -186,7 +429,36 @@
           "min_provenance_recall": 1.0,
           "min_recall": 1.0
         }
+      },
+      {
+        "category": "Transaction",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "VerificationMethod",
+        "field_name": "summary",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
       }
-    ]
+    ],
+    "global": {
+      "max_invariant_violations": 0,
+      "min_f1": 1.0,
+      "min_precision": 1.0,
+      "min_provenance_recall": 1.0,
+      "min_recall": 1.0
+    }
   }
 }

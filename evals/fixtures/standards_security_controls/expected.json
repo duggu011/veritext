@@ -1,0 +1,68 @@
+{
+  "case_id": "standards_security_controls",
+  "expected_data_points": [
+    {
+      "category": "StandardControl",
+      "end_byte": 40,
+      "end_char": 40,
+      "expected_id": "expected-control-id",
+      "field_name": "control_id",
+      "source_text": "AC-07",
+      "start_byte": 35,
+      "start_char": 35,
+      "value": "AC-07"
+    },
+    {
+      "category": "Requirement",
+      "end_byte": 107,
+      "end_char": 107,
+      "expected_id": "expected-access-review-requirement",
+      "field_name": "summary",
+      "source_text": "Control AC-07 requires administrators to review privileged access every 90 days.",
+      "start_byte": 27,
+      "start_char": 27,
+      "value": "Control AC-07 requires administrators to review privileged access every 90 days."
+    },
+    {
+      "category": "Requirement",
+      "end_byte": 183,
+      "end_char": 183,
+      "expected_id": "expected-log-retention-requirement",
+      "field_name": "summary",
+      "source_text": "Systems handling audit logs shall retain immutable records for seven years.",
+      "start_byte": 108,
+      "start_char": 108,
+      "value": "Systems handling audit logs shall retain immutable records for seven years."
+    },
+    {
+      "category": "VerificationMethod",
+      "end_byte": 275,
+      "end_char": 275,
+      "expected_id": "expected-verification-method",
+      "field_name": "summary",
+      "source_text": "The verification method is quarterly sampling of access tickets and log-retention evidence.",
+      "start_byte": 184,
+      "start_char": 184,
+      "value": "The verification method is quarterly sampling of access tickets and log-retention evidence."
+    },
+    {
+      "category": "Requirement",
+      "end_byte": 366,
+      "end_char": 366,
+      "expected_id": "expected-exception-requirement",
+      "field_name": "summary",
+      "source_text": "Exceptions must be documented with compensating controls approved by the security officer.",
+      "start_byte": 276,
+      "start_char": 276,
+      "value": "Exceptions must be documented with compensating controls approved by the security officer."
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "StandardControl",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-control-id"
+      ],
+      "critic_report_ids": [
+        "critic-control-id"
+      ],
+      "data_point_id": "dp-control-id",
+      "doc_id": "doc-standards-security-controls",
+      "field_name": "control_id",
+      "reconciliation_decision_id": "decision-control-id",
+      "run_id": "run-standards-security-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-standards-security-controls",
+        "end_byte": 40,
+        "end_char": 40,
+        "start_byte": 35,
+        "start_char": 35,
+        "text": "AC-07"
+      },
+      "value": "AC-07",
+      "verifier_report_ids": [
+        "verifier-control-id"
+      ]
+    },
+    {
+      "category": "Requirement",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-access-review-requirement"
+      ],
+      "critic_report_ids": [
+        "critic-access-review-requirement"
+      ],
+      "data_point_id": "dp-access-review-requirement",
+      "doc_id": "doc-standards-security-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-access-review-requirement",
+      "run_id": "run-standards-security-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-standards-security-controls",
+        "end_byte": 107,
+        "end_char": 107,
+        "start_byte": 27,
+        "start_char": 27,
+        "text": "Control AC-07 requires administrators to review privileged access every 90 days."
+      },
+      "value": "Control AC-07 requires administrators to review privileged access every 90 days.",
+      "verifier_report_ids": [
+        "verifier-access-review-requirement"
+      ]
+    },
+    {
+      "category": "Requirement",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-log-retention-requirement"
+      ],
+      "critic_report_ids": [
+        "critic-log-retention-requirement"
+      ],
+      "data_point_id": "dp-log-retention-requirement",
+      "doc_id": "doc-standards-security-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-log-retention-requirement",
+      "run_id": "run-standards-security-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-standards-security-controls",
+        "end_byte": 183,
+        "end_char": 183,
+        "start_byte": 108,
+        "start_char": 108,
+        "text": "Systems handling audit logs shall retain immutable records for seven years."
+      },
+      "value": "Systems handling audit logs shall retain immutable records for seven years.",
+      "verifier_report_ids": [
+        "verifier-log-retention-requirement"
+      ]
+    },
+    {
+      "category": "VerificationMethod",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-verification-method"
+      ],
+      "critic_report_ids": [
+        "critic-verification-method"
+      ],
+      "data_point_id": "dp-verification-method",
+      "doc_id": "doc-standards-security-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-verification-method",
+      "run_id": "run-standards-security-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-standards-security-controls",
+        "end_byte": 275,
+        "end_char": 275,
+        "start_byte": 184,
+        "start_char": 184,
+        "text": "The verification method is quarterly sampling of access tickets and log-retention evidence."
+      },
+      "value": "The verification method is quarterly sampling of access tickets and log-retention evidence.",
+      "verifier_report_ids": [
+        "verifier-verification-method"
+      ]
+    },
+    {
+      "category": "Requirement",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-exception-requirement"
+      ],
+      "critic_report_ids": [
+        "critic-exception-requirement"
+      ],
+      "data_point_id": "dp-exception-requirement",
+      "doc_id": "doc-standards-security-controls",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-exception-requirement",
+      "run_id": "run-standards-security-controls",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-standards-security-controls",
+        "end_byte": 366,
+        "end_char": 366,
+        "start_byte": 276,
+        "start_char": 276,
+        "text": "Exceptions must be documented with compensating controls approved by the security officer."
+      },
+      "value": "Exceptions must be documented with compensating controls approved by the security officer.",
+      "verifier_report_ids": [
+        "verifier-exception-requirement"
+      ]
+    }
+  ],
+  "doc_id": "doc-standards-security-controls",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-control-id",
+    "dp-access-review-requirement",
+    "dp-log-retention-requirement",
+    "dp-verification-method",
+    "dp-exception-requirement"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-standards-security-controls",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "security_standard",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "schema_id": "schema:standards-security-controls-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

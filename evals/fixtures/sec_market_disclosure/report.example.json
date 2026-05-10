@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "Entity",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-reporting-entity"
+      ],
+      "critic_report_ids": [
+        "critic-reporting-entity"
+      ],
+      "data_point_id": "dp-reporting-entity",
+      "doc_id": "doc-sec-market-disclosure",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-reporting-entity",
+      "run_id": "run-sec-market-disclosure",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-sec-market-disclosure",
+        "end_byte": 54,
+        "end_char": 54,
+        "start_byte": 31,
+        "start_char": 31,
+        "text": "Northstar Robotics Inc."
+      },
+      "value": "Northstar Robotics Inc.",
+      "verifier_report_ids": [
+        "verifier-reporting-entity"
+      ]
+    },
+    {
+      "category": "ReportingPeriod",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-reporting-period"
+      ],
+      "critic_report_ids": [
+        "critic-reporting-period"
+      ],
+      "data_point_id": "dp-reporting-period",
+      "doc_id": "doc-sec-market-disclosure",
+      "field_name": "period",
+      "reconciliation_decision_id": "decision-reporting-period",
+      "run_id": "run-sec-market-disclosure",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-sec-market-disclosure",
+        "end_byte": 109,
+        "end_char": 109,
+        "start_byte": 81,
+        "start_char": 81,
+        "text": "quarter ended March 31, 2026"
+      },
+      "value": "quarter ended March 31, 2026",
+      "verifier_report_ids": [
+        "verifier-reporting-period"
+      ]
+    },
+    {
+      "category": "FinancialMetric",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-quarterly-revenue"
+      ],
+      "critic_report_ids": [
+        "critic-quarterly-revenue"
+      ],
+      "data_point_id": "dp-quarterly-revenue",
+      "doc_id": "doc-sec-market-disclosure",
+      "field_name": "statement",
+      "reconciliation_decision_id": "decision-quarterly-revenue",
+      "run_id": "run-sec-market-disclosure",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-sec-market-disclosure",
+        "end_byte": 189,
+        "end_char": 189,
+        "start_byte": 111,
+        "start_char": 111,
+        "text": "Revenue for the quarter was $48.2 million, up 14% from the prior-year quarter."
+      },
+      "value": "Revenue for the quarter was $48.2 million, up 14% from the prior-year quarter.",
+      "verifier_report_ids": [
+        "verifier-quarterly-revenue"
+      ]
+    },
+    {
+      "category": "RiskFactor",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-supplier-risk"
+      ],
+      "critic_report_ids": [
+        "critic-supplier-risk"
+      ],
+      "data_point_id": "dp-supplier-risk",
+      "doc_id": "doc-sec-market-disclosure",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-supplier-risk",
+      "run_id": "run-sec-market-disclosure",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-sec-market-disclosure",
+        "end_byte": 300,
+        "end_char": 300,
+        "start_byte": 190,
+        "start_char": 190,
+        "text": "The company disclosed supply-chain concentration risk because one supplier provides 62% of navigation sensors."
+      },
+      "value": "The company disclosed supply-chain concentration risk because one supplier provides 62% of navigation sensors.",
+      "verifier_report_ids": [
+        "verifier-supplier-risk"
+      ]
+    },
+    {
+      "category": "Transaction",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-related-party-lease"
+      ],
+      "critic_report_ids": [
+        "critic-related-party-lease"
+      ],
+      "data_point_id": "dp-related-party-lease",
+      "doc_id": "doc-sec-market-disclosure",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-related-party-lease",
+      "run_id": "run-sec-market-disclosure",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-sec-market-disclosure",
+        "end_byte": 398,
+        "end_char": 398,
+        "start_byte": 301,
+        "start_char": 301,
+        "text": "A related-party lease with Harbor Ventures requires $1.6 million of annual payments through 2028."
+      },
+      "value": "A related-party lease with Harbor Ventures requires $1.6 million of annual payments through 2028.",
+      "verifier_report_ids": [
+        "verifier-related-party-lease"
+      ]
+    }
+  ],
+  "doc_id": "doc-sec-market-disclosure",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-reporting-entity",
+    "dp-reporting-period",
+    "dp-quarterly-revenue",
+    "dp-supplier-risk",
+    "dp-related-party-lease"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-sec-market-disclosure",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "sec_filing",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "schema_id": "schema:sec-market-disclosure-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}
