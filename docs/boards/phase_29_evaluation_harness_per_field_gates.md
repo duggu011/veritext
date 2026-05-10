@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 4 of 5
+Step: 5 of 5
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_29_evaluation_harness_per_field_gates.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 4 complete. Step 5 is next: add prompt-neutrality verification and final project verification.
+Final gate ready for operator review. Do not begin Phase 30 until the operator accepts Phase 29 and explicitly continues.
 
 ---
 
@@ -21,7 +21,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 2: Add provenance and invariant breakdown grouping coverage.
 - [x] Step 3: Add suite manifest contracts, loader, and core suite artifact.
 - [x] Step 4: Add suite scoring, threshold failure reporting, and CLI output.
-- [ ] Step 5: Add prompt-neutrality verification and final project verification.
+- [x] Step 5: Add prompt-neutrality verification and final project verification.
 
 ---
 
@@ -70,6 +70,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/evals/cli.py:13` | Added `veritext-eval --suite <manifest>` while preserving single-fixture positional mode. | Step 4 |
 | `tests/unit/test_eval_suites.py:206` | Added suite scoring, field-threshold failure, and suite CLI JSON tests. | Step 4 |
 | `tests/unit/test_evals.py:274` | Extended single-fixture CLI JSON assertions for category/field breakdown output and ID lists. | Step 4 |
+| `docs/boards/README.md:1` | Marked Phase 29 final-gate-ready. | Step 5 |
+| `docs/boards/phase_29_evaluation_harness_per_field_gates.md:1` | Recorded final verification, final gate status, and phase summary. | Step 5 |
+| `PROGRESS.md:1` | Recorded Phase 29 final verification handoff. | Step 5 |
 
 ---
 
@@ -101,18 +104,19 @@ _(No issues yet.)_
 | 2 | `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q` first failed with grouped invariant count `0 != 2`; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q`; `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 | 3 | `python3 -m pytest tests/unit/test_eval_suites.py::test_load_suite_manifest_accepts_valid_manifest -q` first failed with missing `extractor.evals.suites`; `python3 -m pytest tests/unit/test_eval_suites.py -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 | 4 | `python3 -m pytest tests/unit/test_eval_suites.py::test_evaluate_suite_manifest_scores_static_core_suite -q` first failed with missing `evaluate_suite_manifest`; `python3 -m pytest tests/unit/test_eval_suites.py -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
+| 5 | `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `make test`; `make lint`; `make smoke`; `git diff --check`; `git diff --exit-code -- prompts` | PASS | 2026-05-10 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -123,10 +127,10 @@ Reverse chronological. Log every session.
 ### 2026-05-10 - Session 1
 
 - Resumed after operator approved Phase 29 with `continue`.
-- Completed: opened this board, pinned Phase 29 open-question resolutions, updated active phase tracking, added additive category and field metric contracts, added scorer aggregation for passing, false-positive, and false-negative grouped metrics, grouped exact provenance recall plus invariant violations by category and field, added suite manifest contracts, loader validation, and the Phase 29 core suite artifact, and added suite scoring, threshold failure reporting, and CLI JSON output.
+- Completed: opened this board, pinned Phase 29 open-question resolutions, updated active phase tracking, added additive category and field metric contracts, added scorer aggregation for passing, false-positive, and false-negative grouped metrics, grouped exact provenance recall plus invariant violations by category and field, added suite manifest contracts, loader validation, and the Phase 29 core suite artifact, added suite scoring, threshold failure reporting, and CLI JSON output, and completed final verification.
 - Issues found: none.
-- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` returned no matches; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q` first failed with missing `EvaluationResult.category_metrics`, then passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_groups_false_positive_and_false_negative_metrics -q` passed; `python3 -m pytest tests/unit/test_evals.py -q` passed with 14 passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q` first failed with grouped invariant count `0 != 2`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py::test_load_suite_manifest_accepts_valid_manifest -q` first failed with missing `extractor.evals.suites`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py -q` passed with 7 passed; `python3 -m pytest tests/unit/test_eval_suites.py::test_evaluate_suite_manifest_scores_static_core_suite -q` first failed with missing `evaluate_suite_manifest`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` passed with 26 passed and 2 skipped; `git diff --check` passed; `make lint` passed.
-- Next: Step 5 - add prompt-neutrality verification and final project verification.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` returned no matches; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q` first failed with missing `EvaluationResult.category_metrics`, then passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_groups_false_positive_and_false_negative_metrics -q` passed; `python3 -m pytest tests/unit/test_evals.py -q` passed with 14 passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q` first failed with grouped invariant count `0 != 2`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py::test_load_suite_manifest_accepts_valid_manifest -q` first failed with missing `extractor.evals.suites`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py -q` passed with 7 passed; `python3 -m pytest tests/unit/test_eval_suites.py::test_evaluate_suite_manifest_scores_static_core_suite -q` first failed with missing `evaluate_suite_manifest`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` passed with 26 passed and 2 skipped; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with suite metrics precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures; `make test` passed with 264 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed.
+- Next: operator review and acceptance of Phase 29. Phase 30 must not begin until the operator explicitly continues.
 
 ---
 
@@ -138,14 +142,14 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: not yet started.
-- Deferred: not yet determined.
-- Added beyond spec: not yet determined.
+- Built as specified: additive per-category and per-field metrics; grouped false positive, false negative, precision, recall, F1, exact provenance, provenance recall, and invariant counts; strict suite manifest contracts; checked-in Phase 29 core suite; suite scoring; threshold failure reporting; single-fixture and suite CLI JSON output; prompt-neutrality verification.
+- Deferred: diverse cross-domain fixtures remain Phase 30; adversarial/mutation/calibration work remains Phase 31; CI/CD remains blocked until an architecture amendment phase.
+- Added beyond spec: none.
 
 ### Lessons for downstream phases
 
-- Not yet determined.
+- Phase 30 fixtures can enter through `evals/suites/*.json` without changing runtime extraction behavior.
+- Category and field threshold failures now identify weak slices directly, so new corpus work should add strict thresholds as fixtures are introduced.
+- Keep checked-in static reports for suite membership unless a later phase explicitly adds a deterministic report-generation step.

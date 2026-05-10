@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 Step 4 complete for Evaluation Harness: Per-Field Gates.
-- Next required work: Phase 29 Step 5 - add prompt-neutrality verification and final project verification.
+- Current status: Phase 29 final gate is ready for operator review.
+- Next required work: Operator review and acceptance of Phase 29. Do not begin Phase 30 until the operator explicitly continues.
 - Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Final Verification
+
+- Marked Phase 29 final-gate-ready after completing per-category/per-field evaluation metrics, provenance and invariant breakdowns, suite manifests, suite scoring, threshold failure reporting, and CLI output.
+- Confirmed the Phase 29 core suite passes strict global, category, and field thresholds across the checked-in static report fixtures, including `legal_contracts_core`.
+- Confirmed prompt files were unchanged.
+- Verification:
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `make test` (`264 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
 
 ### 2026-05-10 — Phase 29 Step 4 Suite Scoring and CLI Output
 
