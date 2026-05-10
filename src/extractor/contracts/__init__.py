@@ -16,6 +16,7 @@ from extractor.contracts.ingestion import (
     TextRange,
     validate_ingestion_boundaries,
 )
+from extractor.contracts.documents import Document, PageSpan
 from extractor.contracts.models import (
     CategoryDefinition,
     Chunk,
@@ -23,14 +24,12 @@ from extractor.contracts.models import (
     CriticIssue,
     CriticReport,
     DataPoint,
-    Document,
     ExtractionBudget,
     ExtractionPlan,
     FieldDefinition,
     LLMCallLog,
     LensBudget,
     LensCandidate,
-    PageSpan,
     RejectionReason,
     RunManifest,
     SourceSpan,

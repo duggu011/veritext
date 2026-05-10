@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 Step 1 complete.
-- Next required work: Phase 32 Step 2 - add `Document` boundary defaults and export compatibility.
+- Current status: Phase 32 Step 2 complete.
+- Next required work: Phase 32 Step 3 - add identity source maps for plain text and Markdown ingestion.
 - Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Step 2 Document Boundary Defaults
+
+- Split `Document` and `PageSpan` into `src/extractor/contracts/documents.py` to keep the large model file from growing.
+- Added defaulted `Document` boundary fields: metadata, source map, layout spans, table spans, and OCR confidence spans.
+- Added document-context validation for provided boundary fields against text length, text byte length, source byte length, and page numbers.
+- Preserved public exports through `extractor.contracts` and compatibility for direct base type imports from `extractor.contracts.models`.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed because `Document` had no boundary fields and rejected them as extras, then passed with 5 passed
+  - `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py tests/unit/test_audit_store.py -q` first exposed a compatibility import for `DocumentFormat`, then passed with 31 passed
+  - `python3 -m pytest tests/unit/test_ingestion_boundaries.py::test_document_defaults_preserve_existing_constructor_compatibility tests/unit/test_ingestion_boundaries.py::test_document_validates_boundary_fields_against_text_source_and_pages -q` (`2 passed`)
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/contracts/documents.py src/extractor/contracts/models.py src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` reported 113, 332, 300, 102, and 285 lines
 
 ### 2026-05-10 — Phase 32 Step 1 Boundary Contracts
 

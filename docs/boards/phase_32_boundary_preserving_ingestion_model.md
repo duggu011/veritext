@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 1 of 6
+Step: 2 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_32_boundary_preserving_ingestion_model.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 1 complete. Next: Step 2 - add `Document` boundary defaults and export compatibility.
+Step 2 complete. Next: Step 3 - add identity source maps for plain text and Markdown ingestion.
 
 ---
 
@@ -18,7 +18,7 @@ Step 1 complete. Next: Step 2 - add `Document` boundary defaults and export comp
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
 - [x] Step 1: Add ingestion-boundary contract tests and models.
-- [ ] Step 2: Add `Document` boundary defaults and export compatibility.
+- [x] Step 2: Add `Document` boundary defaults and export compatibility.
 - [ ] Step 3: Add identity source maps for plain text and Markdown ingestion.
 - [ ] Step 4: Add generated-segment and source-support validation.
 - [ ] Step 5: Add audit persistence/readback coverage for boundary fields.
@@ -63,6 +63,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/contracts/__init__.py:1` | Exported the new ingestion-boundary contract surface. | Step 1 |
 | `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 1 complete and recorded verification. | Step 1 |
 | `PROGRESS.md:1` | Recorded Phase 32 Step 1 completion and next step. | Step 1 |
+| `tests/unit/test_ingestion_boundaries.py:1` | Added `Document` boundary default compatibility and boundary-field validation tests. | Step 2 |
+| `src/extractor/contracts/documents.py:1` | Split `Document` and `PageSpan` into a focused module and added defaulted boundary fields with document-context validation. | Step 2 |
+| `src/extractor/contracts/models.py:1` | Preserved compatibility exports for document contracts and base type aliases while reducing model-file size. | Step 2 |
+| `src/extractor/contracts/__init__.py:1` | Re-exported `Document` and `PageSpan` from the focused document-contract module. | Step 2 |
+| `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 2 complete and recorded verification. | Step 2 |
+| `PROGRESS.md:1` | Recorded Phase 32 Step 2 completion and next step. | Step 2 |
 
 ---
 
@@ -91,6 +97,7 @@ _(No issues yet.)_
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md`; `sed -n '261,263p' docs/specs/phase_32_boundary_preserving_ingestion_model.md`; `rg -n "Phase 32|phase_32_boundary_preserving_ingestion_model.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/phase_32_boundary_preserving_ingestion_model.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 | 1 | `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed with missing `BoundaryValidationContext`, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py -q`; `wc -l src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
+| 2 | `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed because `Document` had no boundary fields and rejected them as extras, then passed with 5 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py tests/unit/test_audit_store.py -q` first exposed a compatibility import for `DocumentFormat`, then passed with 31 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py::test_document_defaults_preserve_existing_constructor_compatibility tests/unit/test_ingestion_boundaries.py::test_document_validates_boundary_fields_against_text_source_and_pages -q`; `make lint`; `git diff --check`; `wc -l src/extractor/contracts/documents.py src/extractor/contracts/models.py src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -115,10 +122,12 @@ Reverse chronological. Log every session.
 - Resumed after operator approved the Phase 32 spec with `continue`.
 - Completed: approved the Phase 32 spec for implementation, opened this board, pinned Phase 32 open-question resolutions, and updated active phase tracking.
 - Completed Step 1: added focused ingestion-boundary contracts for text ranges, metadata, source-map segments, layout spans, table spans/cells, OCR confidence spans, and context validation.
+- Completed Step 2: split `Document`/`PageSpan` into a focused document contract module, added defaulted boundary fields, validated provided boundaries against document text/source/page context, and preserved public contract imports.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` returned no matches; `sed -n '261,263p' docs/specs/phase_32_boundary_preserving_ingestion_model.md` confirmed the Open Questions section is `_(None...)`; `rg -n "Phase 32|phase_32_boundary_preserving_ingestion_model.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Tests for Step 1: `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed with missing `BoundaryValidationContext`, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py -q` passed with 20 passed; `wc -l src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` reported 300, 103, and 177 lines; `git diff --check` passed; `make lint` passed.
-- Next: Step 2 - add `Document` boundary defaults and export compatibility.
+- Tests for Step 2: `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed because `Document` had no boundary fields and rejected them as extras, then passed with 5 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py tests/unit/test_audit_store.py -q` first exposed a compatibility import for `DocumentFormat`, then passed with 31 passed; the two focused Step 2 tests passed; `make lint` passed; `git diff --check` passed; line counts are 113 for `contracts/documents.py`, 332 for `contracts/models.py`, 300 for `contracts/ingestion.py`, 102 for `contracts/__init__.py`, and 285 for `test_ingestion_boundaries.py`.
+- Next: Step 3 - add identity source maps for plain text and Markdown ingestion.
 
 ---
 
