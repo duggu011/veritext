@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 29 - Evaluation Harness: Per-Field Gates
-- Current status: Phase 30 board is open.
-- Next required work: Phase 30 Step 4 - add complete suite thresholds, prompt-neutrality verification, and final project verification.
-- Next-phase context: Phase 30 should add the first diverse static fixture corpus using Phase 29 suite, category, and field gates without tuning runtime extraction behavior.
+- Current status: Phase 30 final gate is ready; awaiting operator acceptance.
+- Next required work: accept Phase 30, then open the Phase 31 spec after explicit operator `continue`.
+- Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 30 Final Verification
+
+- Marked Phase 30 final-gate-ready after completing the diverse static fixture corpus and strict suite thresholds.
+- Confirmed the Phase 30 suite covers `legal_contracts_core` plus eight new cross-domain fixtures: SEC disclosure, clinical trial protocol, FDA-label safety, regulatory order, insurance policy coverage, standards security controls, scientific review paper, and procurement RFP requirements.
+- Confirmed prompt files were unchanged.
+- Verification:
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `make test` (`265 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
 
 ### 2026-05-10 — Phase 30 Step 3 Clinical FDA Insurance Scientific Fixtures
 

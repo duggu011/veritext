@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 30 - Diverse Fixture Corpus Round 1** | Status: BOARD OPEN | Spec: [approved](../specs/phase_30_diverse_fixture_corpus_round_1.md) | Board: [board](phase_30_diverse_fixture_corpus_round_1.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 30 - Diverse Fixture Corpus Round 1** | Status: FINAL GATE READY | Spec: [approved](../specs/phase_30_diverse_fixture_corpus_round_1.md) | Board: [board](phase_30_diverse_fixture_corpus_round_1.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -28,7 +28,7 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 27 - Planner Schema Reuse and Schema-Fit Refusal | [approved](../specs/phase_27_planner_schema_reuse_and_schema_fit_refusal.md) | [board](phase_27_planner_schema_reuse_and_schema_fit_refusal.md) | COMPLETE (2026-05-09) |
 | 28 - Legal Contracts Domain Pack v1 | [approved](../specs/phase_28_legal_contracts_domain_pack_v1.md) | [board](phase_28_legal_contracts_domain_pack_v1.md) | COMPLETE (2026-05-10) |
 | 29 - Evaluation Harness: Per-Field Gates | [approved](../specs/phase_29_evaluation_harness_per_field_gates.md) | [board](phase_29_evaluation_harness_per_field_gates.md) | COMPLETE (2026-05-10) |
-| 30 - Diverse Fixture Corpus Round 1 | [approved](../specs/phase_30_diverse_fixture_corpus_round_1.md) | [board](phase_30_diverse_fixture_corpus_round_1.md) | ACTIVE - BOARD OPEN |
+| 30 - Diverse Fixture Corpus Round 1 | [approved](../specs/phase_30_diverse_fixture_corpus_round_1.md) | [board](phase_30_diverse_fixture_corpus_round_1.md) | ACTIVE - FINAL GATE READY |
 | 31 - Adversarial, Mutation, and Calibration Evaluation | _(not opened)_ | _(not opened)_ | PLANNED |
 | 32 - Boundary-Preserving Ingestion Model | _(not opened)_ | _(not opened)_ | PLANNED |
 | 33 - PDF and Table Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
