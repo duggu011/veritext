@@ -4,12 +4,26 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 final verification complete; awaiting operator acceptance.
-- Next required work: Operator acceptance of Phase 31. Do not start the next phase until the operator explicitly continues from this phase gate.
-- Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
+- Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
+- Current status: Phase 32 spec draft open.
+- Next required work: Review the Phase 32 boundary-preserving ingestion model spec. Do not start implementation until the spec is approved and the board is opened.
+- Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Acceptance and Phase 32 Spec Draft
+
+- Accepted Phase 31 after operator continuation.
+- Marked Phase 31 complete in `docs/boards/README.md`.
+- Opened Phase 32 in spec-draft state.
+- Drafted `docs/specs/phase_32_boundary_preserving_ingestion_model.md` from the ingestion/chunker roadmap, current ingestion contracts, and Phase 31 handoff.
+- No source code, prompts, config, eval fixtures, or runtime extraction behavior changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` returned no matches
+  - `rg -n "Phase 31|Phase 32|phase_32_boundary_preserving_ingestion_model.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md docs/specs/phase_32_boundary_preserving_ingestion_model.md` found the expected pointers
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `wc -l docs/specs/phase_32_boundary_preserving_ingestion_model.md` reported 263 lines
 
 ### 2026-05-10 — Phase 31 Final Verification
 

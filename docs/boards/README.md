@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 31 - Adversarial, Mutation, and Calibration Evaluation** | Status: BOARD OPEN | Spec: [approved](../specs/phase_31_adversarial_mutation_calibration_evaluation.md) | Board: [board](phase_31_adversarial_mutation_calibration_evaluation.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 32 - Boundary-Preserving Ingestion Model** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_32_boundary_preserving_ingestion_model.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -29,8 +29,8 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 28 - Legal Contracts Domain Pack v1 | [approved](../specs/phase_28_legal_contracts_domain_pack_v1.md) | [board](phase_28_legal_contracts_domain_pack_v1.md) | COMPLETE (2026-05-10) |
 | 29 - Evaluation Harness: Per-Field Gates | [approved](../specs/phase_29_evaluation_harness_per_field_gates.md) | [board](phase_29_evaluation_harness_per_field_gates.md) | COMPLETE (2026-05-10) |
 | 30 - Diverse Fixture Corpus Round 1 | [approved](../specs/phase_30_diverse_fixture_corpus_round_1.md) | [board](phase_30_diverse_fixture_corpus_round_1.md) | COMPLETE (2026-05-10) |
-| 31 - Adversarial, Mutation, and Calibration Evaluation | [approved](../specs/phase_31_adversarial_mutation_calibration_evaluation.md) | [board](phase_31_adversarial_mutation_calibration_evaluation.md) | ACTIVE - BOARD OPEN |
-| 32 - Boundary-Preserving Ingestion Model | _(not opened)_ | _(not opened)_ | PLANNED |
+| 31 - Adversarial, Mutation, and Calibration Evaluation | [approved](../specs/phase_31_adversarial_mutation_calibration_evaluation.md) | [board](phase_31_adversarial_mutation_calibration_evaluation.md) | COMPLETE (2026-05-10) |
+| 32 - Boundary-Preserving Ingestion Model | [draft](../specs/phase_32_boundary_preserving_ingestion_model.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
 | 33 - PDF and Table Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
 | 34 - DOCX, HTML, and Email Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
 | 35 - Layout-Aware Chunking | _(not opened)_ | _(not opened)_ | PLANNED |
