@@ -129,14 +129,121 @@ class EvaluationResult(EvalModel):
     passed: bool = Field(strict=True)
 
 
+class SuiteMetricThresholds(EvaluationThresholds):
+    invariant_allowance_rationale: NonEmptyStr | None = None
+
+    @model_validator(mode="after")
+    def validate_invariant_allowance(self) -> SuiteMetricThresholds:
+        if (
+            self.max_invariant_violations > 0
+            and self.invariant_allowance_rationale is None
+        ):
+            raise ValueError("non-zero invariant allowance requires rationale")
+        return self
+
+
+class EvaluationSuiteFixture(EvalModel):
+    fixture_id: NonEmptyStr
+    case_path: NonEmptyStr
+    report_path: NonEmptyStr
+
+
+class CategoryThreshold(EvalModel):
+    category: NonEmptyStr
+    thresholds: SuiteMetricThresholds = Field(default_factory=SuiteMetricThresholds)
+
+
+class FieldThreshold(EvalModel):
+    category: NonEmptyStr
+    field_name: NonEmptyStr
+    thresholds: SuiteMetricThresholds = Field(default_factory=SuiteMetricThresholds)
+
+
+class EvaluationSuiteThresholds(EvalModel):
+    global_thresholds: SuiteMetricThresholds = Field(
+        default_factory=SuiteMetricThresholds,
+        alias="global",
+    )
+    categories: tuple[CategoryThreshold, ...] = ()
+    fields: tuple[FieldThreshold, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_threshold_keys(self) -> EvaluationSuiteThresholds:
+        category_keys = [threshold.category for threshold in self.categories]
+        if len(category_keys) != len(set(category_keys)):
+            raise ValueError("duplicate category threshold keys")
+
+        field_keys = [
+            (threshold.category, threshold.field_name) for threshold in self.fields
+        ]
+        if len(field_keys) != len(set(field_keys)):
+            raise ValueError("duplicate field threshold keys")
+        return self
+
+
+class EvaluationSuiteManifest(EvalModel):
+    suite_id: NonEmptyStr
+    description: NonEmptyStr
+    fixtures: tuple[EvaluationSuiteFixture, ...] = Field(min_length=1)
+    thresholds: EvaluationSuiteThresholds = Field(
+        default_factory=EvaluationSuiteThresholds
+    )
+
+    @model_validator(mode="after")
+    def validate_fixture_ids(self) -> EvaluationSuiteManifest:
+        fixture_ids = [fixture.fixture_id for fixture in self.fixtures]
+        if len(fixture_ids) != len(set(fixture_ids)):
+            raise ValueError("duplicate suite fixture IDs")
+        return self
+
+
+class ThresholdFailure(EvalModel):
+    suite_id: NonEmptyStr
+    scope: NonEmptyStr
+    metric: NonEmptyStr
+    actual: float = Field(strict=True)
+    threshold: float = Field(strict=True)
+    comparator: NonEmptyStr
+    fixture_id: str | None = None
+    category: str | None = None
+    field_name: str | None = None
+
+
+class EvaluationSuiteFixtureResult(EvalModel):
+    fixture_id: NonEmptyStr
+    case_path: NonEmptyStr
+    report_path: NonEmptyStr
+    result: EvaluationResult
+    passed: bool = Field(strict=True)
+
+
+class EvaluationSuiteResult(EvalModel):
+    suite_id: NonEmptyStr
+    metrics: EvaluationMetrics
+    category_metrics: tuple[CategoryMetricBreakdown, ...]
+    field_metrics: tuple[FieldMetricBreakdown, ...]
+    fixtures: tuple[EvaluationSuiteFixtureResult, ...]
+    threshold_failures: tuple[ThresholdFailure, ...]
+    passed: bool = Field(strict=True)
+
+
 __all__ = [
     "CategoryMetricBreakdown",
+    "CategoryThreshold",
     "DataPointMatch",
     "EvaluationCase",
     "EvaluationMetrics",
     "EvaluationResult",
+    "EvaluationSuiteFixture",
+    "EvaluationSuiteFixtureResult",
+    "EvaluationSuiteManifest",
+    "EvaluationSuiteResult",
+    "EvaluationSuiteThresholds",
     "EvaluationThresholds",
     "ExpectedDataPoint",
     "FieldMetricBreakdown",
+    "FieldThreshold",
     "InvariantViolation",
+    "SuiteMetricThresholds",
+    "ThresholdFailure",
 ]

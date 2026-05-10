@@ -279,6 +279,12 @@ def test_eval_cli_returns_zero_for_passing_fixture(capsys: pytest.CaptureFixture
     assert status == 0
     assert payload["passed"] is True
     assert payload["metrics"]["f1"] == 1.0
+    assert payload["category_metrics"][0]["category"] == "CorporateEvent"
+    assert payload["field_metrics"][0]["category"] == "CorporateEvent"
+    assert payload["field_metrics"][0]["field_name"] == "summary"
+    assert payload["missing_expected_ids"] == []
+    assert payload["unexpected_data_point_ids"] == []
+    assert payload["invariant_violations"] == []
 
 
 def test_pyproject_registers_eval_console_script() -> None:

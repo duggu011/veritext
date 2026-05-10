@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 Step 3 complete for Evaluation Harness: Per-Field Gates.
-- Next required work: Phase 29 Step 4 - add suite scoring, threshold failure reporting, and CLI output.
+- Current status: Phase 29 Step 4 complete for Evaluation Harness: Per-Field Gates.
+- Next required work: Phase 29 Step 5 - add prompt-neutrality verification and final project verification.
 - Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Step 4 Suite Scoring and CLI Output
+
+- Added suite-level result contracts, aggregate suite/category/field metric merging, fixture result records, and threshold failure records.
+- Added `evaluate_suite_manifest(...)` for static suite scoring and strict global/category/field threshold enforcement.
+- Added `veritext-eval --suite <manifest>` while preserving existing `veritext-eval <case> <report>` behavior.
+- Extended CLI JSON coverage for both single-fixture and suite scoring output.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_suites.py::test_evaluate_suite_manifest_scores_static_core_suite -q` first failed with missing `evaluate_suite_manifest`
+  - `python3 -m pytest tests/unit/test_eval_suites.py -q` (`10 passed`)
+  - `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` (`26 passed, 2 skipped`)
+  - `git diff --check`
+  - `make lint`
 
 ### 2026-05-10 — Phase 29 Step 3 Suite Manifest Loader
 

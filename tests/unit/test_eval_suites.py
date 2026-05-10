@@ -1,12 +1,14 @@
 import copy
 import importlib
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from extractor.evals import EvaluationError
+from extractor.evals.cli import main as eval_main
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -63,6 +65,24 @@ def _write_manifest(tmp_path: Path, payload: dict[str, Any]) -> Path:
     manifest_path = tmp_path / "suite.json"
     manifest_path.write_text(json.dumps(payload), encoding="utf-8")
     return manifest_path
+
+
+def _loose_thresholds() -> dict[str, Any]:
+    return {
+        "max_invariant_violations": 0,
+        "min_f1": 0.0,
+        "min_precision": 0.0,
+        "min_provenance_recall": 0.0,
+        "min_recall": 0.0,
+    }
+
+
+def _copy_fixture_repo(tmp_path: Path, fixture_id: str) -> Path:
+    repo_root = tmp_path / "repo"
+    fixture_dir = repo_root / "evals" / "fixtures" / fixture_id
+    fixture_dir.parent.mkdir(parents=True)
+    shutil.copytree(ROOT / "evals" / "fixtures" / fixture_id, fixture_dir)
+    return repo_root
 
 
 def test_load_suite_manifest_accepts_valid_manifest(tmp_path: Path) -> None:
@@ -181,3 +201,104 @@ def test_phase_29_core_suite_manifest_loads_static_checked_in_reports() -> None:
     assert "medium_research_brief" not in {
         fixture.fixture_id for fixture in manifest.fixtures
     }
+
+
+def test_evaluate_suite_manifest_scores_static_core_suite() -> None:
+    suites = _suites_module()
+
+    result = suites.evaluate_suite_manifest(
+        ROOT / "evals" / "suites" / "phase_29_core.json",
+        repo_root=ROOT,
+    )
+
+    assert result.passed is True
+    assert result.suite_id == "phase_29_core"
+    assert result.metrics.expected_count == 21
+    assert result.metrics.actual_count == 21
+    assert result.metrics.precision == 1.0
+    assert result.metrics.recall == 1.0
+    assert result.metrics.f1 == 1.0
+    assert result.metrics.provenance_recall == 1.0
+    assert result.metrics.invariant_violation_count == 0
+    assert result.threshold_failures == ()
+    assert [fixture.fixture_id for fixture in result.fixtures] == [
+        "minimal_financial_update",
+        "minimal_contract_obligation",
+        "minimal_policy_controls",
+        "hard_mixed_distractors",
+        "legal_contracts_core",
+    ]
+
+
+def test_evaluate_suite_manifest_reports_field_threshold_failures(
+    tmp_path: Path,
+) -> None:
+    suites = _suites_module()
+    repo_root = _copy_fixture_repo(tmp_path, "minimal_financial_update")
+    fixture_dir = repo_root / "evals" / "fixtures" / "minimal_financial_update"
+
+    case_payload = json.loads(
+        (fixture_dir / "expected.json").read_text(encoding="utf-8")
+    )
+    case_payload["thresholds"] = _loose_thresholds()
+    (fixture_dir / "expected.json").write_text(json.dumps(case_payload), encoding="utf-8")
+
+    report_path = fixture_dir / "report.example.json"
+    report_payload = json.loads(report_path.read_text(encoding="utf-8"))
+    report_payload["data_points"] = report_payload["data_points"][1:]
+    report_payload["output_data_point_ids"] = [
+        point["data_point_id"] for point in report_payload["data_points"]
+    ]
+    report_path.write_text(json.dumps(report_payload), encoding="utf-8")
+
+    payload = _valid_manifest()
+    payload["fixtures"][0] = {
+        "fixture_id": "minimal_financial_update",
+        "case_path": "evals/fixtures/minimal_financial_update/expected.json",
+        "report_path": "evals/fixtures/minimal_financial_update/report.example.json",
+    }
+    payload["thresholds"] = {
+        "global": _loose_thresholds(),
+        "fields": [
+            {
+                "category": "FinancialMetric",
+                "field_name": "statement",
+                "thresholds": {
+                    **_loose_thresholds(),
+                    "min_recall": 1.0,
+                },
+            }
+        ],
+    }
+
+    result = suites.evaluate_suite_manifest(
+        _write_manifest(tmp_path, payload),
+        repo_root=repo_root,
+    )
+
+    assert result.passed is False
+    assert result.metrics.recall == pytest.approx(2 / 3)
+    assert len(result.threshold_failures) == 1
+    failure = result.threshold_failures[0]
+    assert failure.suite_id == "unit_suite"
+    assert failure.scope == "field"
+    assert failure.category == "FinancialMetric"
+    assert failure.field_name == "statement"
+    assert failure.metric == "recall"
+    assert failure.actual == pytest.approx(1 / 2)
+    assert failure.threshold == 1.0
+
+
+def test_eval_cli_scores_suite_manifest(capsys: pytest.CaptureFixture[str]) -> None:
+    status = eval_main(
+        ("--suite", str(ROOT / "evals" / "suites" / "phase_29_core.json"))
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert status == 0
+    assert payload["passed"] is True
+    assert payload["suite_id"] == "phase_29_core"
+    assert payload["metrics"]["expected_count"] == 21
+    assert len(payload["fixtures"]) == 5
+    assert payload["threshold_failures"] == []

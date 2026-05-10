@@ -2,14 +2,23 @@
 
 from extractor.evals.models import (
     CategoryMetricBreakdown,
+    CategoryThreshold,
     DataPointMatch,
     EvaluationCase,
     EvaluationMetrics,
     EvaluationResult,
+    EvaluationSuiteFixture,
+    EvaluationSuiteFixtureResult,
+    EvaluationSuiteManifest,
+    EvaluationSuiteResult,
+    EvaluationSuiteThresholds,
     EvaluationThresholds,
     ExpectedDataPoint,
     FieldMetricBreakdown,
+    FieldThreshold,
     InvariantViolation,
+    SuiteMetricThresholds,
+    ThresholdFailure,
 )
 from extractor.evals.drops import (
     RunDropSummary,
@@ -24,15 +33,7 @@ from extractor.evals.scoring import (
     load_evaluation_case,
     load_extraction_report,
 )
-from extractor.evals.suites import (
-    CategoryThreshold,
-    EvaluationSuiteFixture,
-    EvaluationSuiteManifest,
-    EvaluationSuiteThresholds,
-    FieldThreshold,
-    SuiteMetricThresholds,
-    load_suite_manifest,
-)
+from extractor.evals.suites import evaluate_suite_manifest, load_suite_manifest
 
 __all__ = [
     "CategoryMetricBreakdown",
@@ -43,7 +44,9 @@ __all__ = [
     "EvaluationMetrics",
     "EvaluationResult",
     "EvaluationSuiteFixture",
+    "EvaluationSuiteFixtureResult",
     "EvaluationSuiteManifest",
+    "EvaluationSuiteResult",
     "EvaluationSuiteThresholds",
     "EvaluationThresholds",
     "ExpectedDataPoint",
@@ -53,8 +56,10 @@ __all__ = [
     "RunDropSummary",
     "StageDropSummary",
     "SuiteMetricThresholds",
+    "ThresholdFailure",
     "evaluate_report",
     "evaluate_report_file",
+    "evaluate_suite_manifest",
     "load_evaluation_case",
     "load_extraction_report",
     "load_suite_manifest",
