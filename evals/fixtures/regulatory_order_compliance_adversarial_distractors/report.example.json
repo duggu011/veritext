@@ -1,0 +1,165 @@
+{
+  "data_points": [
+    {
+      "category": "Entity",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-issuing-authority"
+      ],
+      "critic_report_ids": [
+        "critic-issuing-authority"
+      ],
+      "data_point_id": "dp-issuing-authority",
+      "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-issuing-authority",
+      "run_id": "run-regulatory-order-compliance-adversarial-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+        "end_byte": 59,
+        "end_char": 59,
+        "start_byte": 30,
+        "start_char": 30,
+        "text": "Energy Reliability Commission"
+      },
+      "value": "Energy Reliability Commission",
+      "verifier_report_ids": [
+        "verifier-issuing-authority"
+      ]
+    },
+    {
+      "category": "Entity",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-regulated-entity"
+      ],
+      "critic_report_ids": [
+        "critic-regulated-entity"
+      ],
+      "data_point_id": "dp-regulated-entity",
+      "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+      "field_name": "name",
+      "reconciliation_decision_id": "decision-regulated-entity",
+      "run_id": "run-regulatory-order-compliance-adversarial-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+        "end_byte": 102,
+        "end_char": 102,
+        "start_byte": 83,
+        "start_char": 83,
+        "text": "Riverbend Utilities"
+      },
+      "value": "Riverbend Utilities",
+      "verifier_report_ids": [
+        "verifier-regulated-entity"
+      ]
+    },
+    {
+      "category": "Deadline",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-corrective-action-deadline"
+      ],
+      "critic_report_ids": [
+        "critic-corrective-action-deadline"
+      ],
+      "data_point_id": "dp-corrective-action-deadline",
+      "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+      "field_name": "date",
+      "reconciliation_decision_id": "decision-corrective-action-deadline",
+      "run_id": "run-regulatory-order-compliance-adversarial-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+        "end_byte": 175,
+        "end_char": 175,
+        "start_byte": 162,
+        "start_char": 162,
+        "text": "July 15, 2026"
+      },
+      "value": "July 15, 2026",
+      "verifier_report_ids": [
+        "verifier-corrective-action-deadline"
+      ]
+    },
+    {
+      "category": "Requirement",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-monthly-outage-reports"
+      ],
+      "critic_report_ids": [
+        "critic-monthly-outage-reports"
+      ],
+      "data_point_id": "dp-monthly-outage-reports",
+      "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+      "field_name": "summary",
+      "reconciliation_decision_id": "decision-monthly-outage-reports",
+      "run_id": "run-regulatory-order-compliance-adversarial-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+        "end_byte": 265,
+        "end_char": 265,
+        "start_byte": 177,
+        "start_char": 177,
+        "text": "The order requires monthly outage reports until the commission closes the investigation."
+      },
+      "value": "The order requires monthly outage reports until the commission closes the investigation.",
+      "verifier_report_ids": [
+        "verifier-monthly-outage-reports"
+      ]
+    },
+    {
+      "category": "Amount",
+      "confidence": 0.95,
+      "contributing_candidate_ids": [
+        "candidate-civil-penalty"
+      ],
+      "critic_report_ids": [
+        "critic-civil-penalty"
+      ],
+      "data_point_id": "dp-civil-penalty",
+      "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+      "field_name": "amount",
+      "reconciliation_decision_id": "decision-civil-penalty",
+      "run_id": "run-regulatory-order-compliance-adversarial-distractors",
+      "source_span": {
+        "chunk_id": "chunk-1",
+        "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+        "end_byte": 293,
+        "end_char": 293,
+        "start_byte": 285,
+        "start_char": 285,
+        "text": "$275,000"
+      },
+      "value": "$275,000",
+      "verifier_report_ids": [
+        "verifier-civil-penalty"
+      ]
+    }
+  ],
+  "doc_id": "doc-regulatory-order-compliance-adversarial-distractors",
+  "generated_at": "2026-05-10T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-issuing-authority",
+    "dp-regulated-entity",
+    "dp-corrective-action-deadline",
+    "dp-monthly-outage-reports",
+    "dp-civil-penalty"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-regulatory-order-compliance-adversarial-distractors",
+  "schema_metadata": {
+    "created_from": "phase_30_static_fixture",
+    "document_class": "regulatory_order",
+    "domain_pack_id": null,
+    "refined_from_schema_id": null,
+    "schema_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "schema_id": "schema:regulatory-order-compliance-static-v1",
+    "schema_version": "1.0.0",
+    "source_kind": "planner_generated"
+  }
+}

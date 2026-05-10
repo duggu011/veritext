@@ -5,11 +5,30 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 Step 1 complete.
-- Next required work: Phase 31 Step 2 - add adversarial fixture variants and strict suite gates.
+- Current status: Phase 31 Step 2 complete.
+- Next required work: Phase 31 Step 3 - add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
 - Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Step 2 Adversarial Fixture Variants
+
+- Added four distractor-insertion adversarial fixture variants across Phase 30 target domains:
+  - `sec_market_disclosure_adversarial_distractors`
+  - `regulatory_order_compliance_adversarial_distractors`
+  - `insurance_policy_coverage_adversarial_distractors`
+  - `procurement_rfp_requirements_adversarial_distractors`
+- Updated `evals/suites/phase_31_adversarial.json` with four adversarial pairs using `distractor_insertion` mode.
+- Added strict variant scoring assertions so every adversarial variant static report must pass exact precision, recall, F1, provenance recall, and invariant gates.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_adversarial_manifest_covers_variant_domains_and_scores -q` first failed with no variant pairs, then passed
+  - `python3 -m pytest tests/unit/test_eval_robustness.py -q` (`5 passed`)
+  - `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` (`30 passed`)
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - Phase 31 adversarial summary reported 4 pairs; each variant had 5 expected data points with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, and zero invariant violations
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 31 Step 1 Adversarial Manifest Contracts
 

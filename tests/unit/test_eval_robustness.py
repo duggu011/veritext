@@ -7,6 +7,11 @@ from typing import Any
 import pytest
 
 from extractor.evals import EvaluationError
+from extractor.evals.scoring import (
+    evaluate_report,
+    load_evaluation_case,
+    load_extraction_report,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -46,7 +51,7 @@ def _copy_fixture(repo_root: Path, fixture_id: str, target_id: str) -> Path:
     return target_dir
 
 
-def test_phase_31_adversarial_suite_skeleton_loads() -> None:
+def test_phase_31_adversarial_manifest_loads() -> None:
     from extractor.evals.robustness import load_adversarial_manifest
 
     manifest = load_adversarial_manifest(
@@ -55,8 +60,37 @@ def test_phase_31_adversarial_suite_skeleton_loads() -> None:
     )
 
     assert manifest.suite_id == "phase_31_adversarial"
-    assert manifest.pairs == ()
-    assert "Pairs are added in Step 2" in manifest.description
+    assert "Phase 31 adversarial robustness suite" in manifest.description
+
+
+def test_phase_31_adversarial_manifest_covers_variant_domains_and_scores() -> None:
+    from extractor.evals.robustness import load_adversarial_manifest
+
+    manifest = load_adversarial_manifest(
+        ROOT / "evals" / "suites" / "phase_31_adversarial.json",
+        repo_root=ROOT,
+    )
+
+    assert [pair.variant_fixture_id for pair in manifest.pairs] == [
+        "sec_market_disclosure_adversarial_distractors",
+        "regulatory_order_compliance_adversarial_distractors",
+        "insurance_policy_coverage_adversarial_distractors",
+        "procurement_rfp_requirements_adversarial_distractors",
+    ]
+    assert {pair.mode for pair in manifest.pairs} == {"distractor_insertion"}
+    assert len({pair.base_fixture_id for pair in manifest.pairs}) == 4
+
+    for pair in manifest.pairs:
+        case = load_evaluation_case(ROOT / pair.variant_case_path)
+        report = load_extraction_report(ROOT / pair.variant_report_path)
+        result = evaluate_report(case, report)
+
+        assert result.passed is True
+        assert result.metrics.precision == 1.0
+        assert result.metrics.recall == 1.0
+        assert result.metrics.f1 == 1.0
+        assert result.metrics.provenance_recall == 1.0
+        assert result.metrics.invariant_violation_count == 0
 
 
 def test_load_adversarial_manifest_rejects_duplicate_pair_ids(

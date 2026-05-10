@@ -1,5 +1,46 @@
 {
-  "description": "Phase 31 adversarial robustness suite skeleton. Pairs are added in Step 2 after adversarial fixture variants are checked in.",
-  "pairs": [],
+  "description": "Phase 31 adversarial robustness suite. Step 2 adds distractor-insertion variants for four Phase 30 target-domain fixtures.",
+  "pairs": [
+    {
+      "base_case_path": "evals/fixtures/sec_market_disclosure/expected.json",
+      "base_fixture_id": "sec_market_disclosure",
+      "base_report_path": "evals/fixtures/sec_market_disclosure/report.example.json",
+      "mode": "distractor_insertion",
+      "pair_id": "sec-market-disclosure-distractors",
+      "variant_case_path": "evals/fixtures/sec_market_disclosure_adversarial_distractors/expected.json",
+      "variant_fixture_id": "sec_market_disclosure_adversarial_distractors",
+      "variant_report_path": "evals/fixtures/sec_market_disclosure_adversarial_distractors/report.example.json"
+    },
+    {
+      "base_case_path": "evals/fixtures/regulatory_order_compliance/expected.json",
+      "base_fixture_id": "regulatory_order_compliance",
+      "base_report_path": "evals/fixtures/regulatory_order_compliance/report.example.json",
+      "mode": "distractor_insertion",
+      "pair_id": "regulatory-order-compliance-distractors",
+      "variant_case_path": "evals/fixtures/regulatory_order_compliance_adversarial_distractors/expected.json",
+      "variant_fixture_id": "regulatory_order_compliance_adversarial_distractors",
+      "variant_report_path": "evals/fixtures/regulatory_order_compliance_adversarial_distractors/report.example.json"
+    },
+    {
+      "base_case_path": "evals/fixtures/insurance_policy_coverage/expected.json",
+      "base_fixture_id": "insurance_policy_coverage",
+      "base_report_path": "evals/fixtures/insurance_policy_coverage/report.example.json",
+      "mode": "distractor_insertion",
+      "pair_id": "insurance-policy-coverage-distractors",
+      "variant_case_path": "evals/fixtures/insurance_policy_coverage_adversarial_distractors/expected.json",
+      "variant_fixture_id": "insurance_policy_coverage_adversarial_distractors",
+      "variant_report_path": "evals/fixtures/insurance_policy_coverage_adversarial_distractors/report.example.json"
+    },
+    {
+      "base_case_path": "evals/fixtures/procurement_rfp_requirements/expected.json",
+      "base_fixture_id": "procurement_rfp_requirements",
+      "base_report_path": "evals/fixtures/procurement_rfp_requirements/report.example.json",
+      "mode": "distractor_insertion",
+      "pair_id": "procurement-rfp-requirements-distractors",
+      "variant_case_path": "evals/fixtures/procurement_rfp_requirements_adversarial_distractors/expected.json",
+      "variant_fixture_id": "procurement_rfp_requirements_adversarial_distractors",
+      "variant_report_path": "evals/fixtures/procurement_rfp_requirements_adversarial_distractors/report.example.json"
+    }
+  ],
   "suite_id": "phase_31_adversarial"
 }

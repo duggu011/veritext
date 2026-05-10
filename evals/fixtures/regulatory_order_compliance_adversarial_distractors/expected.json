@@ -1,0 +1,68 @@
+{
+  "case_id": "regulatory_order_compliance_adversarial_distractors",
+  "expected_data_points": [
+    {
+      "category": "Entity",
+      "end_byte": 59,
+      "end_char": 59,
+      "expected_id": "expected-issuing-authority",
+      "field_name": "name",
+      "source_text": "Energy Reliability Commission",
+      "start_byte": 30,
+      "start_char": 30,
+      "value": "Energy Reliability Commission"
+    },
+    {
+      "category": "Entity",
+      "end_byte": 102,
+      "end_char": 102,
+      "expected_id": "expected-regulated-entity",
+      "field_name": "name",
+      "source_text": "Riverbend Utilities",
+      "start_byte": 83,
+      "start_char": 83,
+      "value": "Riverbend Utilities"
+    },
+    {
+      "category": "Deadline",
+      "end_byte": 175,
+      "end_char": 175,
+      "expected_id": "expected-corrective-action-deadline",
+      "field_name": "date",
+      "source_text": "July 15, 2026",
+      "start_byte": 162,
+      "start_char": 162,
+      "value": "July 15, 2026"
+    },
+    {
+      "category": "Requirement",
+      "end_byte": 265,
+      "end_char": 265,
+      "expected_id": "expected-monthly-outage-reports",
+      "field_name": "summary",
+      "source_text": "The order requires monthly outage reports until the commission closes the investigation.",
+      "start_byte": 177,
+      "start_char": 177,
+      "value": "The order requires monthly outage reports until the commission closes the investigation."
+    },
+    {
+      "category": "Amount",
+      "end_byte": 293,
+      "end_char": 293,
+      "expected_id": "expected-civil-penalty",
+      "field_name": "amount",
+      "source_text": "$275,000",
+      "start_byte": 285,
+      "start_char": 285,
+      "value": "$275,000"
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}

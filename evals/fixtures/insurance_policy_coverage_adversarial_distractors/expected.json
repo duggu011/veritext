@@ -1,0 +1,68 @@
+{
+  "case_id": "insurance_policy_coverage_adversarial_distractors",
+  "expected_data_points": [
+    {
+      "category": "Entity",
+      "end_byte": 75,
+      "end_char": 75,
+      "expected_id": "expected-insurer",
+      "field_name": "name",
+      "source_text": "Harbor Mutual Insurance Company",
+      "start_byte": 44,
+      "start_char": 44,
+      "value": "Harbor Mutual Insurance Company"
+    },
+    {
+      "category": "Identifier",
+      "end_byte": 103,
+      "end_char": 103,
+      "expected_id": "expected-policy-number",
+      "field_name": "identifier",
+      "source_text": "HMI-GL-7781",
+      "start_byte": 92,
+      "start_char": 92,
+      "value": "HMI-GL-7781"
+    },
+    {
+      "category": "CoverageLimit",
+      "end_byte": 170,
+      "end_char": 170,
+      "expected_id": "expected-coverage-limit",
+      "field_name": "amount",
+      "source_text": "$2,000,000 per occurrence",
+      "start_byte": 145,
+      "start_char": 145,
+      "value": "$2,000,000 per occurrence"
+    },
+    {
+      "category": "Deductible",
+      "end_byte": 244,
+      "end_char": 244,
+      "expected_id": "expected-deductible",
+      "field_name": "amount",
+      "source_text": "$25,000 deductible for each pollution claim",
+      "start_byte": 201,
+      "start_char": 201,
+      "value": "$25,000 deductible for each pollution claim"
+    },
+    {
+      "category": "Exclusion",
+      "end_byte": 322,
+      "end_char": 322,
+      "expected_id": "expected-exclusion",
+      "field_name": "summary",
+      "source_text": "excludes loss arising from intentional discharge of contaminants",
+      "start_byte": 258,
+      "start_char": 258,
+      "value": "excludes loss arising from intentional discharge of contaminants"
+    }
+  ],
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  }
+}
