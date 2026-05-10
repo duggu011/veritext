@@ -25,6 +25,56 @@ def load_report() -> ExtractionReport:
     return ExtractionReport.model_validate_json(REPORT_PATH.read_text(encoding="utf-8"))
 
 
+def test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture() -> None:
+    case = load_evaluation_case(CASE_PATH)
+    report = load_report()
+
+    result = evaluate_report(case, report)
+
+    category_metrics = {
+        breakdown.category: breakdown.metrics for breakdown in result.category_metrics
+    }
+    financial_metrics = category_metrics["FinancialMetric"]
+    assert financial_metrics.expected_count == 2
+    assert financial_metrics.actual_count == 2
+    assert financial_metrics.true_positives == 2
+    assert financial_metrics.false_positives == 0
+    assert financial_metrics.false_negatives == 0
+    assert financial_metrics.precision == 1.0
+    assert financial_metrics.recall == 1.0
+    assert financial_metrics.f1 == 1.0
+    assert financial_metrics.exact_provenance_matches == 2
+    assert financial_metrics.provenance_recall == 1.0
+    assert financial_metrics.invariant_violation_count == 0
+
+    corporate_event_metrics = category_metrics["CorporateEvent"]
+    assert corporate_event_metrics.expected_count == 1
+    assert corporate_event_metrics.actual_count == 1
+    assert corporate_event_metrics.true_positives == 1
+    assert corporate_event_metrics.precision == 1.0
+    assert corporate_event_metrics.recall == 1.0
+    assert corporate_event_metrics.provenance_recall == 1.0
+
+    field_metrics = {
+        (breakdown.category, breakdown.field_name): breakdown.metrics
+        for breakdown in result.field_metrics
+    }
+    statement_metrics = field_metrics[("FinancialMetric", "statement")]
+    assert statement_metrics.expected_count == 2
+    assert statement_metrics.actual_count == 2
+    assert statement_metrics.true_positives == 2
+    assert statement_metrics.precision == 1.0
+    assert statement_metrics.recall == 1.0
+    assert statement_metrics.provenance_recall == 1.0
+
+    summary_metrics = field_metrics[("CorporateEvent", "summary")]
+    assert summary_metrics.expected_count == 1
+    assert summary_metrics.actual_count == 1
+    assert summary_metrics.true_positives == 1
+    assert summary_metrics.precision == 1.0
+    assert summary_metrics.recall == 1.0
+
+
 @pytest.mark.parametrize("fixture_dir", FIXTURE_DIRS)
 def test_evaluate_report_scores_exact_fixtures_as_passing(fixture_dir: Path) -> None:
     case = load_evaluation_case(fixture_dir / "expected.json")
@@ -73,6 +123,70 @@ def test_evaluate_report_counts_missing_and_unexpected_points() -> None:
     assert result.metrics.recall == pytest.approx(2 / 3)
     assert result.missing_expected_ids == ("expected-revenue-growth",)
     assert result.unexpected_data_point_ids == ("dp-unexpected",)
+
+
+def test_evaluate_report_groups_false_positive_and_false_negative_metrics() -> None:
+    case = load_evaluation_case(CASE_PATH)
+    report = load_report()
+    dropped_first = report.data_points[1:]
+    unexpected = report.data_points[0].model_copy(
+        update={
+            "data_point_id": "dp-unexpected",
+            "category": "Unexpected",
+            "field_name": "statement",
+        }
+    )
+    report = report.model_copy(
+        update={
+            "data_points": (*dropped_first, unexpected),
+            "output_data_point_ids": tuple(
+                point.data_point_id for point in (*dropped_first, unexpected)
+            ),
+        }
+    )
+
+    result = evaluate_report(case, report)
+
+    category_metrics = {
+        breakdown.category: breakdown.metrics for breakdown in result.category_metrics
+    }
+    financial_metrics = category_metrics["FinancialMetric"]
+    assert financial_metrics.expected_count == 2
+    assert financial_metrics.actual_count == 1
+    assert financial_metrics.true_positives == 1
+    assert financial_metrics.false_positives == 0
+    assert financial_metrics.false_negatives == 1
+    assert financial_metrics.precision == 1.0
+    assert financial_metrics.recall == pytest.approx(1 / 2)
+    assert financial_metrics.f1 == pytest.approx(2 / 3)
+
+    unexpected_metrics = category_metrics["Unexpected"]
+    assert unexpected_metrics.expected_count == 0
+    assert unexpected_metrics.actual_count == 1
+    assert unexpected_metrics.true_positives == 0
+    assert unexpected_metrics.false_positives == 1
+    assert unexpected_metrics.false_negatives == 0
+    assert unexpected_metrics.precision == 0.0
+    assert unexpected_metrics.recall == 1.0
+    assert unexpected_metrics.f1 == 0.0
+
+    field_metrics = {
+        (breakdown.category, breakdown.field_name): breakdown.metrics
+        for breakdown in result.field_metrics
+    }
+    statement_metrics = field_metrics[("FinancialMetric", "statement")]
+    assert statement_metrics.expected_count == 2
+    assert statement_metrics.actual_count == 1
+    assert statement_metrics.true_positives == 1
+    assert statement_metrics.false_negatives == 1
+    assert statement_metrics.recall == pytest.approx(1 / 2)
+    assert statement_metrics.f1 == pytest.approx(2 / 3)
+
+    unexpected_statement_metrics = field_metrics[("Unexpected", "statement")]
+    assert unexpected_statement_metrics.expected_count == 0
+    assert unexpected_statement_metrics.actual_count == 1
+    assert unexpected_statement_metrics.false_positives == 1
+    assert unexpected_statement_metrics.precision == 0.0
 
 
 def test_evaluate_report_flags_source_span_invariant_breaks() -> None:

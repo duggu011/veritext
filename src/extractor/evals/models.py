@@ -104,11 +104,24 @@ class EvaluationMetrics(EvalModel):
     invariant_violation_count: NonNegativeInt
 
 
+class CategoryMetricBreakdown(EvalModel):
+    category: NonEmptyStr
+    metrics: EvaluationMetrics
+
+
+class FieldMetricBreakdown(EvalModel):
+    category: NonEmptyStr
+    field_name: NonEmptyStr
+    metrics: EvaluationMetrics
+
+
 class EvaluationResult(EvalModel):
     case_id: NonEmptyStr
     run_id: NonEmptyStr
     doc_id: NonEmptyStr
     metrics: EvaluationMetrics
+    category_metrics: tuple[CategoryMetricBreakdown, ...] = ()
+    field_metrics: tuple[FieldMetricBreakdown, ...] = ()
     matches: tuple[DataPointMatch, ...]
     missing_expected_ids: tuple[NonEmptyStr, ...]
     unexpected_data_point_ids: tuple[NonEmptyStr, ...]
@@ -117,11 +130,13 @@ class EvaluationResult(EvalModel):
 
 
 __all__ = [
+    "CategoryMetricBreakdown",
     "DataPointMatch",
     "EvaluationCase",
     "EvaluationMetrics",
     "EvaluationResult",
     "EvaluationThresholds",
     "ExpectedDataPoint",
+    "FieldMetricBreakdown",
     "InvariantViolation",
 ]

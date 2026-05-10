@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 board is open for Evaluation Harness: Per-Field Gates.
-- Next required work: Phase 29 Step 1 - add category and field metric breakdown contracts and scorer coverage.
+- Current status: Phase 29 Step 1 complete for Evaluation Harness: Per-Field Gates.
+- Next required work: Phase 29 Step 2 - add provenance and invariant breakdown grouping coverage.
 - Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Step 1 Category and Field Breakdowns
+
+- Added strict Pydantic category and field metric breakdown contracts to eval results without removing existing single-fixture fields.
+- Extended `evaluate_report(...)` to compute deterministic per-category and per-field metrics for passing data, false positives, and false negatives.
+- Preserved existing exact-match global scoring behavior and existing eval CLI/API consumers.
+- Verification:
+  - `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q` first failed with missing `EvaluationResult.category_metrics`
+  - `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q`
+  - `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_groups_false_positive_and_false_negative_metrics -q`
+  - `python3 -m pytest tests/unit/test_evals.py -q` (`14 passed`)
+  - `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` (`16 passed, 2 skipped`)
+  - `git diff --check`
+  - `make lint`
 
 ### 2026-05-10 — Operator Trust Resume Policy
 

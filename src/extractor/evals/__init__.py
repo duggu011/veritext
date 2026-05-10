@@ -1,12 +1,14 @@
 """Evaluation fixtures and scoring harnesses."""
 
 from extractor.evals.models import (
+    CategoryMetricBreakdown,
     DataPointMatch,
     EvaluationCase,
     EvaluationMetrics,
     EvaluationResult,
     EvaluationThresholds,
     ExpectedDataPoint,
+    FieldMetricBreakdown,
     InvariantViolation,
 )
 from extractor.evals.drops import (
@@ -24,6 +26,7 @@ from extractor.evals.scoring import (
 )
 
 __all__ = [
+    "CategoryMetricBreakdown",
     "DataPointMatch",
     "EvaluationCase",
     "EvaluationError",
@@ -31,6 +34,7 @@ __all__ = [
     "EvaluationResult",
     "EvaluationThresholds",
     "ExpectedDataPoint",
+    "FieldMetricBreakdown",
     "InvariantViolation",
     "RunDropSummary",
     "StageDropSummary",

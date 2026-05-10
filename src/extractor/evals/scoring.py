@@ -8,11 +8,13 @@ from pydantic import ValidationError
 
 from extractor.contracts import DataPoint
 from extractor.evals.models import (
+    CategoryMetricBreakdown,
     DataPointMatch,
     EvaluationCase,
     EvaluationMetrics,
     EvaluationResult,
     ExpectedDataPoint,
+    FieldMetricBreakdown,
     InvariantViolation,
 )
 from extractor.reporter import ExtractionReport
@@ -79,6 +81,16 @@ def evaluate_report(case: EvaluationCase, report: ExtractionReport) -> Evaluatio
         exact_provenance_matches=exact_provenance_matches,
         invariant_violation_count=len(invariant_violations),
     )
+    category_metrics = _build_category_metric_breakdowns(
+        expected=case.expected_data_points,
+        actual=report.data_points,
+        matches=matches,
+    )
+    field_metrics = _build_field_metric_breakdowns(
+        expected=case.expected_data_points,
+        actual=report.data_points,
+        matches=matches,
+    )
     thresholds = case.thresholds
     passed = (
         metrics.precision >= thresholds.min_precision
@@ -92,12 +104,111 @@ def evaluate_report(case: EvaluationCase, report: ExtractionReport) -> Evaluatio
         run_id=report.run_id,
         doc_id=report.doc_id,
         metrics=metrics,
+        category_metrics=tuple(category_metrics),
+        field_metrics=tuple(field_metrics),
         matches=tuple(matches),
         missing_expected_ids=tuple(missing_expected_ids),
         unexpected_data_point_ids=tuple(unexpected_data_point_ids),
         invariant_violations=tuple(invariant_violations),
         passed=passed,
     )
+
+
+def _build_category_metric_breakdowns(
+    *,
+    expected: tuple[ExpectedDataPoint, ...],
+    actual: tuple[DataPoint, ...],
+    matches: list[DataPointMatch],
+) -> list[CategoryMetricBreakdown]:
+    expected_by_id = {point.expected_id: point for point in expected}
+    used_actual_ids = {match.data_point_id for match in matches}
+
+    categories = {
+        point.category for point in expected
+    } | {
+        point.category for point in actual if point.data_point_id not in used_actual_ids
+    }
+
+    breakdowns: list[CategoryMetricBreakdown] = []
+    for category in sorted(categories):
+        true_positive_matches = [
+            match
+            for match in matches
+            if expected_by_id[match.expected_id].category == category
+        ]
+        false_positive_count = sum(
+            1
+            for point in actual
+            if point.data_point_id not in used_actual_ids and point.category == category
+        )
+        metrics = _build_metrics(
+            expected_count=sum(1 for point in expected if point.category == category),
+            actual_count=len(true_positive_matches) + false_positive_count,
+            true_positives=len(true_positive_matches),
+            exact_provenance_matches=sum(
+                1 for match in true_positive_matches if match.exact_provenance
+            ),
+            invariant_violation_count=0,
+        )
+        breakdowns.append(CategoryMetricBreakdown(category=category, metrics=metrics))
+    return breakdowns
+
+
+def _build_field_metric_breakdowns(
+    *,
+    expected: tuple[ExpectedDataPoint, ...],
+    actual: tuple[DataPoint, ...],
+    matches: list[DataPointMatch],
+) -> list[FieldMetricBreakdown]:
+    expected_by_id = {point.expected_id: point for point in expected}
+    used_actual_ids = {match.data_point_id for match in matches}
+
+    fields = {
+        (point.category, point.field_name) for point in expected
+    } | {
+        (point.category, point.field_name)
+        for point in actual
+        if point.data_point_id not in used_actual_ids
+    }
+
+    breakdowns: list[FieldMetricBreakdown] = []
+    for category, field_name in sorted(fields):
+        true_positive_matches = [
+            match
+            for match in matches
+            if (
+                expected_by_id[match.expected_id].category,
+                expected_by_id[match.expected_id].field_name,
+            )
+            == (category, field_name)
+        ]
+        false_positive_count = sum(
+            1
+            for point in actual
+            if point.data_point_id not in used_actual_ids
+            and (point.category, point.field_name) == (category, field_name)
+        )
+        metrics = _build_metrics(
+            expected_count=sum(
+                1
+                for point in expected
+                if (point.category, point.field_name) == (category, field_name)
+            ),
+            actual_count=len(true_positive_matches) + false_positive_count,
+            true_positives=len(true_positive_matches),
+            exact_provenance_matches=sum(
+                1 for match in true_positive_matches if match.exact_provenance
+            ),
+            invariant_violation_count=0,
+        )
+        breakdowns.append(
+            FieldMetricBreakdown(
+                category=category,
+                field_name=field_name,
+                metrics=metrics,
+            )
+        )
+    return breakdowns
 
 
 def _build_metrics(
