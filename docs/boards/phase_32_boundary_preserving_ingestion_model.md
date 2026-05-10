@@ -9,7 +9,7 @@ Last session: 2026-05-10
 Spec: `docs/specs/phase_32_boundary_preserving_ingestion_model.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 6 complete. Phase 32 final verification passed; awaiting operator acceptance before Phase 33.
+Phase 32 accepted after operator continuation. Phase 33 is active in spec-draft state; no Phase 33 implementation has started.
 
 ---
 
@@ -85,6 +85,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `PROGRESS.md:1` | Recorded Phase 32 Step 5 completion and next step. | Step 5 |
 | `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 6 complete, recorded final verification, and filled the phase summary. | Step 6 |
 | `PROGRESS.md:1` | Recorded Phase 32 final verification and operator-acceptance handoff. | Step 6 |
+| `docs/specs/phase_33_pdf_and_table_ingestion.md:1` | Drafted Phase 33 PDF and table ingestion spec. | Acceptance |
+| `docs/boards/README.md:1` | Marked Phase 32 complete and Phase 33 active in spec-draft state. | Acceptance |
+| `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Recorded Phase 32 acceptance handoff. | Acceptance |
+| `PROGRESS.md:1` | Recorded Phase 32 acceptance and Phase 33 spec-draft handoff. | Acceptance |
 
 ---
 
@@ -118,6 +122,7 @@ _(No issues yet.)_
 | 4 | `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets -q` first failed because PDF `source_map` was empty, then passed with 1 passed; `python3 -m pytest tests/unit/test_source_support.py -q` first failed with missing source-backed span helpers, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q`; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py -q`; `wc -l src/extractor/source_support.py src/extractor/ingestion/documents.py src/extractor/contracts/ingestion.py tests/unit/test_source_support.py tests/unit/test_ingestion.py`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 | 5 | `python3 -m pytest tests/unit/test_audit_document_boundaries.py -q`; `python3 -m pytest tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q`; `make lint`; `git diff --check`; `wc -l tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py` | PASS | 2026-05-10 |
 | 6 | `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json`; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json`; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make test`; `make lint`; `make smoke`; `git diff --check`; `git diff --exit-code -- prompts`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_33_pdf_and_table_ingestion.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md`; `rg -n "Phase 32|Phase 33|phase_33_pdf_and_table_ingestion.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/boards/phase_32_boundary_preserving_ingestion_model.md docs/specs/phase_33_pdf_and_table_ingestion.md`; `cmp -s AGENTS.md CLAUDE.md`; `wc -l docs/specs/phase_33_pdf_and_table_ingestion.md` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -156,6 +161,14 @@ Reverse chronological. Log every session.
 - Completed Step 6: ran prompt-neutrality verification, canonical project gates, and Phase 29-31 eval gates without changing prompts, configs, domain packs, or runtime LLM stages.
 - Tests for Step 6: `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, and expected/provenance calibration error 0.048979591836734754; `make test` passed with 287 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Next: operator acceptance of Phase 32. Do not start Phase 33 until explicit continuation after acceptance.
+
+### 2026-05-10 - Acceptance Handoff
+
+- Resumed after operator accepted the Phase 32 final gate with `continue`.
+- Completed: marked Phase 32 complete in the board index, drafted the Phase 33 PDF and table ingestion spec, and updated progress tracking.
+- Issues found: none.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_33_pdf_and_table_ingestion.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` returned no matches; `rg -n "Phase 32|Phase 33|phase_33_pdf_and_table_ingestion.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/boards/phase_32_boundary_preserving_ingestion_model.md docs/specs/phase_33_pdf_and_table_ingestion.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `wc -l docs/specs/phase_33_pdf_and_table_ingestion.md` reported 319 lines.
+- Next: Phase 33 spec review and board opening if approved.
 
 ---
 

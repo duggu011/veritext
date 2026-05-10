@@ -4,12 +4,27 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 final verification complete; awaiting operator acceptance.
-- Next required work: Operator acceptance of Phase 32. Do not start Phase 33 until explicit continuation after acceptance.
-- Next-phase context: Phase 33 PDF and Table Ingestion depends on the Phase 32 boundary model and should populate real PDF/table boundary evidence without weakening generated/unmapped source-map semantics.
+- Last completed phase: Phase 32 - Boundary-Preserving Ingestion Model
+- Current status: Phase 33 spec draft ready for operator review; no implementation has started.
+- Next required work: Operator approval of the Phase 33 spec, then board opening if approved. Do not start Phase 33 implementation until the spec is approved and the board is opened.
+- Next-phase context: Phase 33 PDF and Table Ingestion should populate real PDF/table boundary evidence without weakening generated/unmapped source-map semantics. Phase 34 DOCX, HTML, and Email Ingestion remains downstream.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Acceptance and Phase 33 Spec Draft
+
+- Accepted Phase 32 after operator continuation.
+- Marked Phase 32 complete in `docs/boards/README.md`.
+- Opened Phase 33 in spec-draft state.
+- Drafted `docs/specs/phase_33_pdf_and_table_ingestion.md` from the ingestion roadmap, Phase 32 boundary contracts, and current PDF ingestion code.
+- Scoped Phase 33 to layout-aware PDF/table ingestion through the existing `pdfplumber` dependency, with no OCR, DOCX, HTML, email, prompt, runtime LLM, domain-pack runtime, config, or architecture-rule changes.
+- No source code, prompts, configs, eval fixtures, or runtime extraction behavior changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_33_pdf_and_table_ingestion.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md`
+  - `rg -n "Phase 32|Phase 33|phase_33_pdf_and_table_ingestion.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/boards/phase_32_boundary_preserving_ingestion_model.md docs/specs/phase_33_pdf_and_table_ingestion.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `wc -l docs/specs/phase_33_pdf_and_table_ingestion.md`
 
 ### 2026-05-10 — Phase 32 Final Verification
 
