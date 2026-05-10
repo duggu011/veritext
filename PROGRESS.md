@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 Step 5 complete.
-- Next required work: Phase 32 Step 6 - add prompt-neutrality verification and final project verification.
-- Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
+- Current status: Phase 32 final verification complete; awaiting operator acceptance.
+- Next required work: Operator acceptance of Phase 32. Do not start Phase 33 until explicit continuation after acceptance.
+- Next-phase context: Phase 33 PDF and Table Ingestion depends on the Phase 32 boundary model and should populate real PDF/table boundary evidence without weakening generated/unmapped source-map semantics.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Final Verification
+
+- Completed Phase 32 Step 6 prompt-neutrality and final project verification.
+- Confirmed Phase 32 remains inside scope: no prompt body changes, runtime config changes, domain-pack runtime behavior changes, architecture-rule changes, or runtime LLM stage changes.
+- Filled the Phase 32 board summary and left the phase awaiting operator acceptance before Phase 33.
+- Verification:
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+  - `make test` (`287 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 32 Step 5 Audit Boundary Payload Coverage
 

@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 5 of 6
+Step: 6 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_32_boundary_preserving_ingestion_model.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 5 complete. Next: Step 6 - add prompt-neutrality verification and final project verification.
+Step 6 complete. Phase 32 final verification passed; awaiting operator acceptance before Phase 33.
 
 ---
 
@@ -22,7 +22,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Add identity source maps for plain text and Markdown ingestion.
 - [x] Step 4: Add generated-segment and source-support validation.
 - [x] Step 5: Add audit persistence/readback coverage for boundary fields.
-- [ ] Step 6: Add prompt-neutrality verification and final project verification.
+- [x] Step 6: Add prompt-neutrality verification and final project verification.
 
 ---
 
@@ -83,6 +83,8 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_audit_document_boundaries.py:1` | Added audit document boundary payload round-trip and conflict regression tests. | Step 5 |
 | `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 5 complete and recorded verification. | Step 5 |
 | `PROGRESS.md:1` | Recorded Phase 32 Step 5 completion and next step. | Step 5 |
+| `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 6 complete, recorded final verification, and filled the phase summary. | Step 6 |
+| `PROGRESS.md:1` | Recorded Phase 32 final verification and operator-acceptance handoff. | Step 6 |
 
 ---
 
@@ -115,18 +117,19 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_plain_text_preserves_hashes_offsets_and_stable_id tests/unit/test_ingestion.py::test_ingest_markdown_detects_format_and_records_audit_document -q` first failed because ingested documents had empty `source_map`, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q`; `make lint`; `git diff --check`; `wc -l src/extractor/ingestion/documents.py tests/unit/test_ingestion.py` | PASS | 2026-05-10 |
 | 4 | `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets -q` first failed because PDF `source_map` was empty, then passed with 1 passed; `python3 -m pytest tests/unit/test_source_support.py -q` first failed with missing source-backed span helpers, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q`; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py -q`; `wc -l src/extractor/source_support.py src/extractor/ingestion/documents.py src/extractor/contracts/ingestion.py tests/unit/test_source_support.py tests/unit/test_ingestion.py`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 | 5 | `python3 -m pytest tests/unit/test_audit_document_boundaries.py -q`; `python3 -m pytest tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q`; `make lint`; `git diff --check`; `wc -l tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py` | PASS | 2026-05-10 |
+| 6 | `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json`; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json`; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make test`; `make lint`; `make smoke`; `git diff --check`; `git diff --exit-code -- prompts`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -150,7 +153,9 @@ Reverse chronological. Log every session.
 - Tests for Step 3: `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_plain_text_preserves_hashes_offsets_and_stable_id tests/unit/test_ingestion.py::test_ingest_markdown_detects_format_and_records_audit_document -q` first failed because ingested documents had empty `source_map`, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q` passed with 31 passed; `make lint` passed; `git diff --check` passed; line counts are 192 for `src/extractor/ingestion/documents.py` and 146 for `tests/unit/test_ingestion.py`.
 - Tests for Step 4: `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets -q` first failed because PDF `source_map` was empty, then passed with 1 passed; `python3 -m pytest tests/unit/test_source_support.py -q` first failed with missing source-backed span helpers, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q` passed with 33 passed; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py -q` passed with 65 passed; `make lint` passed; `git diff --check` passed; line counts remain below 400 for touched files.
 - Tests for Step 5: `python3 -m pytest tests/unit/test_audit_document_boundaries.py -q` passed with 2 passed; `python3 -m pytest tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q` passed with 35 passed; `make lint` passed; `git diff --check` passed; `tests/unit/test_audit_document_boundaries.py` is 147 lines and the existing oversized audit-store test was not grown.
-- Next: Step 6 - add prompt-neutrality verification and final project verification.
+- Completed Step 6: ran prompt-neutrality verification, canonical project gates, and Phase 29-31 eval gates without changing prompts, configs, domain packs, or runtime LLM stages.
+- Tests for Step 6: `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, and expected/provenance calibration error 0.048979591836734754; `make test` passed with 287 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator acceptance of Phase 32. Do not start Phase 33 until explicit continuation after acceptance.
 
 ---
 
@@ -162,14 +167,14 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: _(phase in progress; see Work Log)_
-- Deferred: _(phase in progress)_
-- Added beyond spec: _(phase in progress)_
+- Built as specified: focused ingestion-boundary contracts, additive defaulted `Document` boundary fields, plain text and Markdown identity source maps, generated/unmapped PDF source-map segments, source-map-aware source-support helpers, audit payload round-trip/conflict coverage, and final prompt-neutrality/project verification.
+- Deferred: full PDF table extraction, DOCX/HTML/email/OCR parser execution, OCR confidence population, and layout-aware chunking remain downstream work for later phases.
+- Added beyond spec: split `Document` and `PageSpan` into `src/extractor/contracts/documents.py` to keep `src/extractor/contracts/models.py` below the 400-line growth boundary while preserving existing imports.
 
 ### Lessons for downstream phases
 
-- _(phase in progress)_
+- Generated and unmapped source-map regions make parser-introduced text auditable without treating it as source-backed evidence.
+- Existing audit payload JSON was sufficient for boundary persistence, so downstream parser phases can populate boundary fields incrementally without an audit migration.
+- Later ingestion and chunking phases should reuse `require_source_backed_span(...)` where exact source evidence is mandatory.
