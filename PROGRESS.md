@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 Step 1 complete for Evaluation Harness: Per-Field Gates.
-- Next required work: Phase 29 Step 2 - add provenance and invariant breakdown grouping coverage.
+- Current status: Phase 29 Step 2 complete for Evaluation Harness: Per-Field Gates.
+- Next required work: Phase 29 Step 3 - add suite manifest contracts, loader, and core suite artifact.
 - Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Step 2 Provenance and Invariant Breakdowns
+
+- Extended category and field metrics to report exact provenance recall for shifted-span matches.
+- Grouped invariant violations by the violated report data point category and field when the violation carries a known `data_point_id`.
+- Kept invariant violations without a report data point as global-only.
+- Verification:
+  - `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q` first failed with grouped invariant count `0 != 2`
+  - `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q`
+  - `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` (`16 passed, 2 skipped`)
+  - `git diff --check`
+  - `make lint`
 
 ### 2026-05-10 — Phase 29 Step 1 Category and Field Breakdowns
 

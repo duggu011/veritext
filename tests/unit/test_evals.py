@@ -201,7 +201,9 @@ def test_evaluate_report_flags_source_span_invariant_breaks() -> None:
         }
     )
     broken_point = report.data_points[0].model_copy(update={"source_span": shifted})
-    report = report.model_copy(update={"data_points": (broken_point, *report.data_points[1:])})
+    report = report.model_copy(
+        update={"data_points": (broken_point, *report.data_points[1:])}
+    )
 
     result = evaluate_report(case, report)
 
@@ -212,6 +214,21 @@ def test_evaluate_report_flags_source_span_invariant_breaks() -> None:
         "source_span_byte_mismatch",
         "source_span_text_mismatch",
     }
+
+    category_metrics = {
+        breakdown.category: breakdown.metrics for breakdown in result.category_metrics
+    }
+    financial_metrics = category_metrics["FinancialMetric"]
+    assert financial_metrics.provenance_recall == pytest.approx(1 / 2)
+    assert financial_metrics.invariant_violation_count == 2
+
+    field_metrics = {
+        (breakdown.category, breakdown.field_name): breakdown.metrics
+        for breakdown in result.field_metrics
+    }
+    statement_metrics = field_metrics[("FinancialMetric", "statement")]
+    assert statement_metrics.provenance_recall == pytest.approx(1 / 2)
+    assert statement_metrics.invariant_violation_count == 2
 
 
 def test_load_evaluation_case_rejects_bad_expected_provenance(tmp_path: Path) -> None:

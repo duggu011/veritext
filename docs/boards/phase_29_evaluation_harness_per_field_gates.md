@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 1 of 5
+Step: 2 of 5
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_29_evaluation_harness_per_field_gates.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 1 complete. Step 2 is next: add provenance and invariant breakdown grouping coverage.
+Step 2 complete. Step 3 is next: add suite manifest contracts, loader, and core suite artifact.
 
 ---
 
@@ -18,7 +18,7 @@ Step 1 complete. Step 2 is next: add provenance and invariant breakdown grouping
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
 - [x] Step 1: Add category and field metric breakdown contracts and scorer coverage.
-- [ ] Step 2: Add provenance and invariant breakdown grouping coverage.
+- [x] Step 2: Add provenance and invariant breakdown grouping coverage.
 - [ ] Step 3: Add suite manifest contracts, loader, and core suite artifact.
 - [ ] Step 4: Add suite scoring, threshold failure reporting, and CLI output.
 - [ ] Step 5: Add prompt-neutrality verification and final project verification.
@@ -60,6 +60,8 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/evals/scoring.py:70` | Added deterministic category and field metric aggregation to `evaluate_report(...)`. | Step 1 |
 | `src/extractor/evals/__init__.py:3` | Exported new eval breakdown model contracts. | Step 1 |
 | `tests/unit/test_evals.py:28` | Added category and field metric coverage for passing fixtures and grouped false positives/false negatives. | Step 1 |
+| `src/extractor/evals/scoring.py:84` | Grouped invariant violations by violated report data point category and field. | Step 2 |
+| `tests/unit/test_evals.py:192` | Added shifted-span provenance recall and invariant grouping assertions for category and field metrics. | Step 2 |
 
 ---
 
@@ -88,6 +90,7 @@ _(No issues yet.)_
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 | 1 | `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q` first failed with missing `EvaluationResult.category_metrics`; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q`; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_groups_false_positive_and_false_negative_metrics -q`; `python3 -m pytest tests/unit/test_evals.py -q`; `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
+| 2 | `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q` first failed with grouped invariant count `0 != 2`; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q`; `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -110,10 +113,10 @@ Reverse chronological. Log every session.
 ### 2026-05-10 - Session 1
 
 - Resumed after operator approved Phase 29 with `continue`.
-- Completed: opened this board, pinned Phase 29 open-question resolutions, updated active phase tracking, added additive category and field metric contracts, and added scorer aggregation for passing, false-positive, and false-negative grouped metrics.
+- Completed: opened this board, pinned Phase 29 open-question resolutions, updated active phase tracking, added additive category and field metric contracts, added scorer aggregation for passing, false-positive, and false-negative grouped metrics, and grouped exact provenance recall plus invariant violations by category and field.
 - Issues found: none.
-- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` returned no matches; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q` first failed with missing `EvaluationResult.category_metrics`, then passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_groups_false_positive_and_false_negative_metrics -q` passed; `python3 -m pytest tests/unit/test_evals.py -q` passed with 14 passed; `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` passed with 16 passed and 2 skipped; `git diff --check` passed; `make lint` passed.
-- Next: Step 2 - add provenance and invariant breakdown grouping coverage.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` returned no matches; `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_29_evaluation_harness_per_field_gates.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_includes_category_and_field_metrics_for_passing_fixture -q` first failed with missing `EvaluationResult.category_metrics`, then passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_groups_false_positive_and_false_negative_metrics -q` passed; `python3 -m pytest tests/unit/test_evals.py -q` passed with 14 passed; `python3 -m pytest tests/unit/test_evals.py::test_evaluate_report_flags_source_span_invariant_breaks -q` first failed with grouped invariant count `0 != 2`, then passed; `python3 -m pytest tests/unit/test_evals.py tests/integration/test_recall_baseline.py -q` passed with 16 passed and 2 skipped; `git diff --check` passed; `make lint` passed.
+- Next: Step 3 - add suite manifest contracts, loader, and core suite artifact.
 
 ---
 

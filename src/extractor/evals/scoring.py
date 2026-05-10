@@ -85,11 +85,13 @@ def evaluate_report(case: EvaluationCase, report: ExtractionReport) -> Evaluatio
         expected=case.expected_data_points,
         actual=report.data_points,
         matches=matches,
+        invariant_violations=invariant_violations,
     )
     field_metrics = _build_field_metric_breakdowns(
         expected=case.expected_data_points,
         actual=report.data_points,
         matches=matches,
+        invariant_violations=invariant_violations,
     )
     thresholds = case.thresholds
     passed = (
@@ -119,8 +121,10 @@ def _build_category_metric_breakdowns(
     expected: tuple[ExpectedDataPoint, ...],
     actual: tuple[DataPoint, ...],
     matches: list[DataPointMatch],
+    invariant_violations: list[InvariantViolation],
 ) -> list[CategoryMetricBreakdown]:
     expected_by_id = {point.expected_id: point for point in expected}
+    actual_by_id = {point.data_point_id: point for point in actual}
     used_actual_ids = {match.data_point_id for match in matches}
 
     categories = {
@@ -148,7 +152,12 @@ def _build_category_metric_breakdowns(
             exact_provenance_matches=sum(
                 1 for match in true_positive_matches if match.exact_provenance
             ),
-            invariant_violation_count=0,
+            invariant_violation_count=sum(
+                1
+                for violation in invariant_violations
+                if violation.data_point_id in actual_by_id
+                and actual_by_id[violation.data_point_id].category == category
+            ),
         )
         breakdowns.append(CategoryMetricBreakdown(category=category, metrics=metrics))
     return breakdowns
@@ -159,8 +168,10 @@ def _build_field_metric_breakdowns(
     expected: tuple[ExpectedDataPoint, ...],
     actual: tuple[DataPoint, ...],
     matches: list[DataPointMatch],
+    invariant_violations: list[InvariantViolation],
 ) -> list[FieldMetricBreakdown]:
     expected_by_id = {point.expected_id: point for point in expected}
+    actual_by_id = {point.data_point_id: point for point in actual}
     used_actual_ids = {match.data_point_id for match in matches}
 
     fields = {
@@ -199,7 +210,16 @@ def _build_field_metric_breakdowns(
             exact_provenance_matches=sum(
                 1 for match in true_positive_matches if match.exact_provenance
             ),
-            invariant_violation_count=0,
+            invariant_violation_count=sum(
+                1
+                for violation in invariant_violations
+                if violation.data_point_id in actual_by_id
+                and (
+                    actual_by_id[violation.data_point_id].category,
+                    actual_by_id[violation.data_point_id].field_name,
+                )
+                == (category, field_name)
+            ),
         )
         breakdowns.append(
             FieldMetricBreakdown(
