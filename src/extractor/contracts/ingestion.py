@@ -219,6 +219,12 @@ def validate_ingestion_boundaries(
         if segment.kind == "source" and segment.source_end_byte > context.source_byte_length:
             raise ValueError("source byte range exceeds document source byte length")
         _ensure_text_range_within_context(segment.text_range, context)
+    if boundaries.source_map:
+        last_range = boundaries.source_map[-1].text_range
+        if last_range.end_char != context.text_length:
+            raise ValueError("source_map text ranges must cover document text")
+        if last_range.end_byte != context.text_byte_length:
+            raise ValueError("source_map byte ranges must cover document text bytes")
 
     for span in boundaries.layout_spans:
         _ensure_page_known(span.page_number, page_numbers)

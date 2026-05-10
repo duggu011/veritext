@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from extractor.contracts import LensCandidate
+from extractor.contracts import Document, LensCandidate, SourceSpan
 
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -63,6 +63,24 @@ def value_is_source_supported(candidate: LensCandidate) -> bool:
     source_tokens = {_canonical_token(token) for token in _tokens(source)}
     value_tokens = tuple(_canonical_token(token) for token in _tokens(value))
     return bool(value_tokens) and all(token in source_tokens for token in value_tokens)
+
+
+def source_span_is_source_backed(document: Document, source_span: SourceSpan) -> bool:
+    if not _source_span_matches_document(document, source_span):
+        return False
+    if not document.source_map:
+        return True
+    return _source_map_covers_span_with_source_segments(document, source_span)
+
+
+def require_source_backed_span(document: Document, source_span: SourceSpan) -> None:
+    if not _source_span_matches_document(document, source_span):
+        raise ValueError("source span does not match document text and offsets")
+    if document.source_map and not _source_map_covers_span_with_source_segments(
+        document,
+        source_span,
+    ):
+        raise ValueError("source span overlaps generated or unmapped text")
 
 
 def source_traced_label_value(candidate: LensCandidate) -> bool:
@@ -240,6 +258,42 @@ def _same_normalized(left: str, right: str) -> bool:
     return _collapse_whitespace(left).casefold() == _collapse_whitespace(right).casefold()
 
 
+def _source_span_matches_document(document: Document, source_span: SourceSpan) -> bool:
+    if source_span.doc_id != document.doc_id:
+        return False
+    if source_span.end_char > len(document.text):
+        return False
+    if source_span.end_byte > document.text_byte_length:
+        return False
+    if document.text[source_span.start_char : source_span.end_char] != source_span.text:
+        return False
+    text_bytes = document.text.encode("utf-8")
+    return text_bytes[source_span.start_byte : source_span.end_byte] == source_span.text.encode(
+        "utf-8"
+    )
+
+
+def _source_map_covers_span_with_source_segments(
+    document: Document,
+    source_span: SourceSpan,
+) -> bool:
+    current_char = source_span.start_char
+    current_byte = source_span.start_byte
+    for segment in document.source_map:
+        text_range = segment.text_range
+        if text_range.end_char <= current_char and text_range.end_byte <= current_byte:
+            continue
+        if text_range.start_char > current_char or text_range.start_byte > current_byte:
+            return False
+        if segment.kind != "source":
+            return False
+        current_char = min(text_range.end_char, source_span.end_char)
+        current_byte = min(text_range.end_byte, source_span.end_byte)
+        if current_char == source_span.end_char and current_byte == source_span.end_byte:
+            return True
+    return False
+
+
 def _collapse_whitespace(text: str) -> str:
     return " ".join(text.split())
 
@@ -248,6 +302,8 @@ __all__ = [
     "candidate_source_specificity_rank",
     "correction_expands_source_span",
     "is_label_field",
+    "require_source_backed_span",
+    "source_span_is_source_backed",
     "source_traced_label_value",
     "value_is_source_supported",
 ]

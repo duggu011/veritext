@@ -121,6 +121,19 @@ def test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets(
         assert document.page_map[1].end_char == len("first page\n\nsecond é")
         assert document.page_map[1].start_byte == len("first page\n\n".encode("utf-8"))
         assert document.page_map[1].end_byte == len("first page\n\nsecond é".encode("utf-8"))
+        assert tuple(segment.kind for segment in document.source_map) == (
+            "unmapped",
+            "generated",
+            "unmapped",
+        )
+        assert document.source_map[0].text_range.start_char == 0
+        assert document.source_map[0].text_range.end_char == len("first page")
+        assert document.source_map[1].text_range.start_char == len("first page")
+        assert document.source_map[1].text_range.end_char == len("first page\n\n")
+        assert document.source_map[1].source_start_byte is None
+        assert document.source_map[1].source_end_byte is None
+        assert document.source_map[2].text_range.start_char == len("first page\n\n")
+        assert document.source_map[2].text_range.end_char == len("first page\n\nsecond é")
 
     asyncio.run(run_check())
 

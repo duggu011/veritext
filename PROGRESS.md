@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 Step 3 complete.
-- Next required work: Phase 32 Step 4 - add generated-segment and source-support validation.
+- Current status: Phase 32 Step 4 complete.
+- Next required work: Phase 32 Step 5 - add audit persistence/readback coverage for boundary fields.
 - Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Step 4 Generated Segments and Source Support
+
+- Added generated and unmapped source-map segments for PDF page joins, including generated page separators and unmapped parser-extracted page text.
+- Tightened non-empty source-map validation so source maps must cover document text and byte ranges.
+- Added `source_span_is_source_backed(...)` and `require_source_backed_span(...)` helpers that reject generated or unmapped source-map regions while preserving legacy exact-span behavior when a document has no source map.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets -q` first failed because PDF `source_map` was empty, then passed with 1 passed
+  - `python3 -m pytest tests/unit/test_source_support.py -q` first failed with missing source-backed span helpers, then passed with 2 passed
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q` (`33 passed`)
+  - `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py -q` (`65 passed`)
+  - `wc -l src/extractor/source_support.py src/extractor/ingestion/documents.py src/extractor/contracts/ingestion.py tests/unit/test_source_support.py tests/unit/test_ingestion.py` reported 309, 247, 306, 99, and 159 lines
+  - `git diff --check`
+  - `make lint`
 
 ### 2026-05-10 — Phase 32 Step 3 Text Identity Source Maps
 
