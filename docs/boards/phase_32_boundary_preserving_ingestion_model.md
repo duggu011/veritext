@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 4 of 6
+Step: 5 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_32_boundary_preserving_ingestion_model.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 4 complete. Next: Step 5 - add audit persistence/readback coverage for boundary fields.
+Step 5 complete. Next: Step 6 - add prompt-neutrality verification and final project verification.
 
 ---
 
@@ -21,7 +21,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 2: Add `Document` boundary defaults and export compatibility.
 - [x] Step 3: Add identity source maps for plain text and Markdown ingestion.
 - [x] Step 4: Add generated-segment and source-support validation.
-- [ ] Step 5: Add audit persistence/readback coverage for boundary fields.
+- [x] Step 5: Add audit persistence/readback coverage for boundary fields.
 - [ ] Step 6: Add prompt-neutrality verification and final project verification.
 
 ---
@@ -80,6 +80,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/source_support.py:1` | Added source-map-aware source-span validation helpers. | Step 4 |
 | `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 4 complete and recorded verification. | Step 4 |
 | `PROGRESS.md:1` | Recorded Phase 32 Step 4 completion and next step. | Step 4 |
+| `tests/unit/test_audit_document_boundaries.py:1` | Added audit document boundary payload round-trip and conflict regression tests. | Step 5 |
+| `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 5 complete and recorded verification. | Step 5 |
+| `PROGRESS.md:1` | Recorded Phase 32 Step 5 completion and next step. | Step 5 |
 
 ---
 
@@ -111,6 +114,7 @@ _(No issues yet.)_
 | 2 | `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed because `Document` had no boundary fields and rejected them as extras, then passed with 5 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py tests/unit/test_audit_store.py -q` first exposed a compatibility import for `DocumentFormat`, then passed with 31 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py::test_document_defaults_preserve_existing_constructor_compatibility tests/unit/test_ingestion_boundaries.py::test_document_validates_boundary_fields_against_text_source_and_pages -q`; `make lint`; `git diff --check`; `wc -l src/extractor/contracts/documents.py src/extractor/contracts/models.py src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` | PASS | 2026-05-10 |
 | 3 | `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_plain_text_preserves_hashes_offsets_and_stable_id tests/unit/test_ingestion.py::test_ingest_markdown_detects_format_and_records_audit_document -q` first failed because ingested documents had empty `source_map`, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q`; `make lint`; `git diff --check`; `wc -l src/extractor/ingestion/documents.py tests/unit/test_ingestion.py` | PASS | 2026-05-10 |
 | 4 | `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets -q` first failed because PDF `source_map` was empty, then passed with 1 passed; `python3 -m pytest tests/unit/test_source_support.py -q` first failed with missing source-backed span helpers, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q`; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py -q`; `wc -l src/extractor/source_support.py src/extractor/ingestion/documents.py src/extractor/contracts/ingestion.py tests/unit/test_source_support.py tests/unit/test_ingestion.py`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
+| 5 | `python3 -m pytest tests/unit/test_audit_document_boundaries.py -q`; `python3 -m pytest tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q`; `make lint`; `git diff --check`; `wc -l tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -138,13 +142,15 @@ Reverse chronological. Log every session.
 - Completed Step 2: split `Document`/`PageSpan` into a focused document contract module, added defaulted boundary fields, validated provided boundaries against document text/source/page context, and preserved public contract imports.
 - Completed Step 3: populated identity source-map segments for plain text and Markdown ingestion while preserving existing hashes, stable IDs, page maps, and audit readback.
 - Completed Step 4: marked PDF page text as unmapped and page separators as generated, tightened source-map coverage validation, and added source-map-aware source-span helpers that reject generated/unmapped evidence while preserving legacy exact-span behavior when no source map exists.
+- Completed Step 5: added audit regression coverage proving document boundary fields round-trip through payload JSON and conflicting boundary payloads are rejected for the same document ID.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` returned no matches; `sed -n '261,263p' docs/specs/phase_32_boundary_preserving_ingestion_model.md` confirmed the Open Questions section is `_(None...)`; `rg -n "Phase 32|phase_32_boundary_preserving_ingestion_model.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Tests for Step 1: `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed with missing `BoundaryValidationContext`, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py -q` passed with 20 passed; `wc -l src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` reported 300, 103, and 177 lines; `git diff --check` passed; `make lint` passed.
 - Tests for Step 2: `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed because `Document` had no boundary fields and rejected them as extras, then passed with 5 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py tests/unit/test_audit_store.py -q` first exposed a compatibility import for `DocumentFormat`, then passed with 31 passed; the two focused Step 2 tests passed; `make lint` passed; `git diff --check` passed; line counts are 113 for `contracts/documents.py`, 332 for `contracts/models.py`, 300 for `contracts/ingestion.py`, 102 for `contracts/__init__.py`, and 285 for `test_ingestion_boundaries.py`.
 - Tests for Step 3: `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_plain_text_preserves_hashes_offsets_and_stable_id tests/unit/test_ingestion.py::test_ingest_markdown_detects_format_and_records_audit_document -q` first failed because ingested documents had empty `source_map`, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q` passed with 31 passed; `make lint` passed; `git diff --check` passed; line counts are 192 for `src/extractor/ingestion/documents.py` and 146 for `tests/unit/test_ingestion.py`.
 - Tests for Step 4: `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets -q` first failed because PDF `source_map` was empty, then passed with 1 passed; `python3 -m pytest tests/unit/test_source_support.py -q` first failed with missing source-backed span helpers, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q` passed with 33 passed; `python3 -m pytest tests/unit/test_executor.py tests/unit/test_critic.py tests/unit/test_verifier.py -q` passed with 65 passed; `make lint` passed; `git diff --check` passed; line counts remain below 400 for touched files.
-- Next: Step 5 - add audit persistence/readback coverage for boundary fields.
+- Tests for Step 5: `python3 -m pytest tests/unit/test_audit_document_boundaries.py -q` passed with 2 passed; `python3 -m pytest tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q` passed with 35 passed; `make lint` passed; `git diff --check` passed; `tests/unit/test_audit_document_boundaries.py` is 147 lines and the existing oversized audit-store test was not grown.
+- Next: Step 6 - add prompt-neutrality verification and final project verification.
 
 ---
 

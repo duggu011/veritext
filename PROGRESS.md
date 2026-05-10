@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 Step 4 complete.
-- Next required work: Phase 32 Step 5 - add audit persistence/readback coverage for boundary fields.
+- Current status: Phase 32 Step 5 complete.
+- Next required work: Phase 32 Step 6 - add prompt-neutrality verification and final project verification.
 - Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Step 5 Audit Boundary Payload Coverage
+
+- Added `tests/unit/test_audit_document_boundaries.py` instead of growing the oversized existing audit-store test file.
+- Covered audit document boundary payload round-trip through SQLite payload JSON.
+- Covered same-document-id conflict rejection when boundary metadata differs.
+- Confirmed no audit schema migration or source change was required.
+- Verification:
+  - `python3 -m pytest tests/unit/test_audit_document_boundaries.py -q` (`2 passed`)
+  - `python3 -m pytest tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q` (`35 passed`)
+  - `make lint`
+  - `git diff --check`
+  - `wc -l tests/unit/test_audit_document_boundaries.py tests/unit/test_audit_store.py` reported 147 and 412 lines
 
 ### 2026-05-10 — Phase 32 Step 4 Generated Segments and Source Support
 
