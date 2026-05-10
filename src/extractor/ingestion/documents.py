@@ -7,6 +7,7 @@ from pathlib import Path
 
 from extractor.audit import AuditStore
 from extractor.contracts import Document, PageSpan
+from extractor.contracts.ingestion import SourceMapSegment, TextRange
 from extractor.contracts.models import DocumentFormat
 
 
@@ -68,6 +69,7 @@ async def ingest_document(
         source_byte_length=len(source_bytes),
         text_byte_length=len(text_bytes),
         page_map=page_map,
+        source_map=_identity_source_map(text) if document_format in ("plain_text", "markdown") else (),
     )
 
     if audit_store is not None:
@@ -106,6 +108,26 @@ def _single_page_span(text: str) -> PageSpan:
         end_char=len(text),
         start_byte=0,
         end_byte=len(text.encode("utf-8")),
+    )
+
+
+def _identity_source_map(text: str) -> tuple[SourceMapSegment, ...]:
+    text_bytes = text.encode("utf-8")
+    return (
+        SourceMapSegment(
+            segment_id="source:0",
+            kind="source",
+            text_range=TextRange(
+                start_char=0,
+                end_char=len(text),
+                start_byte=0,
+                end_byte=len(text_bytes),
+            ),
+            source_start_byte=0,
+            source_end_byte=len(text_bytes),
+            source_start_char=0,
+            source_end_char=len(text),
+        ),
     )
 
 

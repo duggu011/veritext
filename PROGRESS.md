@@ -5,11 +5,22 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 Step 2 complete.
-- Next required work: Phase 32 Step 3 - add identity source maps for plain text and Markdown ingestion.
+- Current status: Phase 32 Step 3 complete.
+- Next required work: Phase 32 Step 4 - add generated-segment and source-support validation.
 - Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Step 3 Text Identity Source Maps
+
+- Added identity source-map population for existing UTF-8 plain text and Markdown ingestion.
+- Preserved existing document IDs, source/text hashes, page maps, text, byte lengths, and audit readback behavior.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion.py::test_ingest_plain_text_preserves_hashes_offsets_and_stable_id tests/unit/test_ingestion.py::test_ingest_markdown_detects_format_and_records_audit_document -q` first failed because ingested documents had empty `source_map`, then passed with 2 passed
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_audit_store.py -q` (`31 passed`)
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/ingestion/documents.py tests/unit/test_ingestion.py` reported 192 and 146 lines
 
 ### 2026-05-10 — Phase 32 Step 2 Document Boundary Defaults
 

@@ -45,6 +45,17 @@ def test_ingest_plain_text_preserves_hashes_offsets_and_stable_id(tmp_path: Path
         assert document.page_map[0].end_char == len(text)
         assert document.page_map[0].start_byte == 0
         assert document.page_map[0].end_byte == len(source_bytes)
+        assert len(document.source_map) == 1
+        assert document.source_map[0].segment_id == "source:0"
+        assert document.source_map[0].kind == "source"
+        assert document.source_map[0].text_range.start_char == 0
+        assert document.source_map[0].text_range.end_char == len(text)
+        assert document.source_map[0].text_range.start_byte == 0
+        assert document.source_map[0].text_range.end_byte == len(source_bytes)
+        assert document.source_map[0].source_start_byte == 0
+        assert document.source_map[0].source_end_byte == len(source_bytes)
+        assert document.source_map[0].source_start_char == 0
+        assert document.source_map[0].source_end_char == len(text)
 
     asyncio.run(run_check())
 
@@ -60,6 +71,10 @@ def test_ingest_markdown_detects_format_and_records_audit_document(tmp_path: Pat
 
         assert detect_document_format(source) == "markdown"
         assert document.format == "markdown"
+        assert len(document.source_map) == 1
+        assert document.source_map[0].kind == "source"
+        assert document.source_map[0].text_range.end_char == len(document.text)
+        assert document.source_map[0].source_end_byte == len(document.text.encode("utf-8"))
         assert stored == document
 
     asyncio.run(run_check())
