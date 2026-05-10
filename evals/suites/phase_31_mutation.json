@@ -1,0 +1,5 @@
+{
+  "description": "Phase 31 mutation robustness suite. Step 4 adds source mutation fixtures and declared source-sensitivity changes across four Phase 30 target-domain fixtures.",
+  "mutations": [],
+  "suite_id": "phase_31_mutation"
+}

@@ -7,6 +7,16 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from extractor.evals.models import EvaluationCase, ExpectedDataPoint
+from extractor.evals.mutation import (
+    MutationDeclaredChange,
+    MutationFixture,
+    MutationFixtureResult,
+    MutationSuiteManifest,
+    MutationSuiteResult,
+    SourceSensitivityFailure,
+    evaluate_mutation_manifest,
+    load_mutation_manifest,
+)
 from extractor.evals.scoring import (
     EvaluationError,
     load_evaluation_case,
@@ -74,43 +84,45 @@ def load_adversarial_manifest(
     except ValidationError as exc:
         raise EvaluationError(f"Invalid adversarial manifest: {path}: {exc}") from exc
 
-    root = Path(repo_root) if repo_root is not None else Path.cwd()
-    resolved_root = root.resolve()
+    resolved_root = (Path(repo_root) if repo_root is not None else Path.cwd()).resolve()
     for pair in manifest.pairs:
-        base_case_path = _validate_repo_relative_file(
+        paths = _validate_repo_relative_files(
             pair_id=pair.pair_id,
-            path_value=pair.base_case_path,
-            path_label="base_case_path",
             repo_root=resolved_root,
+            values={
+                "base_case_path": pair.base_case_path,
+                "base_report_path": pair.base_report_path,
+                "variant_case_path": pair.variant_case_path,
+                "variant_report_path": pair.variant_report_path,
+            },
         )
-        _validate_repo_relative_file(
-            pair_id=pair.pair_id,
-            path_value=pair.base_report_path,
-            path_label="base_report_path",
-            repo_root=resolved_root,
-        )
-        variant_case_path = _validate_repo_relative_file(
-            pair_id=pair.pair_id,
-            path_value=pair.variant_case_path,
-            path_label="variant_case_path",
-            repo_root=resolved_root,
-        )
-        _validate_repo_relative_file(
-            pair_id=pair.pair_id,
-            path_value=pair.variant_report_path,
-            path_label="variant_report_path",
-            repo_root=resolved_root,
-        )
-        base_case = load_evaluation_case(base_case_path)
-        variant_case = load_evaluation_case(variant_case_path)
-        load_extraction_report(resolved_root / pair.base_report_path)
-        load_extraction_report(resolved_root / pair.variant_report_path)
+        base_case = load_evaluation_case(paths["base_case_path"])
+        variant_case = load_evaluation_case(paths["variant_case_path"])
+        load_extraction_report(paths["base_report_path"])
+        load_extraction_report(paths["variant_report_path"])
         _validate_no_changed_text_copied_offsets(
             pair_id=pair.pair_id,
             base_case=base_case,
             variant_case=variant_case,
         )
     return manifest
+
+
+def _validate_repo_relative_files(
+    *,
+    pair_id: str,
+    repo_root: Path,
+    values: dict[str, str],
+) -> dict[str, Path]:
+    return {
+        label: _validate_repo_relative_file(
+            pair_id=pair_id,
+            path_value=value,
+            path_label=label,
+            repo_root=repo_root,
+        )
+        for label, value in values.items()
+    }
 
 
 def _validate_repo_relative_file(
@@ -147,9 +159,7 @@ def _validate_no_changed_text_copied_offsets(
     base_case: EvaluationCase,
     variant_case: EvaluationCase,
 ) -> None:
-    base_points = {
-        point.expected_id: point for point in base_case.expected_data_points
-    }
+    base_points = {point.expected_id: point for point in base_case.expected_data_points}
     for variant_point in variant_case.expected_data_points:
         base_point = base_points.get(variant_point.expected_id)
         if base_point is None:
@@ -177,5 +187,13 @@ __all__ = [
     "AdversarialFixturePair",
     "AdversarialMode",
     "AdversarialSuiteManifest",
+    "MutationDeclaredChange",
+    "MutationFixture",
+    "MutationFixtureResult",
+    "MutationSuiteManifest",
+    "MutationSuiteResult",
+    "SourceSensitivityFailure",
+    "evaluate_mutation_manifest",
     "load_adversarial_manifest",
+    "load_mutation_manifest",
 ]

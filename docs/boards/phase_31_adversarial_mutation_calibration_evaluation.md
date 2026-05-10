@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 2 of 6
+Step: 3 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Step 2 complete. Next: Step 3 - add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
+Step 3 complete. Next: Step 4 - add mutation fixtures and strict source-sensitivity gates.
 
 ---
 
@@ -19,7 +19,7 @@ From the approved spec. Check off only after verification and commit or explicit
 
 - [x] Step 1: Add adversarial manifest contracts, loader validation, and suite skeleton.
 - [x] Step 2: Add adversarial fixture variants and strict suite gates.
-- [ ] Step 3: Add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
+- [x] Step 3: Add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
 - [ ] Step 4: Add mutation fixtures and strict source-sensitivity gates.
 - [ ] Step 5: Add calibration report generation and CLI JSON output.
 - [ ] Step 6: Add prompt-neutrality verification and final project verification.
@@ -80,6 +80,13 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_eval_robustness.py:1` | Added adversarial manifest coverage and strict variant report scoring assertions. | Step 2 |
 | `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 2 complete and recorded verification. | Step 2 |
 | `PROGRESS.md:1` | Recorded Phase 31 Step 2 completion and next step. | Step 2 |
+| `src/extractor/evals/mutation.py:1` | Added mutation manifest contracts, repo-relative loader validation, declared-change validation, source-sensitivity result models, and mutation source-sensitivity scoring. | Step 3 |
+| `src/extractor/evals/robustness.py:1` | Re-exported mutation contracts and scorer from the Phase 31 robustness surface while preserving adversarial manifest behavior. | Step 3 |
+| `src/extractor/evals/__init__.py:1` | Exported mutation manifest contracts, result models, loader, and scorer. | Step 3 |
+| `evals/suites/phase_31_mutation.json:1` | Added empty Phase 31 mutation suite skeleton for Step 4 fixture mutations. | Step 3 |
+| `tests/unit/test_eval_robustness.py:1` | Added mutation manifest skeleton, duplicate ID, path, empty-change, absent-retired-value, and source-sensitivity failure coverage. | Step 3 |
+| `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 3 complete and recorded verification. | Step 3 |
+| `PROGRESS.md:1` | Recorded Phase 31 Step 3 completion and next step. | Step 3 |
 
 ---
 
@@ -109,6 +116,7 @@ _(No issues yet.)_
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 | 1 | `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 | 2 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_adversarial_manifest_covers_variant_domains_and_scores -q` first failed with no variant pairs; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
+| 3 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_loads tests/unit/test_eval_robustness.py::test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_reports_source_sensitivity tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value -q` first failed with missing mutation loader/scorer, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -134,11 +142,13 @@ Reverse chronological. Log every session.
 - Completed: approved the Phase 31 spec for implementation, opened this board, pinned Phase 31 open-question resolutions, and updated active phase tracking.
 - Completed Step 1: added adversarial manifest contracts, loader validation, an empty Phase 31 adversarial suite skeleton, and test coverage for duplicate pair IDs, bad paths, unsupported modes, and copied offsets with changed variant text.
 - Completed Step 2: added SEC disclosure, regulatory order, insurance policy, and procurement RFP distractor-insertion adversarial variants; updated the adversarial manifest with four pairs; and added strict static report scoring assertions for every variant.
+- Completed Step 3: added mutation manifest contracts, an empty mutation suite skeleton, declared-change validation, mutation result models, source-sensitivity scoring, and tests for retained retired values and missing introduced values.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` returned no matches; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Tests for Step 1: `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 29 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
 - Tests for Step 2: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_adversarial_manifest_covers_variant_domains_and_scores -q` first failed with no variant pairs, then passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 5 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 30 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; Phase 31 adversarial summary reported 4 pairs and each variant had 5 expected data points with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, and zero invariant violations; `make lint` passed; `git diff --check` passed.
-- Next: Step 3 - add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
+- Tests for Step 3: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_loads tests/unit/test_eval_robustness.py::test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_reports_source_sensitivity tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value -q` first failed with missing mutation loader/scorer, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 34 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
+- Next: Step 4 - add mutation fixtures and strict source-sensitivity gates.
 
 ---
 
