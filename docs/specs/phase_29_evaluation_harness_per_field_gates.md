@@ -1,6 +1,6 @@
 # Phase 29 - Evaluation Harness: Per-Field Gates
 
-Status: draft opened after Phase 28 operator acceptance on 2026-05-10. Implementation starts only after operator approval and creation of `docs/boards/phase_29_evaluation_harness_per_field_gates.md`.
+Status: approved for implementation after operator continuation on 2026-05-10. Board: `docs/boards/phase_29_evaluation_harness_per_field_gates.md`.
 
 Date opened: 2026-05-10
 

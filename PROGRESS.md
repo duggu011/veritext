@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 28 - Legal Contracts Domain Pack v1
-- Current status: Phase 29 spec draft is opened for Evaluation Harness: Per-Field Gates.
-- Next required work: Operator review and approval of `docs/specs/phase_29_evaluation_harness_per_field_gates.md`. Do not create the Phase 29 board or begin implementation until the spec is approved.
+- Current status: Phase 29 board is open for Evaluation Harness: Per-Field Gates.
+- Next required work: Phase 29 Step 1 - add category and field metric breakdown contracts and scorer coverage.
 - Next-phase context: Phase 29 should upgrade evaluation from aggregate fixture metrics to suite, category, and field gates before broader corpus expansion in Phase 30.
 
 ## Session Log
+
+### 2026-05-10 — Phase 29 Board Opening
+
+- Approved Phase 29 for implementation after operator continuation with `continue`.
+- Created active board `docs/boards/phase_29_evaluation_harness_per_field_gates.md`.
+- Pinned Phase 29 implementation open-question resolutions:
+  - Use `veritext-eval --suite <manifest>` for suite scoring.
+  - Keep grouped thresholds in suite manifests only.
+  - Limit the first suite to fixtures with checked-in `report.example.json` files.
+  - Include full missing and unexpected ID lists by default in JSON output.
+- Updated `docs/boards/README.md` to show Phase 29 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/README.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`
+  - `rg -n "Phase 29|phase_29_evaluation_harness_per_field_gates.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_29_evaluation_harness_per_field_gates.md docs/boards/phase_29_evaluation_harness_per_field_gates.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Codex Session Goal Guidance
 
