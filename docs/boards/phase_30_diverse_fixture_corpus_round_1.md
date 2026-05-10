@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 4
+Step: 1 of 4
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_30_diverse_fixture_corpus_round_1.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Board opened after operator continuation. Next: Step 1 - add corpus inventory validation and Phase 30 suite skeleton.
+Step 1 complete. Next: Step 2 - add SEC, regulatory, standards, and procurement fixtures.
 
 ---
 
@@ -17,7 +17,7 @@ Board opened after operator continuation. Next: Step 1 - add corpus inventory va
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add corpus inventory validation and Phase 30 suite skeleton.
+- [x] Step 1: Add corpus inventory validation and Phase 30 suite skeleton.
 - [ ] Step 2: Add SEC, regulatory, standards, and procurement fixtures.
 - [ ] Step 3: Add clinical, FDA-label, insurance, and scientific fixtures.
 - [ ] Step 4: Add complete suite thresholds, prompt-neutrality verification, and final project verification.
@@ -56,6 +56,8 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_30_diverse_fixture_corpus_round_1.md:1` | Active Phase 30 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_eval_suites.py:208` | Added Phase 30 suite skeleton scoring and threshold-coverage validation. | Step 1 |
+| `evals/suites/phase_30_diverse_corpus_round_1.json:1` | Added strict Phase 30 suite skeleton with `legal_contracts_core`. | Step 1 |
 
 ---
 
@@ -83,6 +85,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`; `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
+| 1 | `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing `phase_30_diverse_corpus_round_1.json`; `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`; `python3 -m pytest tests/unit/test_eval_suites.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `git diff --check` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -106,9 +109,11 @@ Reverse chronological. Log every session.
 
 - Resumed after operator approved Phase 30 with `continue`.
 - Completed: opened this board, pinned Phase 30 open-question resolutions, and updated active phase tracking.
+- Completed Step 1: added Phase 30 suite skeleton validation, added `evals/suites/phase_30_diverse_corpus_round_1.json` with strict `legal_contracts_core` thresholds, and verified both Phase 29 and Phase 30 suite CLIs.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md` returned no matches; `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
-- Next: Step 1 - add corpus inventory validation and Phase 30 suite skeleton.
+- Tests for Step 1: `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing `phase_30_diverse_corpus_round_1.json`, then passed; `python3 -m pytest tests/unit/test_eval_suites.py -q` passed with 11 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 9 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `git diff --check` passed.
+- Next: Step 2 - add SEC, regulatory, standards, and procurement fixtures.
 
 ---
 

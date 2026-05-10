@@ -203,6 +203,53 @@ def test_phase_29_core_suite_manifest_loads_static_checked_in_reports() -> None:
     }
 
 
+def test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds() -> None:
+    suites = _suites_module()
+    manifest_path = ROOT / "evals" / "suites" / "phase_30_diverse_corpus_round_1.json"
+
+    manifest = suites.load_suite_manifest(manifest_path, repo_root=ROOT)
+    fixture_ids = {fixture.fixture_id for fixture in manifest.fixtures}
+    assert "legal_contracts_core" in fixture_ids
+    assert all(
+        fixture.report_path.endswith("report.example.json")
+        for fixture in manifest.fixtures
+    )
+    assert manifest.thresholds.global_thresholds.min_precision == 1.0
+    assert manifest.thresholds.global_thresholds.min_recall == 1.0
+    assert manifest.thresholds.global_thresholds.min_f1 == 1.0
+    assert manifest.thresholds.global_thresholds.min_provenance_recall == 1.0
+    assert manifest.thresholds.global_thresholds.max_invariant_violations == 0
+
+    result = suites.evaluate_suite_manifest(manifest_path, repo_root=ROOT)
+
+    assert result.passed is True
+    assert result.suite_id == "phase_30_diverse_corpus_round_1"
+    assert result.metrics.precision == 1.0
+    assert result.metrics.recall == 1.0
+    assert result.metrics.f1 == 1.0
+    assert result.metrics.provenance_recall == 1.0
+    assert result.metrics.invariant_violation_count == 0
+    assert result.threshold_failures == ()
+
+    threshold_categories = {
+        threshold.category for threshold in manifest.thresholds.categories
+    }
+    result_categories = {
+        breakdown.category for breakdown in result.category_metrics
+    }
+    assert result_categories <= threshold_categories
+
+    threshold_fields = {
+        (threshold.category, threshold.field_name)
+        for threshold in manifest.thresholds.fields
+    }
+    result_fields = {
+        (breakdown.category, breakdown.field_name)
+        for breakdown in result.field_metrics
+    }
+    assert result_fields <= threshold_fields
+
+
 def test_evaluate_suite_manifest_scores_static_core_suite() -> None:
     suites = _suites_module()
 

@@ -6,10 +6,23 @@ Running log for repository sessions and accepted phase gates.
 
 - Last completed phase: Phase 29 - Evaluation Harness: Per-Field Gates
 - Current status: Phase 30 board is open.
-- Next required work: Phase 30 Step 1 - add corpus inventory validation and Phase 30 suite skeleton.
+- Next required work: Phase 30 Step 2 - add SEC, regulatory, standards, and procurement fixtures.
 - Next-phase context: Phase 30 should add the first diverse static fixture corpus using Phase 29 suite, category, and field gates without tuning runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 30 Step 1 Suite Skeleton
+
+- Added Phase 30 suite skeleton validation in `tests/unit/test_eval_suites.py`.
+- Added `evals/suites/phase_30_diverse_corpus_round_1.json` with `legal_contracts_core` as the initial baseline fixture and strict global/category/field thresholds.
+- Confirmed the Phase 29 core suite still passes after adding the Phase 30 skeleton.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing `phase_30_diverse_corpus_round_1.json`
+  - `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`
+  - `python3 -m pytest tests/unit/test_eval_suites.py -q` (`11 passed`)
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 9 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 30 Board Opening
 

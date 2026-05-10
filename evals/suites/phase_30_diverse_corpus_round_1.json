@@ -1,0 +1,192 @@
+{
+  "suite_id": "phase_30_diverse_corpus_round_1",
+  "description": "Phase 30 diverse corpus suite skeleton. Step 1 starts with the legal-contract baseline; later steps add new cross-domain fixtures under the same strict gates.",
+  "fixtures": [
+    {
+      "fixture_id": "legal_contracts_core",
+      "case_path": "evals/fixtures/legal_contracts_core/expected.json",
+      "report_path": "evals/fixtures/legal_contracts_core/report.example.json"
+    }
+  ],
+  "thresholds": {
+    "global": {
+      "max_invariant_violations": 0,
+      "min_f1": 1.0,
+      "min_precision": 1.0,
+      "min_provenance_recall": 1.0,
+      "min_recall": 1.0
+    },
+    "categories": [
+      {
+        "category": "ContractDefinition",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "ContractObligation",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "ContractParty",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "EffectiveDate",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "GoverningLaw",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "NoticeProvision",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "PaymentTerm",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "TerminationRight",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      }
+    ],
+    "fields": [
+      {
+        "category": "ContractDefinition",
+        "field_name": "definition_text",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "ContractObligation",
+        "field_name": "duty",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "ContractParty",
+        "field_name": "party_name",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "EffectiveDate",
+        "field_name": "effective_date",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "GoverningLaw",
+        "field_name": "jurisdiction",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "NoticeProvision",
+        "field_name": "method",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "PaymentTerm",
+        "field_name": "fee_description",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "TerminationRight",
+        "field_name": "trigger",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      }
+    ]
+  }
+}
