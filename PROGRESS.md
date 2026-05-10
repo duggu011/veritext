@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 29 - Evaluation Harness: Per-Field Gates
-- Current status: Phase 30 spec draft is open for operator review.
-- Next required work: Operator review and approval of the Phase 30 spec. Do not begin Phase 30 implementation until the spec is approved and a board is created.
+- Current status: Phase 30 board is open.
+- Next required work: Phase 30 Step 1 - add corpus inventory validation and Phase 30 suite skeleton.
 - Next-phase context: Phase 30 should add the first diverse static fixture corpus using Phase 29 suite, category, and field gates without tuning runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 30 Board Opening
+
+- Approved Phase 30 for implementation after operator continuation with `continue`.
+- Created active board `docs/boards/phase_30_diverse_fixture_corpus_round_1.md`.
+- Pinned Phase 30 implementation open-question resolutions:
+  - Require at least eight new cross-domain fixtures in Round 1.
+  - Keep live LLM baseline reports optional and outside required tests.
+  - Add `annotation.md` only for fixtures with non-obvious span-width decisions.
+  - Keep new domain schemas embedded in static report metadata for Phase 30 and defer domain-pack/schema-registry artifacts.
+- Updated `docs/boards/README.md` to show Phase 30 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`
+  - `rg -n "Phase 30|phase_30_diverse_fixture_corpus_round_1.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_30_diverse_fixture_corpus_round_1.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 29 Acceptance and Phase 30 Spec Draft
 

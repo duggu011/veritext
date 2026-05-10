@@ -1,6 +1,6 @@
 # Phase 30 - Diverse Fixture Corpus Round 1
 
-Status: draft for operator review. Implementation starts only after operator approval and board creation.
+Status: approved for implementation after operator continuation on 2026-05-10. Board: `docs/boards/phase_30_diverse_fixture_corpus_round_1.md`.
 
 Date opened: 2026-05-10
 
