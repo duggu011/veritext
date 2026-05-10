@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 Step 5 complete.
-- Next required work: Phase 31 Step 6 - add prompt-neutrality verification and final project verification.
+- Current status: Phase 31 final verification complete; awaiting operator acceptance.
+- Next required work: Operator acceptance of Phase 31. Do not start the next phase until the operator explicitly continues from this phase gate.
 - Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Final Verification
+
+- Completed prompt-neutrality verification and final project gates for Phase 31.
+- Confirmed Phase 31 remains evaluation-only: no prompt body changes, runtime extraction stage changes, runtime config changes, or domain-pack runtime behavior changes.
+- Filled the Phase 31 board summary and left the phase awaiting operator acceptance.
+- Verification:
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed with 4 pairs
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with 4 mutations and source-sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 total data points, 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+  - `make test` (`278 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 31 Step 5 Calibration and CLI JSON
 

@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 5 of 6
+Step: 6 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Step 5 complete. Next: Step 6 - add prompt-neutrality verification and final project verification.
+Step 6 complete. Final verification is complete; awaiting operator acceptance before any next-phase work.
 
 ---
 
@@ -22,7 +22,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
 - [x] Step 4: Add mutation fixtures and strict source-sensitivity gates.
 - [x] Step 5: Add calibration report generation and CLI JSON output.
-- [ ] Step 6: Add prompt-neutrality verification and final project verification.
+- [x] Step 6: Add prompt-neutrality verification and final project verification.
 
 ---
 
@@ -111,6 +111,8 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_eval_robustness.py:1` | Consolidated robustness test imports and formatting to keep the file below the 400-line limit. | Step 5 |
 | `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 5 complete and recorded verification. | Step 5 |
 | `PROGRESS.md:1` | Recorded Phase 31 Step 5 completion and next step. | Step 5 |
+| `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 6 complete, recorded final verification, and filled the phase summary. | Step 6 |
+| `PROGRESS.md:1` | Recorded Phase 31 final verification and next operator gate. | Step 6 |
 
 ---
 
@@ -143,18 +145,19 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_loads tests/unit/test_eval_robustness.py::test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_reports_source_sensitivity tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value -q` first failed with missing mutation loader/scorer, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 | 4 | `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_covers_mutated_domains_and_scores -q` first failed with no checked-in mutation entries, then passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q`; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 | 5 | `python3 -m pytest tests/unit/test_eval_calibration.py -q` first failed with missing `extractor.evals.calibration` and missing Phase 31 CLI flags, then passed with 3 passed; `python3 -m pytest tests/unit/test_eval_calibration.py tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json`; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json`; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
+| 6 | `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json`; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json`; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make test`; `make lint`; `make smoke`; `git diff --check`; `git diff --exit-code -- prompts`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -171,6 +174,7 @@ Reverse chronological. Log every session.
 - Completed Step 3: added mutation manifest contracts, an empty mutation suite skeleton, declared-change validation, mutation result models, source-sensitivity scoring, and tests for retained retired values and missing introduced values.
 - Completed Step 4: added SEC disclosure, regulatory order, insurance policy, and procurement RFP mutation fixtures; updated the mutation manifest with retired and introduced source values; and added strict source-sensitivity scoring assertions for every mutation.
 - Completed Step 5: added deterministic calibration report generation, default confidence bins, public JSON CLI modes for adversarial, mutation, and calibration suites, and calibration tests for deterministic bins and unmatched actual points.
+- Completed Step 6: verified prompts were unchanged, ran final project and evaluation gates, confirmed `AGENTS.md` and `CLAUDE.md` remain byte-identical, and filled the phase summary.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` returned no matches; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
 - Tests for Step 1: `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 29 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
@@ -178,7 +182,8 @@ Reverse chronological. Log every session.
 - Tests for Step 3: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_loads tests/unit/test_eval_robustness.py::test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_reports_source_sensitivity tests/unit/test_eval_robustness.py::test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value -q` first failed with missing mutation loader/scorer, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 34 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
 - Tests for Step 4: `python3 -m pytest tests/unit/test_eval_robustness.py::test_phase_31_mutation_manifest_covers_mutated_domains_and_scores -q` first failed with no checked-in mutation entries, then passed; `python3 -m pytest tests/unit/test_eval_robustness.py -q` passed with 10 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 35 passed; Phase 31 mutation summary reported 4 mutations, source-sensitivity 1.0, each mutation with 5 expected data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero source-sensitivity failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
 - Tests for Step 5: `python3 -m pytest tests/unit/test_eval_calibration.py -q` first failed with missing `extractor.evals.calibration` and missing Phase 31 CLI flags, then passed with 3 passed; `python3 -m pytest tests/unit/test_eval_calibration.py tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 38 passed; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed with 4 pairs; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with 4 mutations and source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 total data points, 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754; Phase 29 and Phase 30 suites remained passing with zero invariant violations and zero threshold failures; `make lint` passed; `git diff --check` passed.
-- Next: Step 6 - add prompt-neutrality verification and final project verification.
+- Tests for Step 6: `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed with 4 pairs; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with 4 mutations and source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 total data points, 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754; `make test` passed with 278 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator acceptance of Phase 31. Do not start the next phase until the operator explicitly continues from this phase gate.
 
 ---
 
@@ -194,10 +199,12 @@ _(Filled in when phase is complete.)_
 
 ### What shipped vs spec
 
-- Built as specified: _(phase in progress; see Work Log)_
-- Deferred: _(phase in progress)_
-- Added beyond spec: _(phase in progress)_
+- Built as specified: adversarial manifests and four distractor variants; mutation manifests, four source mutation fixtures, and source-sensitivity scoring; deterministic calibration JSON; public `--adversarial-suite`, `--mutation-suite`, and `--calibration-suite` eval CLI modes; prompt-neutrality and final verification evidence.
+- Deferred: live LLM robustness baselines remain optional operator-run evidence outside required deterministic gates.
+- Added beyond spec: mutation scoring was split into `src/extractor/evals/mutation.py` to keep evaluation modules below the 400-line file limit while preserving the public robustness export surface.
 
 ### Lessons for downstream phases
 
 - Robustness and calibration work should stay in evaluation artifacts and code until a later approved phase changes runtime behavior.
+- Calibration output is a portable JSON reliability table; plotting or viewer work remains a later reporting/viewer phase if approved.
+- Source-sensitivity fixtures can preserve exact offsets with same-length source mutations, which makes hand audit and static report validation simpler.
