@@ -1,6 +1,6 @@
 # Phase 31 - Adversarial, Mutation, and Calibration Evaluation
 
-Status: draft for operator review after Phase 30 acceptance on 2026-05-10. Implementation is blocked until this spec is approved and a Phase 31 board is created.
+Status: approved for implementation after operator continuation on 2026-05-10. Board: `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`.
 
 Date opened: 2026-05-10
 

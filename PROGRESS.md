@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 spec draft is open; awaiting operator review and approval.
-- Next required work: review `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`; if accepted, create the Phase 31 board before implementation.
+- Current status: Phase 31 board is open for implementation.
+- Next required work: Phase 31 Step 1 - add adversarial manifest contracts, loader validation, and suite skeleton.
 - Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Board Opening
+
+- Approved Phase 31 for implementation after operator continuation with `continue`.
+- Created active board `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`.
+- Pinned Phase 31 implementation open-question resolutions:
+  - Require at least four adversarial variants and four mutation fixtures across at least four Phase 30 target domains.
+  - Keep live LLM robustness baselines optional and outside required tests.
+  - Keep calibration output as deterministic JSON reliability tables without plotting dependencies.
+  - Add evaluation-only robustness contracts rather than changing runtime report, data point, planner, or audit contracts.
+- Updated `docs/boards/README.md` to show Phase 31 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`
+  - `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 30 Acceptance and Phase 31 Spec Draft
 
