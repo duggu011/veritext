@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 31 - Adversarial, Mutation, and Calibration Evaluation
-- Current status: Phase 32 board open.
-- Next required work: Phase 32 Step 1 - add ingestion-boundary contract tests and models.
+- Current status: Phase 32 Step 1 complete.
+- Next required work: Phase 32 Step 2 - add `Document` boundary defaults and export compatibility.
 - Next-phase context: Phase 32 should add domain-neutral ingestion boundary contracts for layout, tables, metadata, source-to-text mapping, and OCR-confidence shape without implementing full PDF/DOCX/HTML/email/OCR parsers or changing runtime extraction behavior.
 
 ## Session Log
+
+### 2026-05-10 — Phase 32 Step 1 Boundary Contracts
+
+- Added focused ingestion-boundary contracts in `src/extractor/contracts/ingestion.py`.
+- Added tests in `tests/unit/test_ingestion_boundaries.py` for source-map source/generator backing, source-map ordering/overlap rejection, duplicate table cell rejection, layout/table/OCR range validation, and page validation.
+- Exported the ingestion-boundary public surface through `extractor.contracts`.
+- Kept existing `Document`, ingestion behavior, prompts, config, eval fixtures, and runtime LLM stages unchanged.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed with missing `BoundaryValidationContext`, then passed with 3 passed
+  - `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py -q` (`20 passed`)
+  - `wc -l src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` reported 300, 103, and 177 lines
+  - `git diff --check`
+  - `make lint`
 
 ### 2026-05-10 — Phase 32 Board Opening
 

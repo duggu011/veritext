@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 6
+Step: 1 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_32_boundary_preserving_ingestion_model.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Board opened after operator approved the Phase 32 spec with `continue`. Next: Step 1 - add ingestion-boundary contract tests and models.
+Step 1 complete. Next: Step 2 - add `Document` boundary defaults and export compatibility.
 
 ---
 
@@ -17,7 +17,7 @@ Board opened after operator approved the Phase 32 spec with `continue`. Next: St
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add ingestion-boundary contract tests and models.
+- [x] Step 1: Add ingestion-boundary contract tests and models.
 - [ ] Step 2: Add `Document` boundary defaults and export compatibility.
 - [ ] Step 3: Add identity source maps for plain text and Markdown ingestion.
 - [ ] Step 4: Add generated-segment and source-support validation.
@@ -58,6 +58,11 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Active Phase 32 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_ingestion_boundaries.py:1` | Added boundary-contract tests for source-map segment backing, ordered/non-overlapping maps, duplicate table cells, and context validation. | Step 1 |
+| `src/extractor/contracts/ingestion.py:1` | Added focused ingestion-boundary Pydantic contracts and boundary context validation helper. | Step 1 |
+| `src/extractor/contracts/__init__.py:1` | Exported the new ingestion-boundary contract surface. | Step 1 |
+| `docs/boards/phase_32_boundary_preserving_ingestion_model.md:1` | Marked Step 1 complete and recorded verification. | Step 1 |
+| `PROGRESS.md:1` | Recorded Phase 32 Step 1 completion and next step. | Step 1 |
 
 ---
 
@@ -85,6 +90,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md`; `sed -n '261,263p' docs/specs/phase_32_boundary_preserving_ingestion_model.md`; `rg -n "Phase 32|phase_32_boundary_preserving_ingestion_model.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/phase_32_boundary_preserving_ingestion_model.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
+| 1 | `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed with missing `BoundaryValidationContext`, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py -q`; `wc -l src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py`; `git diff --check`; `make lint` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -108,9 +114,11 @@ Reverse chronological. Log every session.
 
 - Resumed after operator approved the Phase 32 spec with `continue`.
 - Completed: approved the Phase 32 spec for implementation, opened this board, pinned Phase 32 open-question resolutions, and updated active phase tracking.
+- Completed Step 1: added focused ingestion-boundary contracts for text ranges, metadata, source-map segments, layout spans, table spans/cells, OCR confidence spans, and context validation.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/README.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` returned no matches; `sed -n '261,263p' docs/specs/phase_32_boundary_preserving_ingestion_model.md` confirmed the Open Questions section is `_(None...)`; `rg -n "Phase 32|phase_32_boundary_preserving_ingestion_model.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_32_boundary_preserving_ingestion_model.md docs/boards/phase_32_boundary_preserving_ingestion_model.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
-- Next: Step 1 - add ingestion-boundary contract tests and models.
+- Tests for Step 1: `python3 -m pytest tests/unit/test_ingestion_boundaries.py -q` first failed with missing `BoundaryValidationContext`, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_ingestion.py -q` passed with 20 passed; `wc -l src/extractor/contracts/ingestion.py src/extractor/contracts/__init__.py tests/unit/test_ingestion_boundaries.py` reported 300, 103, and 177 lines; `git diff --check` passed; `make lint` passed.
+- Next: Step 2 - add `Document` boundary defaults and export compatibility.
 
 ---
 
