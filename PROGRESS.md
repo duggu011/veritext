@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 29 - Evaluation Harness: Per-Field Gates
-- Current status: Phase 30 final gate is ready; awaiting operator acceptance.
-- Next required work: accept Phase 30, then open the Phase 31 spec after explicit operator `continue`.
-- Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior.
+- Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
+- Current status: Phase 31 spec draft is open; awaiting operator review and approval.
+- Next required work: review `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`; if accepted, create the Phase 31 board before implementation.
+- Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 30 Acceptance and Phase 31 Spec Draft
+
+- Accepted Phase 30 after operator continuation and kept the completed Phase 30 evidence on `docs/boards/phase_30_diverse_fixture_corpus_round_1.md`.
+- Updated `docs/boards/README.md` so Phase 30 is complete and Phase 31 is active in `SPEC DRAFT` state.
+- Created `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md` from the Phase 26+ roadmap and `docs/PROJECT_OVERVIEW.md` evaluation guidance.
+- Scoped Phase 31 to evaluation-only adversarial fixtures, mutation fixtures, source-sensitivity scoring, and deterministic calibration JSON while preserving existing runtime extraction behavior.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`
+  - `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 30 Final Verification
 

@@ -9,7 +9,7 @@ Last session: 2026-05-10
 Spec: `docs/specs/phase_30_diverse_fixture_corpus_round_1.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Phase 30 final gate ready. Awaiting operator acceptance; do not start Phase 31 without explicit `continue`.
+Phase 30 accepted by the operator on 2026-05-10. Matching commits exist through `d083384`. Phase 31 spec draft is opened; do not begin Phase 31 implementation until its spec is approved and a board is created.
 
 ---
 
@@ -59,6 +59,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/phase_30_diverse_fixture_corpus_round_1.md:1` | Marked Step 4 complete, recorded final verification, and filled the phase summary. | Step 4 |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
 | `PROGRESS.md:1` | Recorded Phase 30 final verification and next operator acceptance gate. | Step 4 |
+| `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Opened draft Phase 31 spec after operator acceptance. | Acceptance |
+| `docs/boards/README.md:1` | Marked Phase 30 complete and Phase 31 active in spec-draft state. | Acceptance |
+| `PROGRESS.md:1` | Recorded Phase 30 acceptance and Phase 31 spec-draft handoff. | Acceptance |
 | `tests/unit/test_eval_suites.py:206` | Added Phase 30 suite scoring, required-fixture, and threshold-coverage validation. | Steps 1-3 |
 | `evals/suites/phase_30_diverse_corpus_round_1.json:1` | Added strict Phase 30 suite skeleton with `legal_contracts_core`. | Step 1 |
 | `evals/suites/phase_30_diverse_corpus_round_1.json:1` | Expanded Phase 30 suite with SEC, regulatory, standards, and procurement fixtures plus strict thresholds for introduced categories and fields. | Step 2 |
@@ -118,6 +121,7 @@ _(No issues yet.)_
 | 2 | `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 2 fixture IDs; `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `git diff --check` | PASS | 2026-05-10 |
 | 3 | `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q` first failed with missing Step 3 fixture IDs; `python3 -m pytest tests/unit/test_eval_suites.py::test_phase_30_diverse_corpus_suite_skeleton_scores_and_covers_thresholds -q`; `python3 -m pytest tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `git diff --check` | PASS | 2026-05-10 |
 | 4 | `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make test`; `make lint`; `make smoke`; `git diff --check`; `git diff --exit-code -- prompts` | PASS | 2026-05-10 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -136,6 +140,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-10 - Session 2
+
+- Resumed after operator accepted Phase 30 with `continue`.
+- Completed: marked Phase 30 complete in the board index, opened the draft Phase 31 spec for adversarial, mutation, and calibration evaluation, and updated `PROGRESS.md`.
+- Issues found: none.
+- Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md` returned no matches; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|SPEC DRAFT|COMPLETE \\(2026-05-10\\)" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_30_diverse_fixture_corpus_round_1.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
+- Next: operator review of `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`. Phase 31 implementation must not begin until the spec is approved and a board is created.
 
 ### 2026-05-10 - Session 1
 
