@@ -34,8 +34,17 @@ from extractor.evals.scoring import (
     load_extraction_report,
 )
 from extractor.evals.suites import evaluate_suite_manifest, load_suite_manifest
+from extractor.evals.robustness import (
+    AdversarialFixturePair,
+    AdversarialMode,
+    AdversarialSuiteManifest,
+    load_adversarial_manifest,
+)
 
 __all__ = [
+    "AdversarialFixturePair",
+    "AdversarialMode",
+    "AdversarialSuiteManifest",
     "CategoryMetricBreakdown",
     "CategoryThreshold",
     "DataPointMatch",
@@ -61,6 +70,7 @@ __all__ = [
     "evaluate_report_file",
     "evaluate_suite_manifest",
     "load_evaluation_case",
+    "load_adversarial_manifest",
     "load_extraction_report",
     "load_suite_manifest",
     "summarize_rejections",

@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 6
+Step: 1 of 6
 Branch: main
 Started: 2026-05-10
 Last session: 2026-05-10
 Spec: `docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:Target domains (ranked by fit)`; `docs/phase_26_plus_roadmap.md`
 
-Phase 31 approved for implementation after operator continuation with `continue`. Board open. Next: Step 1 - add adversarial manifest contracts, loader validation, and suite skeleton.
+Step 1 complete. Next: Step 2 - add adversarial fixture variants and strict suite gates.
 
 ---
 
@@ -17,7 +17,7 @@ Phase 31 approved for implementation after operator continuation with `continue`
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add adversarial manifest contracts, loader validation, and suite skeleton.
+- [x] Step 1: Add adversarial manifest contracts, loader validation, and suite skeleton.
 - [ ] Step 2: Add adversarial fixture variants and strict suite gates.
 - [ ] Step 3: Add mutation manifest contracts, source-sensitivity scoring, and suite skeleton.
 - [ ] Step 4: Add mutation fixtures and strict source-sensitivity gates.
@@ -58,6 +58,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Active Phase 31 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `src/extractor/evals/robustness.py:1` | Added adversarial manifest contracts, repo-relative loader validation, report/case validation, duplicate-pair rejection, mode validation, and copied-offset detection. | Step 1 |
+| `src/extractor/evals/__init__.py:1` | Exported adversarial manifest contracts and loader. | Step 1 |
+| `evals/suites/phase_31_adversarial.json:1` | Added empty Phase 31 adversarial suite skeleton for Step 2 fixture pairs. | Step 1 |
+| `tests/unit/test_eval_robustness.py:1` | Added adversarial manifest loader, skeleton, path, mode, duplicate, and copied-offset validation coverage. | Step 1 |
+| `docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md:1` | Marked Step 1 complete and recorded verification. | Step 1 |
+| `PROGRESS.md:1` | Recorded Phase 31 Step 1 completion and next step. | Step 1 |
 
 ---
 
@@ -85,6 +91,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md`; `cmp -s AGENTS.md CLAUDE.md` | PASS | 2026-05-10 |
+| 1 | `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json`; `make lint`; `git diff --check` | PASS | 2026-05-10 |
 
 ### Final Gate
 
@@ -108,9 +115,11 @@ Reverse chronological. Log every session.
 
 - Resumed after operator approved Phase 31 with `continue`.
 - Completed: approved the Phase 31 spec for implementation, opened this board, pinned Phase 31 open-question resolutions, and updated active phase tracking.
+- Completed Step 1: added adversarial manifest contracts, loader validation, an empty Phase 31 adversarial suite skeleton, and test coverage for duplicate pair IDs, bad paths, unsupported modes, and copied offsets with changed variant text.
 - Issues found: none.
 - Tests: `git diff --check` passed; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|O[p]en Questions|\\?\\?" docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/README.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` returned no matches; `rg -n "Phase 31|phase_31_adversarial_mutation_calibration_evaluation.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_31_adversarial_mutation_calibration_evaluation.md docs/boards/phase_31_adversarial_mutation_calibration_evaluation.md` found the expected pointers; `cmp -s AGENTS.md CLAUDE.md` passed.
-- Next: Step 1 - add adversarial manifest contracts, loader validation, and suite skeleton.
+- Tests for Step 1: `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed; `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 29 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positive data points, precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, zero invariant violations, and zero threshold failures; `make lint` passed; `git diff --check` passed.
+- Next: Step 2 - add adversarial fixture variants and strict suite gates.
 
 ---
 
@@ -126,9 +135,9 @@ _(Filled in when phase is complete.)_
 
 ### What shipped vs spec
 
-- Built as specified: board opened and Phase 31 implementation decisions pinned.
-- Deferred: implementation steps remain open.
-- Added beyond spec: none.
+- Built as specified: _(phase in progress; see Work Log)_
+- Deferred: _(phase in progress)_
+- Added beyond spec: _(phase in progress)_
 
 ### Lessons for downstream phases
 

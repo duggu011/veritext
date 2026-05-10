@@ -1,0 +1,5 @@
+{
+  "description": "Phase 31 adversarial robustness suite skeleton. Pairs are added in Step 2 after adversarial fixture variants are checked in.",
+  "pairs": [],
+  "suite_id": "phase_31_adversarial"
+}

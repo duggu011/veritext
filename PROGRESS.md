@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 board is open for implementation.
-- Next required work: Phase 31 Step 1 - add adversarial manifest contracts, loader validation, and suite skeleton.
+- Current status: Phase 31 Step 1 complete.
+- Next required work: Phase 31 Step 2 - add adversarial fixture variants and strict suite gates.
 - Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Step 1 Adversarial Manifest Contracts
+
+- Added `src/extractor/evals/robustness.py` with evaluation-only adversarial manifest contracts and loader validation.
+- Added duplicate pair ID rejection, unsupported mode rejection, repo-relative path checks, checked-in case/report validation, and copied-offset detection when a variant changes source text under an existing expected ID.
+- Added empty Phase 31 adversarial suite skeleton `evals/suites/phase_31_adversarial.json`; Step 2 will add fixture pairs.
+- Exported the adversarial manifest contracts and loader from `extractor.evals`.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_robustness.py -q` first failed with missing `extractor.evals.robustness`, then passed with 4 passed
+  - `python3 -m pytest tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` (`29 passed`)
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 31 Board Opening
 
