@@ -26,6 +26,12 @@ from extractor.evals.drops import (
     summarize_rejections,
     summarize_run_drops,
 )
+from extractor.evals.calibration import (
+    DEFAULT_CALIBRATION_BINS,
+    CalibrationBin,
+    CalibrationReport,
+    generate_calibration_report,
+)
 from extractor.evals.scoring import (
     EvaluationError,
     evaluate_report,
@@ -36,14 +42,17 @@ from extractor.evals.scoring import (
 from extractor.evals.suites import evaluate_suite_manifest, load_suite_manifest
 from extractor.evals.robustness import (
     AdversarialFixturePair,
+    AdversarialFixturePairResult,
     AdversarialMode,
     AdversarialSuiteManifest,
+    AdversarialSuiteResult,
     MutationDeclaredChange,
     MutationFixture,
     MutationFixtureResult,
     MutationSuiteManifest,
     MutationSuiteResult,
     SourceSensitivityFailure,
+    evaluate_adversarial_manifest,
     evaluate_mutation_manifest,
     load_adversarial_manifest,
     load_mutation_manifest,
@@ -51,11 +60,16 @@ from extractor.evals.robustness import (
 
 __all__ = [
     "AdversarialFixturePair",
+    "AdversarialFixturePairResult",
     "AdversarialMode",
     "AdversarialSuiteManifest",
+    "AdversarialSuiteResult",
+    "CalibrationBin",
+    "CalibrationReport",
     "CategoryMetricBreakdown",
     "CategoryThreshold",
     "DataPointMatch",
+    "DEFAULT_CALIBRATION_BINS",
     "EvaluationCase",
     "EvaluationError",
     "EvaluationMetrics",
@@ -80,10 +94,12 @@ __all__ = [
     "StageDropSummary",
     "SuiteMetricThresholds",
     "ThresholdFailure",
+    "evaluate_adversarial_manifest",
     "evaluate_mutation_manifest",
     "evaluate_report",
     "evaluate_report_file",
     "evaluate_suite_manifest",
+    "generate_calibration_report",
     "load_evaluation_case",
     "load_adversarial_manifest",
     "load_extraction_report",

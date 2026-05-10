@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from extractor.evals.models import EvaluationCase, ExpectedDataPoint
+from extractor.evals.models import EvaluationCase, EvaluationResult, ExpectedDataPoint
 from extractor.evals.mutation import (
     MutationDeclaredChange,
     MutationFixture,
@@ -19,6 +19,7 @@ from extractor.evals.mutation import (
 )
 from extractor.evals.scoring import (
     EvaluationError,
+    evaluate_report,
     load_evaluation_case,
     load_extraction_report,
 )
@@ -68,6 +69,21 @@ class AdversarialSuiteManifest(RobustnessModel):
         return self
 
 
+class AdversarialFixturePairResult(RobustnessModel):
+    pair_id: NonEmptyStr
+    mode: AdversarialMode
+    base_fixture_id: NonEmptyStr
+    variant_fixture_id: NonEmptyStr
+    result: EvaluationResult
+    passed: bool = Field(strict=True)
+
+
+class AdversarialSuiteResult(RobustnessModel):
+    suite_id: NonEmptyStr
+    pairs: tuple[AdversarialFixturePairResult, ...]
+    passed: bool = Field(strict=True)
+
+
 def load_adversarial_manifest(
     manifest_path: str | Path,
     *,
@@ -106,6 +122,35 @@ def load_adversarial_manifest(
             variant_case=variant_case,
         )
     return manifest
+
+
+def evaluate_adversarial_manifest(
+    manifest_path: str | Path,
+    *,
+    repo_root: str | Path | None = None,
+) -> AdversarialSuiteResult:
+    manifest = load_adversarial_manifest(manifest_path, repo_root=repo_root)
+    resolved_root = (Path(repo_root) if repo_root is not None else Path.cwd()).resolve()
+    pair_results: list[AdversarialFixturePairResult] = []
+    for pair in manifest.pairs:
+        case = load_evaluation_case(resolved_root / pair.variant_case_path)
+        report = load_extraction_report(resolved_root / pair.variant_report_path)
+        result = evaluate_report(case, report)
+        pair_results.append(
+            AdversarialFixturePairResult(
+                pair_id=pair.pair_id,
+                mode=pair.mode,
+                base_fixture_id=pair.base_fixture_id,
+                variant_fixture_id=pair.variant_fixture_id,
+                result=result,
+                passed=result.passed,
+            )
+        )
+    return AdversarialSuiteResult(
+        suite_id=manifest.suite_id,
+        pairs=tuple(pair_results),
+        passed=all(pair_result.passed for pair_result in pair_results),
+    )
 
 
 def _validate_repo_relative_files(
@@ -185,7 +230,9 @@ def _same_offsets(left: ExpectedDataPoint, right: ExpectedDataPoint) -> bool:
 
 __all__ = [
     "AdversarialFixturePair",
+    "AdversarialFixturePairResult",
     "AdversarialMode",
+    "AdversarialSuiteResult",
     "AdversarialSuiteManifest",
     "MutationDeclaredChange",
     "MutationFixture",
@@ -193,6 +240,7 @@ __all__ = [
     "MutationSuiteManifest",
     "MutationSuiteResult",
     "SourceSensitivityFailure",
+    "evaluate_adversarial_manifest",
     "evaluate_mutation_manifest",
     "load_adversarial_manifest",
     "load_mutation_manifest",

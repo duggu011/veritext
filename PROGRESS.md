@@ -5,11 +5,28 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 30 - Diverse Fixture Corpus Round 1
-- Current status: Phase 31 Step 4 complete.
-- Next required work: Phase 31 Step 5 - add calibration report generation and CLI JSON output.
+- Current status: Phase 31 Step 5 complete.
+- Next required work: Phase 31 Step 6 - add prompt-neutrality verification and final project verification.
 - Next-phase context: Phase 31 should add adversarial, mutation, and calibration evaluation on top of the Phase 30 diverse static corpus without tuning runtime extraction behavior, prompts, model routing, or runtime config.
 
 ## Session Log
+
+### 2026-05-10 — Phase 31 Step 5 Calibration and CLI JSON
+
+- Added deterministic calibration report contracts and generation in `src/extractor/evals/calibration.py`.
+- Added default calibration bins `[0.0, 0.5)`, `[0.5, 0.8)`, `[0.8, 0.9)`, `[0.9, 0.95)`, and `[0.95, 1.0]`.
+- Added public eval CLI JSON modes for `--adversarial-suite`, `--mutation-suite`, and `--calibration-suite`.
+- Added calibration tests for deterministic bins, unmatched actual points, and Phase 31 CLI modes.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_calibration.py -q` first failed with missing `extractor.evals.calibration` and missing Phase 31 CLI flags, then passed with 3 passed
+  - `python3 -m pytest tests/unit/test_eval_calibration.py tests/unit/test_eval_robustness.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` (`38 passed`)
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed with 4 pairs
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with 4 mutations and source-sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 total data points, 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 21 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with precision 1.0, recall 1.0, F1 1.0, provenance recall 1.0, 49 expected/actual/true positive data points, zero invariant violations, and zero threshold failures
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-10 — Phase 31 Step 4 Mutation Fixtures and Strict Gates
 

@@ -12,6 +12,11 @@ from extractor.evals.scoring import (
     load_evaluation_case,
     load_extraction_report,
 )
+from extractor.evals.robustness import (
+    evaluate_mutation_manifest,
+    load_adversarial_manifest,
+    load_mutation_manifest,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -62,21 +67,14 @@ def _build_minimal_mutation_fixture(
     retain_retired_report_value: bool = False,
 ) -> tuple[str, str]:
     base_dir = _copy_fixture(repo_root, "minimal_financial_update", "mutation_base")
-    mutated_dir = _copy_fixture(
-        repo_root,
-        "minimal_financial_update",
-        "mutation_revenue_increase",
-    )
+    mutated_dir = _copy_fixture(repo_root, "minimal_financial_update", "mutation_revenue_increase")
     retired_value = "Revenue increased 12%"
     introduced_value = "Revenue increased 18%"
     assert len(retired_value) == len(introduced_value)
 
     source_path = mutated_dir / "source.txt"
     source_text = source_path.read_text(encoding="utf-8")
-    source_path.write_text(
-        source_text.replace(retired_value, introduced_value),
-        encoding="utf-8",
-    )
+    source_path.write_text(source_text.replace(retired_value, introduced_value), encoding="utf-8")
 
     expected_path = mutated_dir / "expected.json"
     expected_payload = json.loads(expected_path.read_text(encoding="utf-8"))
@@ -106,18 +104,11 @@ def _build_minimal_mutation_fixture(
         (base_dir / "expected.json").read_text(encoding="utf-8")
     )
     base_expected_payload["case_id"] = "mutation_base"
-    (base_dir / "expected.json").write_text(
-        json.dumps(base_expected_payload),
-        encoding="utf-8",
-    )
+    (base_dir / "expected.json").write_text(json.dumps(base_expected_payload), encoding="utf-8")
     return retired_value, introduced_value
 
 
-def _valid_mutation_manifest(
-    *,
-    retired_value: str,
-    introduced_value: str,
-) -> dict[str, Any]:
+def _valid_mutation_manifest(*, retired_value: str, introduced_value: str) -> dict[str, Any]:
     return {
         "suite_id": "unit_mutation",
         "description": "Unit-test mutation manifest for robustness validation.",
@@ -128,12 +119,8 @@ def _valid_mutation_manifest(
                 "mutated_fixture_id": "mutation_revenue_increase",
                 "base_case_path": "evals/fixtures/mutation_base/expected.json",
                 "base_report_path": "evals/fixtures/mutation_base/report.example.json",
-                "mutated_case_path": (
-                    "evals/fixtures/mutation_revenue_increase/expected.json"
-                ),
-                "mutated_report_path": (
-                    "evals/fixtures/mutation_revenue_increase/report.example.json"
-                ),
+                "mutated_case_path": "evals/fixtures/mutation_revenue_increase/expected.json",
+                "mutated_report_path": "evals/fixtures/mutation_revenue_increase/report.example.json",
                 "changes": [
                     {
                         "expected_id": "expected-revenue-growth",
@@ -147,8 +134,6 @@ def _valid_mutation_manifest(
 
 
 def test_phase_31_adversarial_manifest_loads() -> None:
-    from extractor.evals.robustness import load_adversarial_manifest
-
     manifest = load_adversarial_manifest(
         ROOT / "evals" / "suites" / "phase_31_adversarial.json",
         repo_root=ROOT,
@@ -159,8 +144,6 @@ def test_phase_31_adversarial_manifest_loads() -> None:
 
 
 def test_phase_31_adversarial_manifest_covers_variant_domains_and_scores() -> None:
-    from extractor.evals.robustness import load_adversarial_manifest
-
     manifest = load_adversarial_manifest(
         ROOT / "evals" / "suites" / "phase_31_adversarial.json",
         repo_root=ROOT,
@@ -189,8 +172,6 @@ def test_phase_31_adversarial_manifest_covers_variant_domains_and_scores() -> No
 
 
 def test_phase_31_mutation_manifest_loads() -> None:
-    from extractor.evals.robustness import load_mutation_manifest
-
     manifest = load_mutation_manifest(
         ROOT / "evals" / "suites" / "phase_31_mutation.json",
         repo_root=ROOT,
@@ -204,8 +185,6 @@ def test_phase_31_mutation_manifest_loads() -> None:
 def test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_and_absent_retired_value(
     tmp_path: Path,
 ) -> None:
-    from extractor.evals.robustness import load_mutation_manifest
-
     repo_root = tmp_path / "repo"
     retired_value, introduced_value = _build_minimal_mutation_fixture(repo_root)
     payload = _valid_mutation_manifest(
@@ -257,8 +236,6 @@ def test_load_mutation_manifest_rejects_duplicate_ids_bad_paths_empty_changes_an
 def test_evaluate_mutation_manifest_reports_source_sensitivity(
     tmp_path: Path,
 ) -> None:
-    from extractor.evals.robustness import evaluate_mutation_manifest
-
     repo_root = tmp_path / "repo"
     retired_value, introduced_value = _build_minimal_mutation_fixture(repo_root)
     payload = _valid_mutation_manifest(
@@ -283,8 +260,6 @@ def test_evaluate_mutation_manifest_reports_source_sensitivity(
 def test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value(
     tmp_path: Path,
 ) -> None:
-    from extractor.evals.robustness import evaluate_mutation_manifest
-
     repo_root = tmp_path / "repo"
     retired_value, introduced_value = _build_minimal_mutation_fixture(
         repo_root,
@@ -312,8 +287,6 @@ def test_evaluate_mutation_manifest_fails_when_report_keeps_retired_value(
 
 
 def test_phase_31_mutation_manifest_covers_mutated_domains_and_scores() -> None:
-    from extractor.evals.robustness import evaluate_mutation_manifest
-
     result = evaluate_mutation_manifest(
         ROOT / "evals" / "suites" / "phase_31_mutation.json",
         repo_root=ROOT,
@@ -343,8 +316,6 @@ def test_phase_31_mutation_manifest_covers_mutated_domains_and_scores() -> None:
 def test_load_adversarial_manifest_rejects_duplicate_pair_ids(
     tmp_path: Path,
 ) -> None:
-    from extractor.evals.robustness import load_adversarial_manifest
-
     payload = _valid_manifest()
     payload["pairs"].append(copy.deepcopy(payload["pairs"][0]))
 
@@ -355,8 +326,6 @@ def test_load_adversarial_manifest_rejects_duplicate_pair_ids(
 def test_load_adversarial_manifest_rejects_bad_paths_and_modes(
     tmp_path: Path,
 ) -> None:
-    from extractor.evals.robustness import load_adversarial_manifest
-
     payload = _valid_manifest()
     payload["pairs"][0]["base_case_path"] = "../outside.json"
     with pytest.raises(EvaluationError, match="base_case_path must be repo-relative"):
@@ -378,8 +347,6 @@ def test_load_adversarial_manifest_rejects_bad_paths_and_modes(
 def test_load_adversarial_manifest_rejects_copied_offsets_for_changed_variant_text(
     tmp_path: Path,
 ) -> None:
-    from extractor.evals.robustness import load_adversarial_manifest
-
     repo_root = tmp_path / "repo"
     _copy_fixture(repo_root, "minimal_financial_update", "base")
     variant_dir = _copy_fixture(repo_root, "minimal_financial_update", "variant")
