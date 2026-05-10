@@ -24,6 +24,18 @@ If the active board does not exist, read `WORKFLOW.md` and follow the board/spec
 
 ---
 
+## Session Goal
+
+For long-running Codex sessions, the operator may set `/goal` after the session-start read and before implementation begins. Use this as advisory steering only:
+
+```text
+Advance Veritext one approved board phase at a time into a provenance-first extraction engine for high-stakes documents. Preserve domain-neutral runtime behavior, exact source/offset provenance, Pydantic contracts, auditability, and invariants I1-I9. Use the active board/spec as source of truth, stop at gates, avoid fixture-specific fixes, and prioritize measurable extraction trust over speed, UI, cost, or convenience. Current focus: Phase NN <active phase>.
+```
+
+Update `Current focus` from `docs/boards/README.md` at session start. A session goal never overrides this file, the active board/spec, `docs/PROJECT_OVERVIEW.md`, `PROGRESS.md`, or invariants I1-I9. Do not treat `/goal` state as a durable project artifact; durable scope belongs in boards, specs, and progress logs.
+
+---
+
 ## Session End
 
 Before ending a session:

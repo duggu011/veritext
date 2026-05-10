@@ -11,6 +11,15 @@ Running log for repository sessions and accepted phase gates.
 
 ## Session Log
 
+### 2026-05-10 — Codex Session Goal Guidance
+
+- Added a `Session Goal` section to `AGENTS.md` and `CLAUDE.md`.
+- Documented `/goal` as session-level advisory steering that never overrides the agent rules, active board/spec, roadmap, progress log, or invariants I1-I9.
+- Kept the current gate unchanged: Phase 29 remains in spec-draft state and implementation is still blocked until operator approval and board creation.
+- Verification:
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `git diff --check`
+
 ### 2026-05-10 — Phase 28 Acceptance and Phase 29 Spec Draft
 
 - Accepted Phase 28 after operator continuation and kept the completed Phase 28 evidence on `docs/boards/phase_28_legal_contracts_domain_pack_v1.md`.
