@@ -36,6 +36,24 @@ Update `Current focus` from `docs/boards/README.md` at session start. A session 
 
 ---
 
+## Operator Trust Resume
+
+This repository currently runs in operator-trust resume mode unless the operator says `gated mode`, `manual approval mode`, `pause`, or `stop`.
+
+In operator-trust resume mode, after completing the Session Start reads and reporting `Phase NN, Step K of N. Open issues: N. Next up: <description>.`, continue automatically instead of waiting for a separate `Ready?` confirmation when all of these are true:
+
+- The next action is already defined by the active board, approved spec, or board/spec creation workflow.
+- The action stays inside the active phase or the operator's explicit request.
+- There are no OPEN high-severity issues.
+- The action does not weaken I1-I9, change architecture rules, or require a product/design decision with multiple valid options.
+- Required verification and commits will still be performed.
+
+If the active phase has a draft spec but no board, operator-trust resume mode is standing permission to perform spec-readiness checks, mark the spec approved, create the board, update tracking files, commit the board-opening change, and proceed to the first board step. Stop instead if the draft contains open questions, placeholders outside allowed prompt blocks, architecture-rule changes, invariant risk, or unclear gate interpretations.
+
+Operator-trust resume mode never overrides Hard Stops. It also does not accept a completed phase, start the next phase after a phase gate, or approve architecture-rule amendments unless the operator explicitly says so.
+
+---
+
 ## Session End
 
 Before ending a session:

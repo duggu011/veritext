@@ -62,9 +62,11 @@ Then report:
 Phase NN, Step K of N. Open issues: N. Next up: <description>. Ready?
 ```
 
-No implementation work starts until the operator confirms.
+No implementation work starts until the operator confirms, unless operator-trust resume mode in `AGENTS.md` / `CLAUDE.md` applies.
 
 If the active board does not exist yet, say that clearly, read this file, and open the phase through phase-doc mode or board creation mode. Do not invent scope from chat alone.
+
+In operator-trust resume mode, the status report is still required, but Codex continues automatically through the next board/spec creation or implementation action when the action is already defined, scoped to the active phase, and not blocked by a Hard Stop.
 
 ---
 

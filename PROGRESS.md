@@ -11,6 +11,15 @@ Running log for repository sessions and accepted phase gates.
 
 ## Session Log
 
+### 2026-05-10 — Operator Trust Resume Policy
+
+- Added operator-trust resume mode to `AGENTS.md` and `CLAUDE.md`.
+- Updated `WORKFLOW.md` so the session-start confirmation gate defers to operator-trust resume mode.
+- Policy now lets Codex continue automatically through already-defined board/spec creation or implementation work while preserving Hard Stops, invariant protection, architecture-rule gates, phase acceptance gates, and next-phase transition gates.
+- Verification:
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `git diff --check -- AGENTS.md CLAUDE.md WORKFLOW.md`
+
 ### 2026-05-10 — Phase 29 Board Opening
 
 - Approved Phase 29 for implementation after operator continuation with `continue`.
