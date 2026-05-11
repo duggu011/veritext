@@ -5,11 +5,34 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 32 - Boundary-Preserving Ingestion Model
-- Current status: Phase 33 board open; implementation has not started.
-- Next required work: Phase 33 Step 1 - add PDF/table ingestion tests and parser fixture strategy.
+- Current status: Phase 33 implementation and final verification complete; awaiting operator acceptance before Phase 34.
+- Next required work: Operator acceptance of Phase 33, then open Phase 34 only after explicit continuation.
 - Next-phase context: Phase 33 PDF and Table Ingestion should populate real PDF/table boundary evidence without weakening generated/unmapped source-map semantics. Phase 34 DOCX, HTML, and Email Ingestion remains downstream.
 
 ## Session Log
+
+### 2026-05-11 — Phase 33 Implementation and Final Verification
+
+- Completed Phase 33 Step 1 through Step 6.
+- Added deterministic fake `pdfplumber` parser coverage for PDF pages, words, tables, parser failures, and no-text PDFs in `tests/unit/test_ingestion_pdf_tables.py`.
+- Split PDF ingestion into `src/extractor/ingestion/pdf.py` and moved canonical ingestion errors to `src/extractor/ingestion/errors.py`.
+- Preserved the public `ingest_document(...)` interface and existing plain text/Markdown identity behavior.
+- Populated PDF parser metadata, page maps, generated/unmapped source maps, word-level layout spans, table spans, table cell spans, stable table/cell IDs, header labels, and optional bounding boxes.
+- Added explicit `IngestionError` behavior for parser failures and unalignable table cells; no-text PDFs continue to fail explicitly.
+- Added audit readback and source-support regression coverage proving PDF generated/unmapped text is not accepted as source-backed evidence.
+- No prompt body, runtime config, domain-pack behavior, runtime LLM stage, architecture rule, OCR, DOCX, HTML, email, or layout-aware chunking changes were added.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_source_support.py tests/unit/test_audit_document_boundaries.py tests/unit/test_ingestion_pdf_tables.py -q` (`20 passed`)
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, and expected/provenance calibration error 0.048979591836734754
+  - `make test` (`294 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` (`1 passed`)
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
 
 ### 2026-05-11 — Phase 33 Board Opening
 
