@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 33 - PDF and Table Ingestion** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_33_pdf_and_table_ingestion.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 33 - PDF and Table Ingestion** | Status: BOARD OPEN | Spec: [approved](../specs/phase_33_pdf_and_table_ingestion.md) | Board: [board](phase_33_pdf_and_table_ingestion.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -31,7 +31,7 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 30 - Diverse Fixture Corpus Round 1 | [approved](../specs/phase_30_diverse_fixture_corpus_round_1.md) | [board](phase_30_diverse_fixture_corpus_round_1.md) | COMPLETE (2026-05-10) |
 | 31 - Adversarial, Mutation, and Calibration Evaluation | [approved](../specs/phase_31_adversarial_mutation_calibration_evaluation.md) | [board](phase_31_adversarial_mutation_calibration_evaluation.md) | COMPLETE (2026-05-10) |
 | 32 - Boundary-Preserving Ingestion Model | [approved](../specs/phase_32_boundary_preserving_ingestion_model.md) | [board](phase_32_boundary_preserving_ingestion_model.md) | COMPLETE (2026-05-10) |
-| 33 - PDF and Table Ingestion | [draft](../specs/phase_33_pdf_and_table_ingestion.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
+| 33 - PDF and Table Ingestion | [approved](../specs/phase_33_pdf_and_table_ingestion.md) | [board](phase_33_pdf_and_table_ingestion.md) | ACTIVE - BOARD OPEN |
 | 34 - DOCX, HTML, and Email Ingestion | _(not opened)_ | _(not opened)_ | PLANNED |
 | 35 - Layout-Aware Chunking | _(not opened)_ | _(not opened)_ | PLANNED |
 | 36 - Lens Taxonomy and Normalization Contracts | _(not opened)_ | _(not opened)_ | PLANNED |

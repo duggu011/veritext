@@ -1,6 +1,6 @@
 # Phase 33 - PDF and Table Ingestion
 
-Status: draft for operator review after Phase 32 acceptance on 2026-05-10. Board not opened.
+Status: approved for implementation and board opened on 2026-05-11.
 
 Date drafted: 2026-05-10
 

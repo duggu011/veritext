@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 32 - Boundary-Preserving Ingestion Model
-- Current status: Phase 33 spec draft ready for operator review; no implementation has started.
-- Next required work: Operator approval of the Phase 33 spec, then board opening if approved. Do not start Phase 33 implementation until the spec is approved and the board is opened.
+- Current status: Phase 33 board open; implementation has not started.
+- Next required work: Phase 33 Step 1 - add PDF/table ingestion tests and parser fixture strategy.
 - Next-phase context: Phase 33 PDF and Table Ingestion should populate real PDF/table boundary evidence without weakening generated/unmapped source-map semantics. Phase 34 DOCX, HTML, and Email Ingestion remains downstream.
 
 ## Session Log
+
+### 2026-05-11 — Phase 33 Board Opening
+
+- Approved Phase 33 for implementation after operator continuation under operator-trust resume mode.
+- Created active board `docs/boards/phase_33_pdf_and_table_ingestion.md`.
+- Pinned Phase 33 implementation open-question resolutions:
+  - Use the existing `pdfplumber` dependency for Phase 33 and do not add a second PDF parser.
+  - Keep parser-extracted PDF text `unmapped` unless source byte ranges into the original PDF are proven.
+  - Treat table extraction as ingestion-boundary population only; do not add executor table lenses or prompts.
+  - Keep OCR fallback out of Phase 33; no-text PDFs fail explicitly.
+  - Use explicit `IngestionError` for unalignable table cells; do not emit partial tables.
+- Updated `docs/boards/README.md` to show Phase 33 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_33_pdf_and_table_ingestion.md docs/boards/README.md docs/boards/phase_33_pdf_and_table_ingestion.md` returned no matches
+  - `rg -n "Phase 33|phase_33_pdf_and_table_ingestion.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_33_pdf_and_table_ingestion.md docs/boards/phase_33_pdf_and_table_ingestion.md` found the expected pointers
+  - `cmp -s AGENTS.md CLAUDE.md`
 
 ### 2026-05-10 — Phase 32 Acceptance and Phase 33 Spec Draft
 
