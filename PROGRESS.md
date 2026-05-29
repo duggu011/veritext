@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 5 of 11.
-- Next required work: Phase 40 Step 5 - add audit integrity-chain persistence and readback.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 6 of 11.
+- Next required work: Phase 40 Step 6 - extend reporter services with detached signed manifest writing and verification for existing report schemas.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 5 Audit Integrity Persistence
+
+- Completed Phase 40 Step 5.
+- Added additive `audit_integrity_events` persistence with record, readback, deterministic listing, and latest chain-head access through `AuditStore`.
+- Kept existing audit tables and schema version behavior compatible.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped audit-integrity change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_audit_integrity.py -q` failed RED with 2 expected missing `AuditStore` method failures, then passed with 2 passed
+  - `python3 -m pytest tests/unit/test_phase_40_audit_integrity.py tests/unit/test_phase_40_report_signing.py tests/unit/test_audit_store.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_reporter.py -q` passed with 24 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_audit_integrity.py src/extractor/audit/integrity_records.py src/extractor/audit/schema.py src/extractor/audit/store.py` reported 77, 78, 155, and 42 lines
+- Next: Phase 40 Step 6 - extend reporter services with detached signed manifest writing and verification for existing report schemas.
 
 ### 2026-05-30 - Phase 40 Step 4 Signing Helpers
 

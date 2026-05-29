@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 4 of 11
+Step: 5 of 11
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:9. Reporter`; `docs/PROJECT_OVERVIEW.m
 
 Phase 40 opened after operator continuation accepted Phase 39 and the Phase 40 draft spec passed readiness checks with no open questions.
 
-Next: Step 5 - add audit integrity-chain persistence and readback.
+Next: Step 6 - extend reporter services with detached signed manifest writing and verification for existing report schemas.
 
 ---
 
@@ -23,7 +23,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 2: Add additive Pydantic contracts and exports.
 - [x] Step 3: Add reporting config models/defaults for signing and confidence buckets.
 - [x] Step 4: Implement canonical hashing, config hashing, HMAC signing, and verification helpers without external signing services.
-- [ ] Step 5: Add audit integrity-chain persistence and readback.
+- [x] Step 5: Add audit integrity-chain persistence and readback.
 - [ ] Step 6: Extend reporter services with detached signed manifest writing and verification for existing report schemas.
 - [ ] Step 7: Add deterministic run diff service and report writer.
 - [ ] Step 8: Add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
@@ -81,6 +81,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_phase_40_report_signing.py:1` | Added RED/GREEN coverage for canonical JSON hashing, file hashing, config hashing, HMAC signing, and verification. | Step 4 |
 | `src/extractor/reporter/signing.py:1` | Added canonical hashing, config hashing, file hashing, HMAC signing, and verification helpers. | Step 4 |
 | `src/extractor/reporter/__init__.py:1` | Exported report signing helpers. | Step 4 |
+| `tests/unit/test_phase_40_audit_integrity.py:1` | Added RED/GREEN audit integrity-chain persistence and readback coverage. | Step 5 |
+| `src/extractor/audit/schema.py:1` | Added additive `audit_integrity_events` table. | Step 5 |
+| `src/extractor/audit/integrity_records.py:1` | Added audit-store methods for integrity event record, readback, listing, and latest chain hash. | Step 5 |
+| `src/extractor/audit/store.py:1` | Mixed integrity audit records into the public `AuditStore`. | Step 5 |
 
 ---
 
@@ -107,6 +111,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 5 | `python3 -m pytest tests/unit/test_phase_40_audit_integrity.py -q` failed RED with 2 expected missing `AuditStore` method failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_40_audit_integrity.py tests/unit/test_phase_40_report_signing.py tests/unit/test_audit_store.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_reporter.py -q` passed with 24 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_audit_integrity.py src/extractor/audit/integrity_records.py src/extractor/audit/schema.py src/extractor/audit/store.py` reported 77, 78, 155, and 42 lines. | PASS | 2026-05-30 |
 | Step 4 | `python3 -m pytest tests/unit/test_phase_40_report_signing.py -q` failed RED with expected missing `extractor.reporter.signing`, then passed with 4 passed; `python3 -m pytest tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_reporter.py tests/unit/test_config.py -q` passed with 33 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_report_signing.py src/extractor/reporter/signing.py src/extractor/reporter/__init__.py` reported 81, 114, and 43 lines. | PASS | 2026-05-30 |
 | Steps 1-3 | `python3 -m pytest tests/unit/test_phase_40_report_integrity_contracts.py -q` failed RED with 3 expected missing-contract export failures, then passed with 3 passed; `python3 -m pytest tests/unit/test_config.py::test_default_config_file_loads tests/unit/test_config.py::test_reporting_settings_support_env_overrides tests/unit/test_config.py::test_domain_pack_and_schema_registry_config_sections_are_strict tests/unit/test_config.py::test_reporting_config_rejects_invalid_signing_and_bucket_thresholds -q` failed RED during collection with missing `ConfidenceBucketConfig`, then the focused config tests were moved to `tests/unit/test_phase_40_reporting_config.py`; `python3 -m pytest tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_config.py -q` passed with 23 passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_config.py -q` passed with 41 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py src/extractor/contracts/report_integrity.py src/extractor/contracts/__init__.py src/extractor/config/models.py src/extractor/config/__init__.py config/default.yaml tests/unit/test_config.py` reported 254, 100, 203, 196, 185, 59, 61, and 361 lines. | PASS | 2026-05-30 |
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/README.md docs/boards/phase_40_signed_reports_and_run_diffs.md`; `rg -n "Status: approved|Date approved|Open Questions Before Approval|No static prompt body changes|hmac-sha256|signed_report_manifest\\.v1|run_diff_report\\.v1|BOARD OPEN|Step 1|veritext-report" docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/README.md PROGRESS.md docs/boards/phase_40_signed_reports_and_run_diffs.md`; `cmp -s AGENTS.md CLAUDE.md`; `wc -l docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/phase_40_signed_reports_and_run_diffs.md`. | PASS | 2026-05-30 |
@@ -137,9 +142,10 @@ Reverse chronological. Log every session.
 - Completed Step 2: added additive Phase 40 report integrity Pydantic contracts and exports.
 - Completed Step 3: added reporting signing and confidence bucket config models/defaults.
 - Completed Step 4: added canonical JSON hashing, config hashing, file hashing, HMAC signing, and verification helpers without external signing services.
+- Completed Step 5: added additive audit integrity-chain persistence and readback.
 - Issues found: none.
-- Tests: board-opening and Steps 1-4 verification passed as recorded above.
-- Next: Step 5 - add audit integrity-chain persistence and readback.
+- Tests: board-opening and Steps 1-5 verification passed as recorded above.
+- Next: Step 6 - extend reporter services with detached signed manifest writing and verification for existing report schemas.
 
 ---
 

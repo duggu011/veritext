@@ -133,6 +133,19 @@ CREATE TABLE IF NOT EXISTS cross_document_results (
     payload_json TEXT NOT NULL,
     FOREIGN KEY (cross_document_run_id) REFERENCES cross_document_run_manifests(cross_document_run_id)
 );
+
+CREATE TABLE IF NOT EXISTS audit_integrity_events (
+    event_id TEXT PRIMARY KEY,
+    event_kind TEXT NOT NULL,
+    run_id TEXT,
+    cross_document_run_id TEXT,
+    artifact_sha256 TEXT NOT NULL,
+    payload_sha256 TEXT NOT NULL,
+    previous_chain_hash TEXT,
+    chain_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    payload_json TEXT NOT NULL
+);
 """
 
 

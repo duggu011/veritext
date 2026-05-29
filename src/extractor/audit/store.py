@@ -11,11 +11,17 @@ from extractor.audit.errors import (
     AuditSchemaError,
     AuditStoreError,
 )
+from extractor.audit.integrity_records import IntegrityAuditRecords
 from extractor.audit.review_records import ReviewAuditRecords
 from extractor.audit.schema import SCHEMA_SQL, SCHEMA_VERSION
 
 
-class AuditStore(CoreAuditRecords, ReviewAuditRecords, CrossDocumentAuditRecords):
+class AuditStore(
+    CoreAuditRecords,
+    ReviewAuditRecords,
+    CrossDocumentAuditRecords,
+    IntegrityAuditRecords,
+):
     """SQLite audit store preserving the public audit persistence interface."""
 
 
