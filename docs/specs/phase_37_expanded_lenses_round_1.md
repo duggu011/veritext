@@ -1,9 +1,9 @@
 # Phase 37 - Expanded Lenses Round 1
 
-Status: draft pending prompt-content gate.
+Status: approved for implementation.
 
 Date drafted: 2026-05-29
-Date approved: not approved.
+Date approved: 2026-05-29
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` section `4. Executor`,
 `docs/PROJECT_OVERVIEW.md` highest-leverage item 4, `docs/phase_26_plus_roadmap.md`,
@@ -33,19 +33,15 @@ accounting, and all existing Phase 29-31 evaluation gates.
 
 ## Prompt-Content Gate
 
-Phase 37 cannot be approved or opened for implementation until the operator
-resolves this gate:
+Resolved 2026-05-29 by operator continuation. The operator explicitly
+authorized agent-authored prompt text for Phase 37 and planner prompt updates.
 
-1. Provide human-authored prompt body text for the new executor prompts and any
-   planner prompt changes, or explicitly authorize agent-authored prompt text
-   for this phase.
-2. Confirm that prompt changes should include `planner.select_strategy` and
-   `planner.allocate_budget` updates so the planner can select and budget the
-   new lenses in live runs.
+Prompt changes include:
 
-Reason: `AGENTS.md` says prompt bodies must remain unfilled until a human fills
-them. The code work is straightforward, but making these lenses useful requires
-new or modified prompt bodies under `prompts/`.
+- New executor prompt bodies for `definition`, `citation`, `temporal`, and
+  `quantity_with_unit`.
+- `planner.select_strategy` and `planner.allocate_budget` updates so live
+  planning can select and budget the new executable lenses.
 
 ## Non-Goals
 
@@ -150,7 +146,7 @@ of the field meaning, such as `5 mg/kg`, `1.85 gigawatt-hours`, `30 days`,
 
 ## Contract Changes
 
-Expected additive changes after the prompt-content gate is resolved:
+Expected additive changes:
 
 - Extend `LensName` with `definition`, `citation`, `temporal`, and
   `quantity_with_unit`.
@@ -169,7 +165,7 @@ Expected additive changes after the prompt-content gate is resolved:
 
 Allowed:
 
-- Add new executor stage prompt files after prompt-content gate resolution.
+- Add new executor stage prompt files.
 - Let planner strategy selection choose the new lenses when approved fields
   require them.
 - Allocate budget entries for the new lenses using the existing one call per
@@ -209,7 +205,7 @@ source or tests.
 
 ## Prompt Changes
 
-Prompt changes are required but gated:
+Prompt changes are required and approved for this phase:
 
 - New executor prompt files:
   - `prompts/executor/definition.md`
@@ -276,6 +272,4 @@ Evaluation acceptance:
 
 ## Open Questions Before Approval
 
-1. Should the operator provide human-authored prompt bodies for the four new
-   executor prompts and planner prompt changes, or explicitly authorize
-   agent-authored prompt text for Phase 37?
+_(None.)_

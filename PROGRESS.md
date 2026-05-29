@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 36 - Lens Taxonomy and Normalization Contracts
-- Current status: Phase 37 Expanded Lenses Round 1 is in spec draft.
-- Next required work: resolve the Phase 37 prompt-content gate before board opening or implementation.
-- Next-phase context: Phase 37 should expand executable source-grounded lenses only after human prompt-body requirements are satisfied, preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
+- Current status: Phase 37 Expanded Lenses Round 1 board is open at Step 1 of 8.
+- Next required work: Phase 37 Step 1 - add RED tests for the expanded executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
+- Next-phase context: Phase 37 expands executable source-grounded lenses with operator-authorized prompt text while preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 37 Board Opening
+
+- Resolved the Phase 37 prompt-content gate by operator continuation authorizing agent-authored prompt bodies and planner prompt updates for this phase.
+- Approved the Phase 37 spec for implementation.
+- Opened `docs/boards/phase_37_expanded_lenses_round_1.md` with eight implementation steps from the approved spec.
+- Updated `docs/boards/README.md` to show Phase 37 as `BOARD OPEN`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped board-opening change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_37_expanded_lenses_round_1.md docs/boards/README.md docs/boards/phase_37_expanded_lenses_round_1.md` returned no matches
+  - `rg -n "Phase 37|phase_37_expanded_lenses_round_1.md|BOARD OPEN|Step 1|approved|prompt-content gate|Agent-authored" docs/boards/README.md PROGRESS.md docs/specs/phase_37_expanded_lenses_round_1.md docs/boards/phase_37_expanded_lenses_round_1.md`
+- Next: Phase 37 Step 1 - add RED tests for the expanded executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
 
 ### 2026-05-29 - Phase 36 Acceptance and Phase 37 Spec Draft
 

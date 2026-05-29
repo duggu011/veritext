@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 37 - Expanded Lenses Round 1** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_37_expanded_lenses_round_1.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 37 - Expanded Lenses Round 1** | Status: BOARD OPEN | Spec: [approved](../specs/phase_37_expanded_lenses_round_1.md) | Board: [board](phase_37_expanded_lenses_round_1.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -35,7 +35,7 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 34 - DOCX, HTML, and Email Ingestion | [approved](../specs/phase_34_docx_html_email_ingestion.md) | [board](phase_34_docx_html_email_ingestion.md) | COMPLETE (2026-05-29) |
 | 35 - Layout-Aware Chunking | [approved](../specs/phase_35_layout_aware_chunking.md) | [board](phase_35_layout_aware_chunking.md) | COMPLETE (2026-05-29) |
 | 36 - Lens Taxonomy and Normalization Contracts | [approved](../specs/phase_36_lens_taxonomy_and_normalization_contracts.md) | [board](phase_36_lens_taxonomy_and_normalization_contracts.md) | COMPLETE (2026-05-29) |
-| 37 - Expanded Lenses Round 1 | [draft](../specs/phase_37_expanded_lenses_round_1.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
+| 37 - Expanded Lenses Round 1 | [approved](../specs/phase_37_expanded_lenses_round_1.md) | [board](phase_37_expanded_lenses_round_1.md) | ACTIVE - BOARD OPEN |
 | 38 - Dedup, Canonical Values, and Conflict Preservation | _(not opened)_ | _(not opened)_ | PLANNED |
 | 39 - Cross-Document Reconciliation | _(not opened)_ | _(not opened)_ | PLANNED |
 | 40 - Signed Reports and Run Diffs | _(not opened)_ | _(not opened)_ | PLANNED |
