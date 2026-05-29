@@ -9,9 +9,9 @@ Last session: 2026-05-29
 Spec: `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:4. Executor`; `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 36 implementation and final verification are complete.
+Phase 36 was accepted by operator continuation on 2026-05-29.
 
-Next: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
+Next: Phase 37 spec review and prompt-content gate resolution.
 
 ---
 
@@ -139,7 +139,8 @@ Reverse chronological. Log every session.
 - Completed Step 6: ran final project, smoke, lint, prompt-neutrality, Phase 29/30 extraction, Phase 31 adversarial/mutation, and calibration gates; filled the final gate and phase summary.
 - Issues found: none.
 - Tests: board-opening, Steps 1-5 red/green/regression verification, and Step 6 final verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
+- Accepted by operator continuation after final verification.
+- Next: Phase 37 spec review and prompt-content gate resolution.
 
 ---
 

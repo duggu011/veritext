@@ -4,12 +4,27 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 35 - Layout-Aware Chunking
-- Current status: Phase 36 Lens Taxonomy and Normalization Contracts completed implementation and final verification; awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
-- Next-phase context: Phase 37 should expand executable source-grounded lenses only after Phase 36 is accepted, preserving the new executable-vs-contract-only lens boundary, verbatim/canonical value split, exact source spans, audit payload compatibility, and current architecture rules.
+- Last completed phase: Phase 36 - Lens Taxonomy and Normalization Contracts
+- Current status: Phase 37 Expanded Lenses Round 1 is in spec draft.
+- Next required work: resolve the Phase 37 prompt-content gate before board opening or implementation.
+- Next-phase context: Phase 37 should expand executable source-grounded lenses only after human prompt-body requirements are satisfied, preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 36 Acceptance and Phase 37 Spec Draft
+
+- Accepted Phase 36 after operator continuation.
+- Marked Phase 36 complete in `docs/boards/README.md` and updated the Phase 36 board handoff.
+- Drafted `docs/specs/phase_37_expanded_lenses_round_1.md` from the executor roadmap, Phase 36 lens taxonomy, current executor stage contracts, prompt loader, and planner lens-selection behavior.
+- Scoped Phase 37 to definition, citation, temporal, and quantity-with-unit lenses only.
+- Kept obligation, condition, exception, relation extraction, dedup canonical-value behavior, conflict preservation, cross-document reconciliation, cost routing, UI/API/CI/Docker/vector/embedding work, and architecture-rule changes out of scope.
+- Stopped before board opening because Phase 37 requires new or modified prompt bodies and `AGENTS.md` requires human prompt-body input before implementation.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_37_expanded_lenses_round_1.md docs/boards/README.md docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`
+  - `rg -n "Phase 36|Phase 37|phase_37_expanded_lenses_round_1.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|Prompt-Content Gate|Open Questions" docs/boards/README.md PROGRESS.md docs/specs/phase_37_expanded_lenses_round_1.md docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`
+  - `wc -l docs/specs/phase_37_expanded_lenses_round_1.md` reported 281 lines
+- Next: resolve the Phase 37 prompt-content gate, then run spec-readiness checks before board opening.
 
 ### 2026-05-29 - Phase 36 Step 6 Final Verification
 
