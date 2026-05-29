@@ -10,11 +10,14 @@ from pydantic import ValidationError
 from extractor.audit import AuditStore
 from extractor.contracts import (
     ApprovedSchemaMetadata,
+    CrossDocumentReconciliationResult,
+    CrossDocumentRunManifest,
     DataPoint,
     PlanningRefusal,
     RunManifest,
 )
 from extractor.reporter.models import (
+    CrossDocumentReport,
     ExtractionRefusalReport,
     ExtractionReport,
     ReportWriteResult,
@@ -148,6 +151,59 @@ async def write_refusal_report(
     )
 
 
+async def write_cross_document_report(
+    *,
+    manifest: CrossDocumentRunManifest,
+    result: CrossDocumentReconciliationResult,
+    output_path: str | Path,
+    audit_store: AuditStore | None = None,
+    generated_at: datetime | None = None,
+) -> ReportWriteResult:
+    _validate_cross_document_report_inputs(manifest, result)
+
+    if audit_store is not None:
+        await _validate_cross_document_audit_state(
+            audit_store=audit_store,
+            manifest=manifest,
+            result=result,
+        )
+
+    completed_at = generated_at or datetime.now(timezone.utc)
+    try:
+        completed_manifest = CrossDocumentRunManifest(
+            cross_document_run_id=manifest.cross_document_run_id,
+            audit_db_path=manifest.audit_db_path,
+            status="completed",
+            started_at=manifest.started_at,
+            completed_at=completed_at,
+            input_run_ids=result.input_run_ids,
+            output_group_ids=tuple(group.group_id for group in result.groups),
+            output_conflict_ids=tuple(conflict.conflict_id for conflict in result.conflicts),
+        )
+        report = CrossDocumentReport.from_result(
+            result=result,
+            generated_at=completed_at,
+        )
+    except ValidationError as exc:
+        raise ReporterError(f"Invalid cross-document report state: {exc}") from exc
+
+    rendered = render_report_json(report)
+    output = Path(output_path)
+    _write_output(output, rendered)
+
+    if audit_store is not None:
+        await audit_store.update_cross_document_run_manifest(completed_manifest)
+
+    output_bytes = rendered.encode("utf-8")
+    return ReportWriteResult(
+        report=report,
+        output_path=str(output),
+        output_sha256=hashlib.sha256(output_bytes).hexdigest(),
+        output_byte_length=len(output_bytes),
+        completed_manifest=completed_manifest,
+    )
+
+
 def _validate_refusal_report_inputs(
     manifest: RunManifest,
     refusal: PlanningRefusal,
@@ -182,6 +238,49 @@ async def _validate_audit_state(
             raise ReporterError(
                 f"Data point does not match the current audit store state: {data_point.data_point_id}"
             )
+
+
+async def _validate_cross_document_audit_state(
+    *,
+    audit_store: AuditStore,
+    manifest: CrossDocumentRunManifest,
+    result: CrossDocumentReconciliationResult,
+) -> None:
+    stored_manifest = await audit_store.get_cross_document_run_manifest(
+        manifest.cross_document_run_id
+    )
+    if stored_manifest is None:
+        raise ReporterError(
+            "Cross-document run manifest is missing from audit store: "
+            f"{manifest.cross_document_run_id}"
+        )
+    if stored_manifest != manifest:
+        raise ReporterError(
+            "Cross-document run manifest must match the current audit store state before reporting"
+        )
+
+    stored_result = await audit_store.get_cross_document_reconciliation_result(
+        result.cross_document_run_id
+    )
+    if stored_result is None:
+        raise ReporterError(
+            "Cross-document result is missing from audit store: "
+            f"{result.cross_document_run_id}"
+        )
+    if stored_result != result:
+        raise ReporterError(
+            "Cross-document result must match the current audit store state before reporting"
+        )
+
+
+def _validate_cross_document_report_inputs(
+    manifest: CrossDocumentRunManifest,
+    result: CrossDocumentReconciliationResult,
+) -> None:
+    if manifest.status == "failed":
+        raise ReporterError("failed cross-document runs cannot be completed by the reporter")
+    if manifest.cross_document_run_id != result.cross_document_run_id:
+        raise ReporterError("result run ID must match cross-document manifest run ID")
 
 
 def _validate_report_inputs(
@@ -229,4 +328,10 @@ def _write_output(output_path: Path, rendered: str) -> None:
     temp_path.replace(output_path)
 
 
-__all__ = ["ReporterError", "render_report_json", "write_refusal_report", "write_report"]
+__all__ = [
+    "ReporterError",
+    "render_report_json",
+    "write_cross_document_report",
+    "write_refusal_report",
+    "write_report",
+]

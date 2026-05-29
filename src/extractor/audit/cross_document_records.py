@@ -35,6 +35,23 @@ class CrossDocumentAuditRecords(SQLiteAuditStore):
             CrossDocumentRunManifest,
         )
 
+    async def update_cross_document_run_manifest(
+        self,
+        manifest: CrossDocumentRunManifest,
+    ) -> None:
+        values = manifest.model_dump(mode="json")
+        await self._update_payload(
+            "cross_document_run_manifests",
+            "cross_document_run_id",
+            manifest.cross_document_run_id,
+            {
+                "status": manifest.status,
+                "started_at": values["started_at"],
+                "completed_at": values["completed_at"],
+                "payload_json": manifest.model_dump_json(),
+            },
+        )
+
     async def list_cross_document_run_manifests(
         self,
     ) -> tuple[CrossDocumentRunManifest, ...]:

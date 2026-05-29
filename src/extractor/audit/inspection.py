@@ -6,6 +6,8 @@ from typing import Any
 
 from extractor.audit.store import AuditStore
 from extractor.contracts import (
+    CrossDocumentReconciliationResult,
+    CrossDocumentRunManifest,
     CriticReport,
     DataPoint,
     LLMCallLog,
@@ -49,6 +51,15 @@ async def inspect_audit_database(
         data_points = await store.list_data_points(manifest.run_id)
         rejections = await store.list_candidate_rejections_for_run(manifest.run_id)
         usage_summary = await store.summarize_run(manifest.run_id)
+        cross_document_manifests = await store.list_cross_document_run_manifests()
+        cross_document_result_items: list[CrossDocumentReconciliationResult] = []
+        for item in cross_document_manifests:
+            result = await store.get_cross_document_reconciliation_result(
+                item.cross_document_run_id
+            )
+            if result is not None:
+                cross_document_result_items.append(result)
+        cross_document_results = tuple(cross_document_result_items)
         schema_version = await store.get_schema_version()
 
     dedup_duplicate_count = sum(
@@ -108,7 +119,18 @@ async def inspect_audit_database(
                 ),
             },
             "data_points": len(data_points),
+            "cross_document_runs": len(cross_document_manifests),
+            "cross_document_groups": sum(len(result.groups) for result in cross_document_results),
+            "cross_document_conflicts": sum(
+                len(result.conflicts) for result in cross_document_results
+            ),
+            "cross_document_skipped_inputs": sum(
+                len(result.skipped_inputs) for result in cross_document_results
+            ),
         },
+        "cross_document_runs": tuple(
+            _cross_document_manifest_summary(item) for item in cross_document_manifests
+        ),
         "usage_summary": usage_summary,
         "acceptance_checks": _acceptance_checks(usage_summary),
     }
@@ -135,6 +157,9 @@ async def inspect_audit_database(
                 for rejection in rejections
             ),
             "data_points": tuple(_data_point_detail(data_point) for data_point in data_points),
+            "cross_document_results": tuple(
+                _cross_document_result_detail(result) for result in cross_document_results
+            ),
         }
 
     return inspection
@@ -162,6 +187,34 @@ def _manifest_summary(manifest: RunManifest) -> dict[str, Any]:
             None if manifest.completed_at is None else manifest.completed_at.isoformat()
         ),
         "output_data_point_ids": manifest.output_data_point_ids,
+    }
+
+
+def _cross_document_manifest_summary(
+    manifest: CrossDocumentRunManifest,
+) -> dict[str, Any]:
+    return {
+        "cross_document_run_id": manifest.cross_document_run_id,
+        "status": manifest.status,
+        "started_at": manifest.started_at.isoformat(),
+        "completed_at": (
+            None if manifest.completed_at is None else manifest.completed_at.isoformat()
+        ),
+        "input_run_ids": manifest.input_run_ids,
+        "output_group_ids": manifest.output_group_ids,
+        "output_conflict_ids": manifest.output_conflict_ids,
+    }
+
+
+def _cross_document_result_detail(
+    result: CrossDocumentReconciliationResult,
+) -> dict[str, Any]:
+    return {
+        "cross_document_run_id": result.cross_document_run_id,
+        "group_count": len(result.groups),
+        "conflict_count": len(result.conflicts),
+        "skipped_input_count": len(result.skipped_inputs),
+        "source_ref_count": sum(len(group.sources) for group in result.groups),
     }
 
 

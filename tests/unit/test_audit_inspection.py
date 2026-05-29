@@ -24,6 +24,10 @@ from extractor.contracts import (
     SourceSpan,
     VerifierReport,
 )
+from tests.unit.test_phase_39_cross_document_audit import (
+    make_cross_document_manifest,
+    make_cross_document_result,
+)
 
 
 HASH = "a" * 64
@@ -270,6 +274,37 @@ def test_inspect_audit_database_returns_acceptance_and_detail_summary(tmp_path: 
         assert result["details"]["data_points"][0]["contributing_candidate_ids"] == (
             "candidate-1",
             "candidate-2",
+        )
+
+    asyncio.run(run_check())
+
+
+def test_inspect_audit_database_includes_cross_document_summary(tmp_path: Path) -> None:
+    async def run_check() -> None:
+        db_path = tmp_path / "audit.sqlite3"
+        await seed_audit_db(db_path)
+        cross_manifest = make_cross_document_manifest()
+        cross_result = make_cross_document_result()
+
+        async with AuditStore(db_path) as store:
+            await store.record_cross_document_run_manifest(cross_manifest)
+            await store.record_cross_document_reconciliation_result(cross_result)
+
+        inspection = await inspect_audit_database(db_path, include_details=True)
+
+        assert inspection["counts"]["cross_document_runs"] == 1
+        assert inspection["counts"]["cross_document_groups"] == 1
+        assert inspection["counts"]["cross_document_conflicts"] == 0
+        assert inspection["counts"]["cross_document_skipped_inputs"] == 0
+        assert inspection["cross_document_runs"][0]["cross_document_run_id"] == "xrun-1"
+        assert inspection["details"]["cross_document_results"] == (
+            {
+                "cross_document_run_id": "xrun-1",
+                "group_count": 1,
+                "conflict_count": 0,
+                "skipped_input_count": 0,
+                "source_ref_count": 2,
+            },
         )
 
     asyncio.run(run_check())

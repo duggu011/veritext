@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 6 of 11
+Step: 7 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: Step 7 - extend audit inspection and reporter output for additive cross-document fields.
+Next: Step 8 - add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 
 ---
 
@@ -25,7 +25,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 4: Implement canonical-key-based cross-document reconciliation without LLM calls.
 - [x] Step 5: Add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
 - [x] Step 6: Add audit persistence and readback for cross-document manifests and results.
-- [ ] Step 7: Extend audit inspection and reporter output for additive cross-document fields.
+- [x] Step 7: Extend audit inspection and reporter output for additive cross-document fields.
 - [ ] Step 8: Add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 - [ ] Step 9: Add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
 - [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
@@ -81,6 +81,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/audit/schema.py:1` | Added additive cross-document manifest and result tables. | Step 6 |
 | `src/extractor/audit/cross_document_records.py:1` | Added audit-store methods for cross-document manifest/result record and readback. | Step 6 |
 | `src/extractor/audit/store.py:1` | Mixed cross-document audit records into the public `AuditStore`. | Step 6 |
+| `tests/unit/test_audit_inspection.py:1` | Added inspection coverage for cross-document run/result summaries. | Step 7 |
+| `tests/unit/test_reporter.py:1` | Added cross-document report serialization and manifest-completion coverage. | Step 7 |
+| `src/extractor/audit/inspection.py:1` | Added cross-document run/result counts and details to audit inspection. | Step 7 |
+| `src/extractor/reporter/models.py:1` | Added additive `cross_document_report.v1` model. | Step 7 |
+| `src/extractor/reporter/service.py:1` | Added cross-document report writer with audit-state validation and manifest completion. | Step 7 |
+| `src/extractor/reporter/__init__.py:1` | Exported cross-document report model and writer. | Step 7 |
 
 ---
 
@@ -107,6 +113,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 7 | `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` failed RED with 2 expected missing cross-document inspection/reporter failures; `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 45 passed; `git diff --check`; `wc -l src/extractor/audit/inspection.py src/extractor/reporter/models.py src/extractor/reporter/service.py src/extractor/reporter/__init__.py src/extractor/audit/cross_document_records.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py` reported 351, 128, 337, 27, 90, 327, 335, and 109 lines. | PASS | 2026-05-29 |
 | Step 6 | `python3 -m pytest tests/unit/test_phase_39_cross_document_audit.py -q` failed RED with 3 expected missing audit-store method failures before implementation; `python3 -m pytest tests/unit/test_phase_39_cross_document_audit.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 36 passed; `git diff --check`; `wc -l src/extractor/audit/cross_document_records.py src/extractor/audit/schema.py src/extractor/audit/store.py tests/unit/test_phase_39_cross_document_audit.py src/extractor/reconciler/cross_document.py src/extractor/reconciler/cross_document_inputs.py tests/unit/test_phase_39_cross_document_input_validation.py` reported 73, 142, 36, 109, 334, 132, and 147 lines. | PASS | 2026-05-29 |
 | Step 5 | `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` failed RED with 3 expected validation/skipped-input failures before implementation; `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py -q` passed with 6 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_reconciler.py -q` passed with 24 passed; `git diff --check`; `wc -l src/extractor/reconciler/cross_document.py src/extractor/reconciler/cross_document_inputs.py src/extractor/reconciler/errors.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py` reported 334, 132, 12, 306, and 147 lines. | PASS | 2026-05-29 |
 | Steps 3-4 | `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` failed RED with 3 expected missing-service failures; `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_reconciler.py -q` passed with 21 passed; `git diff --check`; `wc -l src/extractor/reconciler/cross_document.py tests/unit/test_phase_39_cross_document_reconciliation.py src/extractor/contracts/cross_document.py tests/unit/test_phase_39_cross_document_contracts.py` reported 328, 279, 169, and 280 lines. | PASS | 2026-05-29 |
@@ -141,9 +148,10 @@ Reverse chronological. Log every session.
 - Completed Step 4: added canonical-key-based cross-document reconciliation without LLM calls.
 - Completed Step 5: added validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
 - Completed Step 6: added audit persistence and readback for cross-document manifests and results.
+- Completed Step 7: extended audit inspection and reporter output for additive cross-document fields.
 - Issues found: none.
-- Tests: board-opening and Steps 1-6 verification passed as recorded above.
-- Next: Step 7 - extend audit inspection and reporter output for additive cross-document fields.
+- Tests: board-opening and Steps 1-7 verification passed as recorded above.
+- Next: Step 8 - add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 
 ---
 

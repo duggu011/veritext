@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import importlib
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -9,6 +10,7 @@ import pytest
 from extractor.audit import AuditStore
 from extractor.contracts import (
     CategoryDefinition,
+    CrossDocumentRunManifest,
     DataPoint,
     Document,
     FieldDefinition,
@@ -18,6 +20,7 @@ from extractor.contracts import (
     build_planner_generated_schema_metadata,
 )
 from extractor.reporter import ReporterError, write_report
+from tests.unit.test_phase_39_cross_document_audit import make_cross_document_result
 
 
 HASH = "a" * 64
@@ -109,6 +112,27 @@ def make_schema_metadata():
     )
 
 
+def _write_cross_document_report():
+    reporter = importlib.import_module("extractor.reporter")
+    value = getattr(reporter, "write_cross_document_report", None)
+    assert value is not None, "write_cross_document_report must be exported"
+    return value
+
+
+def make_cross_document_manifest() -> CrossDocumentRunManifest:
+    result = make_cross_document_result()
+    return CrossDocumentRunManifest(
+        cross_document_run_id=result.cross_document_run_id,
+        audit_db_path="/tmp/audit.sqlite3",
+        status="running",
+        started_at=STARTED,
+        completed_at=None,
+        input_run_ids=result.input_run_ids,
+        output_group_ids=(),
+        output_conflict_ids=(),
+    )
+
+
 async def seed_audit_store(
     audit_store: AuditStore,
     manifest: RunManifest,
@@ -155,6 +179,48 @@ def test_write_report_serializes_output_and_completes_manifest(tmp_path: Path) -
         assert stored_manifest.status == "completed"
         assert stored_manifest.completed_at == COMPLETED
         assert stored_manifest.output_data_point_ids == ("dp-1", "dp-2")
+
+    asyncio.run(run_check())
+
+
+def test_write_cross_document_report_serializes_output_and_completes_manifest(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        write_cross_document_report = _write_cross_document_report()
+        manifest = make_cross_document_manifest()
+        result = make_cross_document_result()
+        output_path = tmp_path / "reports" / "xrun-1.json"
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await audit_store.record_cross_document_run_manifest(manifest)
+            await audit_store.record_cross_document_reconciliation_result(result)
+            write_result = await write_cross_document_report(
+                manifest=manifest,
+                result=result,
+                output_path=output_path,
+                audit_store=audit_store,
+                generated_at=COMPLETED,
+            )
+            stored_manifest = await audit_store.get_cross_document_run_manifest("xrun-1")
+
+        rendered = output_path.read_text(encoding="utf-8")
+        payload = json.loads(rendered)
+
+        assert write_result.output_sha256 == hashlib.sha256(
+            rendered.encode("utf-8")
+        ).hexdigest()
+        assert payload["report_schema_version"] == "cross_document_report.v1"
+        assert payload["cross_document_run_id"] == "xrun-1"
+        assert payload["input_run_ids"] == ["run-a", "run-b"]
+        assert payload["output_group_ids"] == [result.groups[0].group_id]
+        assert payload["groups"][0]["sources"][0]["data_point_id"] == "dp-a"
+        assert payload["conflicts"] == []
+        assert payload["skipped_inputs"] == []
+        assert stored_manifest == write_result.completed_manifest
+        assert stored_manifest.status == "completed"
+        assert stored_manifest.completed_at == COMPLETED
+        assert stored_manifest.output_group_ids == (result.groups[0].group_id,)
 
     asyncio.run(run_check())
 

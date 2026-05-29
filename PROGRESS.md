@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 7 of 11.
-- Next required work: Phase 39 Step 7 - extend audit inspection and reporter output for additive cross-document fields.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 8 of 11.
+- Next required work: Phase 39 Step 8 - add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Step 7 Audit Inspection and Reporter Output
+
+- Completed Phase 39 Step 7.
+- Extended audit inspection with cross-document run/result summaries and details.
+- Added additive `cross_document_report.v1` reporter output and cross-document manifest completion without changing `report.v2`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped inspection/reporting change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` failed RED with 2 expected missing cross-document inspection/reporter failures
+  - `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` passed with 9 passed
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 45 passed
+  - `git diff --check`
+  - `wc -l src/extractor/audit/inspection.py src/extractor/reporter/models.py src/extractor/reporter/service.py src/extractor/reporter/__init__.py src/extractor/audit/cross_document_records.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py` reported 351, 128, 337, 27, 90, 327, 335, and 109 lines
+- Next: Phase 39 Step 8 - add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 
 ### 2026-05-29 - Phase 39 Step 6 Cross-Document Audit Persistence
 
