@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is board-open at Step 7 of 8.
-- Next required work: Phase 42 Step 8 - fill the Phase 42 summary and stop for operator acceptance.
+- Current status: Phase 42 Static Provenance Artifact is implementation-complete and awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 42; do not begin Phase 43 without explicit continuation after acceptance.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Summary and Handoff
+
+- Completed Phase 42 Step 8.
+- Filled the Phase 42 board summary with shipped scope, deferred items, added details, and downstream lessons.
+- Left Phase 42 awaiting operator acceptance; Phase 43 must not start without explicit continuation after acceptance.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped summary change.
+- Verification:
+  - Final gates passed in Step 7 as recorded above.
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `git status --short` showed summary/board tracking edits plus unrelated `?? .codex/`
+  - `git log --oneline -10` showed Phase 42 commits through `e2d47cd`
+- Next: operator acceptance of Phase 42.
 
 ### 2026-05-30 - Phase 42 Step 7 Final Gates
 

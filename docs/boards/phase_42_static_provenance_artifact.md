@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 7 of 8
+Step: 8 of 8
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -13,7 +13,7 @@ Phase 42 opened after operator approval to begin spec work and operator-trust
 readiness checks found no open questions, unfinished-work markers, prompt changes, or
 scope conflicts with the Phase 41 static-artifact allowance.
 
-Next: Step 8 - fill the Phase 42 summary and stop for operator acceptance.
+Phase 42 implementation is complete and awaiting operator acceptance.
 
 ---
 
@@ -28,7 +28,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 5: Extend `veritext-report` with the provenance command and CLI tests.
 - [x] Step 6: Add source-neutral acceptance coverage.
 - [x] Step 7: Run final phase gates.
-- [ ] Step 8: Fill the Phase 42 summary and stop for operator acceptance.
+- [x] Step 8: Fill the Phase 42 summary and stop for operator acceptance.
 
 ---
 
@@ -114,6 +114,7 @@ _(No issues yet.)_
 | Step 5 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py -q` failed RED with missing `provenance` subcommand and then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 38 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/cli.py tests/unit/test_phase_42_static_provenance_cli.py src/extractor/config/models.py config/default.yaml` reported 275, 102, 186, and 62 lines. | PASS | 2026-05-30 |
 | Step 6 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py -q` passed with 1 passed after fixing the fixture to avoid an unrelated audited-candidate FK requirement; `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 42 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l tests/unit/test_phase_42_static_provenance_acceptance.py` reported 187 lines. | PASS | 2026-05-30 |
 | Step 7 | `make test` passed with 400 passed and 2 skipped; `make lint`; `make smoke` passed with 1 passed; `git diff --check`; `git diff --exit-code -- prompts`; `git status --short` showed only unrelated `?? .codex/`; `git log --oneline -10` showed Phase 42 commits through `62fe38d`. Evaluation gates were not run because Phase 42 did not change extraction behavior or prompt bodies. | PASS | 2026-05-30 |
+| Step 8 | Filled the Phase 42 board summary and updated `PROGRESS.md`; `git diff --check`; `git diff --exit-code -- prompts`; `git status --short` showed summary/board tracking edits plus unrelated `?? .codex/`; `git log --oneline -10` showed Phase 42 commits through `e2d47cd`. | PASS | 2026-05-30 |
 
 ### Final Gate
 
@@ -125,8 +126,8 @@ _(No issues yet.)_
 - [x] `git diff --exit-code -- prompts` passes
 - [x] Evaluation gates optional; not run because no extraction behavior or prompt bodies changed
 - [x] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -141,6 +142,14 @@ Reverse chronological. Log every session.
 - Issues found: none.
 - Tests: Step 7 final gates passed as recorded above.
 - Next: Step 8 - fill the Phase 42 summary and stop for operator acceptance.
+
+### 2026-05-30 - Step 8
+
+- Resumed at Step 8.
+- Completed: filled the Phase 42 summary and prepared the operator acceptance handoff.
+- Issues found: none.
+- Tests: final gates passed in Step 7; post-summary diff/status/log checks passed as recorded above.
+- Next: operator acceptance of Phase 42.
 
 ### 2026-05-30 - Step 6
 
@@ -208,14 +217,15 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: _(pending)_
-- Deferred: _(pending)_
-- Added beyond spec: _(pending)_
+- Built as specified: deterministic static provenance artifact contracts, typed artifact construction, static HTML rendering with standard-library escaping, file writing with SHA-256 and byte-length reporting, `veritext-report provenance`, source-context radius configuration, and source-neutral acceptance coverage.
+- Preserved as specified: existing `report.v2`, `refusal.v1`, `cross_document_report.v1`, signed manifest, run diff, reporter, audit, prompt, and extraction behavior compatibility.
+- Deferred: refusal and cross-document static artifact support beyond optional typed inputs; richer reviewer ergonomics; any governance records; repository CI; and any broader UI/server behavior.
+- Added beyond spec: a small typed HTML write-result model and explicit absent-manifest/diff/document warnings in static artifact output.
 
 ### Lessons for downstream phases
 
-- _(pending)_
+- A static artifact can stay entirely reporter-side by consuming existing report, manifest, diff, document, and rejection contracts.
+- The source-context boundary is now explicit: matching spans render directly, mismatches produce high-severity warnings, and missing document text is visible rather than repaired.
+- Any future review or governance phase should build on these typed artifacts instead of re-reading report JSON with ad hoc parsing.
