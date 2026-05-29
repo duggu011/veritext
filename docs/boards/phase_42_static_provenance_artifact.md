@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 6 of 8
+Step: 7 of 8
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -13,7 +13,7 @@ Phase 42 opened after operator approval to begin spec work and operator-trust
 readiness checks found no open questions, unfinished-work markers, prompt changes, or
 scope conflicts with the Phase 41 static-artifact allowance.
 
-Next: Step 7 - run final phase gates.
+Next: Step 8 - fill the Phase 42 summary and stop for operator acceptance.
 
 ---
 
@@ -27,7 +27,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 4: Implement static HTML writing with output hash and byte-length reporting.
 - [x] Step 5: Extend `veritext-report` with the provenance command and CLI tests.
 - [x] Step 6: Add source-neutral acceptance coverage.
-- [ ] Step 7: Run final phase gates.
+- [x] Step 7: Run final phase gates.
 - [ ] Step 8: Fill the Phase 42 summary and stop for operator acceptance.
 
 ---
@@ -113,17 +113,18 @@ _(No issues yet.)_
 | Step 4 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py -q` failed RED with 2 expected missing writer export failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 19 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/static_provenance_html.py tests/unit/test_phase_42_static_provenance_writer.py src/extractor/reporter/__init__.py` reported 248, 68, and 69 lines. | PASS | 2026-05-30 |
 | Step 5 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py -q` failed RED with missing `provenance` subcommand and then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 38 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/cli.py tests/unit/test_phase_42_static_provenance_cli.py src/extractor/config/models.py config/default.yaml` reported 275, 102, 186, and 62 lines. | PASS | 2026-05-30 |
 | Step 6 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py -q` passed with 1 passed after fixing the fixture to avoid an unrelated audited-candidate FK requirement; `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 42 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l tests/unit/test_phase_42_static_provenance_acceptance.py` reported 187 lines. | PASS | 2026-05-30 |
+| Step 7 | `make test` passed with 400 passed and 2 skipped; `make lint`; `make smoke` passed with 1 passed; `git diff --check`; `git diff --exit-code -- prompts`; `git status --short` showed only unrelated `?? .codex/`; `git log --oneline -10` showed Phase 42 commits through `62fe38d`. Evaluation gates were not run because Phase 42 did not change extraction behavior or prompt bodies. | PASS | 2026-05-30 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] `git diff --exit-code -- prompts` passes
-- [ ] Evaluation gates pass if extraction behavior changes
-- [ ] All OPEN issues are resolved or explicitly deferred
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] `git diff --exit-code -- prompts` passes
+- [x] Evaluation gates optional; not run because no extraction behavior or prompt bodies changed
+- [x] All OPEN issues are resolved or explicitly deferred
 - [ ] Phase Summary filled in
 - [ ] `PROGRESS.md` updated
 
@@ -132,6 +133,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - Step 7
+
+- Resumed at Step 7.
+- Completed: ran final project, lint, smoke, diff, prompt-neutrality, status, and log gates.
+- Issues found: none.
+- Tests: Step 7 final gates passed as recorded above.
+- Next: Step 8 - fill the Phase 42 summary and stop for operator acceptance.
 
 ### 2026-05-30 - Step 6
 
