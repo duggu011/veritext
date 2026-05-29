@@ -31,6 +31,7 @@ from extractor.reporter.signing import (
     write_signed_report_manifest,
 )
 from extractor.reporter.static_provenance import build_static_provenance_artifact
+from extractor.reporter.static_provenance_html import render_static_provenance_html
 
 __all__ = [
     "CrossDocumentReport",
@@ -48,6 +49,7 @@ __all__ = [
     "file_sha256",
     "render_run_diff_report_json",
     "render_report_json",
+    "render_static_provenance_html",
     "sign_payload",
     "verify_signed_report_manifest",
     "verify_payload_signature",
