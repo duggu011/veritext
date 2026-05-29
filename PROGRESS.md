@@ -4,12 +4,28 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is implemented and awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 39. Do not start Phase 40 without explicit continuation.
-- Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
+- Last completed phase: Phase 39 - Cross-Document Reconciliation
+- Current status: Phase 40 Signed Reports and Run Diffs is in spec draft.
+- Next required work: Phase 40 spec readiness checks, then board opening if approved.
+- Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 39 Acceptance and Phase 40 Spec Draft
+
+- Accepted Phase 39 after operator continuation.
+- Marked Phase 39 complete in `docs/boards/README.md` and updated the Phase 39 board handoff.
+- Drafted `docs/specs/phase_40_signed_reports_and_run_diffs.md` from the Reporter, Audit, and phase roadmap items plus the current Phase 39 reporter/audit/CLI state.
+- Scoped Phase 40 to detached signed manifests, deterministic confidence buckets, additive audit integrity-chain records, and reproducible run diff reports.
+- Kept HTML provenance viewer work, REST APIs, web UI, CI/CD, external signing services, new LLM calls, prompt-body changes, and destructive audit rewrites out of scope.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/README.md docs/boards/phase_39_cross_document_reconciliation.md` returned no matches
+  - `rg -n "Status: draft|Date drafted|Open Questions Before Approval|No static prompt body changes|hmac-sha256|signed_report_manifest\\.v1|run_diff_report\\.v1|SPEC DRAFT|COMPLETE \\(2026-05-30\\)|Phase 40 spec readiness" docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/README.md PROGRESS.md docs/boards/phase_39_cross_document_reconciliation.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `wc -l docs/specs/phase_40_signed_reports_and_run_diffs.md` reported 371 lines
+- Next: Phase 40 spec readiness checks, then board opening if approved.
 
 ### 2026-05-29 - Phase 39 Summary and Handoff
 

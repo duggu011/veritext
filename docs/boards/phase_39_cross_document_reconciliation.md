@@ -5,13 +5,13 @@
 Step: 11 of 11
 Branch: main
 Started: 2026-05-29
-Last session: 2026-05-29
+Last session: 2026-05-30
 Spec: `docs/specs/phase_39_cross_document_reconciliation.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: operator acceptance of Phase 39; do not start Phase 40 without explicit continuation.
+Next: Phase 40 spec readiness and board opening if approved.
 
 ---
 
@@ -165,7 +165,8 @@ Reverse chronological. Log every session.
 - Completed Step 11: filled the Phase 39 summary and prepared the operator acceptance handoff.
 - Issues found: none.
 - Tests: board-opening and Steps 1-10 verification passed as recorded above.
-- Next: operator acceptance of Phase 39. Do not start Phase 40 without explicit continuation.
+- Accepted by operator continuation on 2026-05-30.
+- Next: Phase 40 spec readiness and board opening if approved.
 
 ---
 

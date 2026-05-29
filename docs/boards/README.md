@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 39 - Cross-Document Reconciliation** | Status: BOARD OPEN | Spec: [approved](../specs/phase_39_cross_document_reconciliation.md) | Board: [board](phase_39_cross_document_reconciliation.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 40 - Signed Reports and Run Diffs** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_40_signed_reports_and_run_diffs.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -37,8 +37,8 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 36 - Lens Taxonomy and Normalization Contracts | [approved](../specs/phase_36_lens_taxonomy_and_normalization_contracts.md) | [board](phase_36_lens_taxonomy_and_normalization_contracts.md) | COMPLETE (2026-05-29) |
 | 37 - Expanded Lenses Round 1 | [approved](../specs/phase_37_expanded_lenses_round_1.md) | [board](phase_37_expanded_lenses_round_1.md) | COMPLETE (2026-05-29) |
 | 38 - Dedup, Canonical Values, and Conflict Preservation | [approved](../specs/phase_38_dedup_canonical_values_conflict_preservation.md) | [board](phase_38_dedup_canonical_values_conflict_preservation.md) | COMPLETE (2026-05-29) |
-| 39 - Cross-Document Reconciliation | [approved](../specs/phase_39_cross_document_reconciliation.md) | [board](phase_39_cross_document_reconciliation.md) | ACTIVE - BOARD OPEN |
-| 40 - Signed Reports and Run Diffs | _(not opened)_ | _(not opened)_ | PLANNED |
+| 39 - Cross-Document Reconciliation | [approved](../specs/phase_39_cross_document_reconciliation.md) | [board](phase_39_cross_document_reconciliation.md) | COMPLETE (2026-05-30) |
+| 40 - Signed Reports and Run Diffs | [draft](../specs/phase_40_signed_reports_and_run_diffs.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
 | 41 - Architecture Rule Amendment for Viewer, Governance, and CI | _(not opened)_ | _(not opened)_ | PLANNED; required before any UI or CI work |
 | 42 - HTML Provenance Viewer, If Approved | _(not opened)_ | _(not opened)_ | PLANNED; gated by Phase 41 |
 | 43 - Cost Observability and Cost-per-Correct-Fact | _(not opened)_ | _(not opened)_ | PLANNED |
