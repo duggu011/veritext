@@ -45,3 +45,17 @@ schema_registry:
   directory: .veritext/schema_registry
   require_approved_schema: false
   minimum_schema_coverage: 0.65
+reporting:
+  signing:
+    enabled: false
+    algorithm: hmac-sha256
+    key_id: local-dev
+    key_env: VERITEXT_REPORT_SIGNING_KEY
+    manifest_suffix: .manifest.json
+  confidence_buckets:
+    - bucket_name: verified
+      minimum_confidence: 0.85
+    - bucket_name: probable
+      minimum_confidence: 0.65
+    - bucket_name: tentative
+      minimum_confidence: 0.0

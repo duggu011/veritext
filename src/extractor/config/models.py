@@ -16,6 +16,8 @@ ReasoningEffort = Literal["minimal", "low", "medium", "high"]
 LLMStageGroup = Literal["planner", "executor", "critic", "verifier", "reconciler"]
 ChunkBoundaryMode = Literal["token_window", "layout_aware"]
 ChunkTokenizerPolicy = Literal["tiktoken"]
+ReportSignatureAlgorithm = Literal["hmac-sha256"]
+ConfidenceBucketName = Literal["verified", "probable", "tentative"]
 
 
 class ConfigModel(BaseModel):
@@ -100,6 +102,46 @@ class SchemaRegistryConfig(ConfigModel):
     minimum_schema_coverage: SchemaCoverageThreshold = 0.65
 
 
+class ReportSigningConfig(ConfigModel):
+    enabled: bool = Field(default=False, strict=True)
+    algorithm: ReportSignatureAlgorithm = "hmac-sha256"
+    key_id: NonEmptyStr = "local-dev"
+    key_env: NonEmptyStr = "VERITEXT_REPORT_SIGNING_KEY"
+    manifest_suffix: NonEmptyStr = ".manifest.json"
+
+
+class ConfidenceBucketConfig(ConfigModel):
+    bucket_name: ConfidenceBucketName
+    minimum_confidence: SchemaCoverageThreshold
+
+
+def default_confidence_buckets() -> tuple[ConfidenceBucketConfig, ...]:
+    return (
+        ConfidenceBucketConfig(bucket_name="verified", minimum_confidence=0.85),
+        ConfidenceBucketConfig(bucket_name="probable", minimum_confidence=0.65),
+        ConfidenceBucketConfig(bucket_name="tentative", minimum_confidence=0.0),
+    )
+
+
+class ReportingConfig(ConfigModel):
+    signing: ReportSigningConfig = Field(default_factory=ReportSigningConfig)
+    confidence_buckets: tuple[ConfidenceBucketConfig, ...] = Field(
+        default_factory=default_confidence_buckets
+    )
+
+    @model_validator(mode="after")
+    def validate_confidence_buckets(self) -> ReportingConfig:
+        expected_names = ("verified", "probable", "tentative")
+        names = tuple(bucket.bucket_name for bucket in self.confidence_buckets)
+        if names != expected_names:
+            raise ValueError("confidence_buckets must be ordered verified, probable, tentative")
+
+        thresholds = tuple(bucket.minimum_confidence for bucket in self.confidence_buckets)
+        if thresholds != tuple(sorted(thresholds, reverse=True)):
+            raise ValueError("confidence_buckets thresholds must be descending")
+        return self
+
+
 class ExtractorConfig(ConfigModel):
     llm: LLMConfig
     chunking: ChunkingConfig
@@ -109,6 +151,7 @@ class ExtractorConfig(ConfigModel):
     prompts: PromptConfig
     domain_packs: DomainPacksConfig
     schema_registry: SchemaRegistryConfig
+    reporting: ReportingConfig = Field(default_factory=ReportingConfig)
 
 
 class RunContext(ConfigModel):
@@ -119,6 +162,8 @@ class RunContext(ConfigModel):
 
 __all__ = [
     "AuditConfig",
+    "ConfidenceBucketConfig",
+    "ConfidenceBucketName",
     "ChunkBoundaryMode",
     "ChunkingConfig",
     "ChunkTokenizerPolicy",
@@ -131,6 +176,9 @@ __all__ = [
     "LLMStageOverrideConfig",
     "LoggingConfig",
     "PromptConfig",
+    "ReportSignatureAlgorithm",
+    "ReportSigningConfig",
+    "ReportingConfig",
     "RunContext",
     "SchemaRegistryConfig",
     "SchemaCoverageThreshold",

@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 1 of 11.
-- Next required work: Phase 40 Step 1 - add RED tests for Phase 40 signing, confidence bucket, audit integrity, and run diff contracts.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 4 of 11.
+- Next required work: Phase 40 Step 4 - implement canonical hashing, config hashing, HMAC signing, and verification helpers without external signing services.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Steps 1-3 Contracts and Reporting Config
+
+- Completed Phase 40 Step 1.
+- Added RED tests for signed report manifests, signature envelopes, report artifact refs, confidence bucket summaries, audit integrity events, run diff refs, diff entries, diff reports, and reporting config defaults/validation.
+- Completed Phase 40 Step 2.
+- Added additive report integrity contracts and public exports.
+- Completed Phase 40 Step 3.
+- Added reporting signing and confidence bucket config models/defaults without requiring signing secrets for existing extraction or smoke behavior.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped contract/config change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_report_integrity_contracts.py -q` failed RED with 3 expected missing-contract export failures, then passed with 3 passed
+  - `python3 -m pytest tests/unit/test_config.py::test_default_config_file_loads tests/unit/test_config.py::test_reporting_settings_support_env_overrides tests/unit/test_config.py::test_domain_pack_and_schema_registry_config_sections_are_strict tests/unit/test_config.py::test_reporting_config_rejects_invalid_signing_and_bucket_thresholds -q` failed RED during collection with missing `ConfidenceBucketConfig`; the focused config tests were then moved to `tests/unit/test_phase_40_reporting_config.py`
+  - `python3 -m pytest tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_config.py -q` passed with 23 passed
+  - `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_config.py -q` passed with 41 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py src/extractor/contracts/report_integrity.py src/extractor/contracts/__init__.py src/extractor/config/models.py src/extractor/config/__init__.py config/default.yaml tests/unit/test_config.py` reported 254, 100, 203, 196, 185, 59, 61, and 361 lines
+- Next: Phase 40 Step 4 - implement canonical hashing, config hashing, HMAC signing, and verification helpers without external signing services.
 
 ### 2026-05-30 - Phase 40 Board Opening
 
