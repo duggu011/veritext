@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 9 of 11.
-- Next required work: Phase 40 Step 9 - add focused source-neutral run diff/signature acceptance coverage.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 10 of 11.
+- Next required work: Phase 40 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 9 Source-Neutral Acceptance Coverage
+
+- Completed Phase 40 Step 9.
+- Added source-neutral acceptance coverage that combines signed manifest writing, verification, confidence bucket assignment, source hash preservation, and deterministic run diffs without domain or fixture-specific nouns.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped acceptance-coverage change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_report_acceptance.py -q` passed with 1 passed
+  - `python3 -m pytest tests/unit/test_phase_40_report_acceptance.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_audit_integrity.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py -q` passed with 19 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_report_acceptance.py` reported 137 lines
+- Next: Phase 40 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ### 2026-05-30 - Phase 40 Step 8 Report CLI
 
