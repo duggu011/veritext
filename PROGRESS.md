@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is in spec draft.
-- Next required work: Phase 40 spec readiness checks, then board opening if approved.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 1 of 11.
+- Next required work: Phase 40 Step 1 - add RED tests for Phase 40 signing, confidence bucket, audit integrity, and run diff contracts.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Board Opening
+
+- Approved the Phase 40 spec for implementation under operator-trust resume mode after readiness checks found no open questions, unresolved draft markers, architecture-rule changes, invariant risk, prompt-body changes, unclear CLI shape, or unclear gate interpretations.
+- Opened `docs/boards/phase_40_signed_reports_and_run_diffs.md` with eleven implementation steps from the approved spec.
+- Updated `docs/boards/README.md` to show Phase 40 as `BOARD OPEN`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped board-opening change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/README.md docs/boards/phase_40_signed_reports_and_run_diffs.md` returned no matches
+  - `rg -n "Status: approved|Date approved|Open Questions Before Approval|No static prompt body changes|hmac-sha256|signed_report_manifest\\.v1|run_diff_report\\.v1|BOARD OPEN|Step 1|veritext-report" docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/README.md PROGRESS.md docs/boards/phase_40_signed_reports_and_run_diffs.md`
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `wc -l docs/specs/phase_40_signed_reports_and_run_diffs.md docs/boards/phase_40_signed_reports_and_run_diffs.md` reported 377 and 148 lines
+- Next: Phase 40 Step 1 - add RED tests for Phase 40 signing, confidence bucket, audit integrity, and run diff contracts.
 
 ### 2026-05-30 - Phase 39 Acceptance and Phase 40 Spec Draft
 

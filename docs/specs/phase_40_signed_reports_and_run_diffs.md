@@ -1,8 +1,9 @@
 # Phase 40 - Signed Reports and Run Diffs
 
-Status: draft.
+Status: approved for implementation.
 
 Date drafted: 2026-05-30
+Date approved: 2026-05-30
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` section `9. Reporter`,
 `docs/PROJECT_OVERVIEW.md` section `11. Audit and observability`,
@@ -267,10 +268,10 @@ Required compatibility:
 
 ## CLI Effects
 
-Phase 40 may add a non-UI command surface for report verification and run diffs.
-The safest shape is a new console script such as `veritext-report` with
-subcommands for `sign`, `verify`, and `diff`, or an additive subcommand surface
-that preserves current `veritext` and `veritext-audit` behavior.
+Phase 40 adds a non-UI command surface for report verification and run diffs as
+a new console script, `veritext-report`, with `sign`, `verify`, and `diff`
+subcommands. This avoids changing current `veritext` and `veritext-audit`
+argument parsing.
 
 CLI output should be JSON and include artifact paths, hashes, verification
 status, signature metadata without secrets, and diff summary counts. Existing
@@ -291,6 +292,11 @@ Expected additive config:
 Signing secrets must not be stored in YAML. The YAML config stores only the
 environment variable name and non-secret key ID. Confidence thresholds must be
 validated as ordered numeric values.
+
+`reporting.signing.enabled` should default to false so existing extraction and
+smoke behavior does not require a signing key. Explicit `veritext-report sign`
+usage or enabled signing config must fail clearly when the configured key
+environment variable is missing.
 
 ## Prompt Changes
 
