@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 9 of 11
+Step: 10 of 11
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:9. Reporter`; `docs/PROJECT_OVERVIEW.m
 
 Phase 40 opened after operator continuation accepted Phase 39 and the Phase 40 draft spec passed readiness checks with no open questions.
 
-Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+Next: Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
 
 ---
 
@@ -28,7 +28,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 7: Add deterministic run diff service and report writer.
 - [x] Step 8: Add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
 - [x] Step 9: Add focused source-neutral run diff/signature acceptance coverage.
-- [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- [x] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - [ ] Step 11: Fill the Phase 40 board summary and stop for operator acceptance.
 
 ---
@@ -127,6 +127,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 10 | `make test` passed with 387 passed and 2 skipped; `make lint`; `make smoke` passed with 1 passed; `git diff --check`; `git diff --exit-code -- prompts`; `git diff --exit-code e32a359..HEAD -- prompts`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual data points, 21 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual data points, 49 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched, 0 unmatched, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-30 |
 | Step 9 | `python3 -m pytest tests/unit/test_phase_40_report_acceptance.py -q` passed with 1 passed; `python3 -m pytest tests/unit/test_phase_40_report_acceptance.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_audit_integrity.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py -q` passed with 19 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_report_acceptance.py` reported 137 lines. | PASS | 2026-05-30 |
 | Step 8 | `python3 -m pytest tests/unit/test_phase_40_report_cli.py -q` failed RED with expected missing `extractor.reporter.cli`, then initially exposed report JSON datetime loading and `VERITEXT_` signing-secret env collision gaps; `python3 -m pytest tests/unit/test_phase_40_report_cli.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_cli.py tests/unit/test_reporter.py -q` passed with 24 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_report_cli.py src/extractor/reporter/cli.py src/extractor/reporter/__main__.py pyproject.toml src/extractor/config/models.py config/default.yaml` reported 123, 195, 5, 41, 185, and 61 lines. | PASS | 2026-05-30 |
 | Step 7 | `python3 -m pytest tests/unit/test_phase_40_run_diff.py -q` failed RED with expected missing `diff_reports` export, then passed with 2 passed after correcting the test fixture to satisfy existing normalization invariants; `python3 -m pytest tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_reporter.py -q` passed with 16 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_run_diff.py src/extractor/reporter/diff.py src/extractor/reporter/__init__.py` reported 134, 228, and 57 lines. | PASS | 2026-05-30 |
@@ -138,15 +139,15 @@ _(No issues yet.)_
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
 - [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -167,9 +168,10 @@ Reverse chronological. Log every session.
 - Completed Step 7: added deterministic `report.v2` run diff service and JSON writer.
 - Completed Step 8: added `veritext-report` CLI subcommands for diff, sign, and verify while preserving existing `veritext` and `veritext-audit` behavior.
 - Completed Step 9: added source-neutral acceptance coverage for signed manifest verification, confidence buckets, source hashes, and run diffs.
+- Completed Step 10: ran final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - Issues found: none.
-- Tests: board-opening and Steps 1-9 verification passed as recorded above.
-- Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- Tests: board-opening and Steps 1-10 verification passed as recorded above.
+- Next: Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
 
 ---
 

@@ -5,11 +5,32 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 10 of 11.
-- Next required work: Phase 40 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 11 of 11.
+- Next required work: Phase 40 Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 10 Final Gates
+
+- Completed Phase 40 Step 10.
+- Ran final project, lint, smoke, prompt-neutrality, diff, and evaluation gates.
+- Verified no static prompt-body changes in the working tree or across Phase 40 implementation commits from `e32a359`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped final-gate tracking change.
+- Verification:
+  - `make test` passed with 387 passed and 2 skipped
+  - `make lint`
+  - `make smoke` passed with 1 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `git diff --exit-code e32a359..HEAD -- prompts`
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual data points, 21 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual data points, 49 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched, 0 unmatched, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+- Next: Phase 40 Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
 
 ### 2026-05-30 - Phase 40 Step 9 Source-Neutral Acceptance Coverage
 
