@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking is at Step 3 of 6.
-- Next required work: Phase 35 Step 3 - add boundary collection and validation from page maps, layout spans, and table spans.
+- Current status: Phase 35 Layout-Aware Chunking is at Step 4 of 6.
+- Next required work: Phase 35 Step 4 - add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
 - Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Step 3 Boundary Collection
+
+- Completed Phase 35 Step 3.
+- Added `src/extractor/chunker/boundaries.py` to collect document, page, layout, and table boundaries into a sorted chunker boundary set.
+- Added validation that page maps cover `Document.text` contiguously and that layout/table spans stay within their declared pages.
+- Moved `ChunkingError` into `src/extractor/chunker/errors.py` so tokenizer and boundary validation failures share the public error type.
+- Verification:
+  - `python3 -m pytest tests/unit/test_chunker_boundaries.py -q` first failed with missing `extractor.chunker.boundaries`, then passed after collector implementation
+  - `python3 -m pytest tests/unit/test_chunker_boundaries.py tests/unit/test_chunker.py -q` passed with 8 passed
+  - `python3 -m pytest tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 60 passed
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/chunker/boundaries.py src/extractor/chunker/errors.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_boundaries.py` reported 221, 5, 132, and 144 lines
+- Next: Phase 35 Step 4 - add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
 
 ### 2026-05-29 — Phase 35 Step 2 Token Offset Helpers
 

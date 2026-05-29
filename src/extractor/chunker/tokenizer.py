@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 
 from extractor.audit import AuditStore
+from extractor.chunker.errors import ChunkingError
 from extractor.chunker.token_offsets import (
     TokenOffsetError,
     TokenOffsetMap,
@@ -14,10 +15,6 @@ from extractor.chunker.token_offsets import (
 )
 from extractor.config import ChunkingConfig
 from extractor.contracts import Chunk, Document
-
-
-class ChunkingError(RuntimeError):
-    """Raised when token-aware chunking cannot preserve source offsets."""
 
 
 async def chunk_document(
