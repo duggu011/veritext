@@ -15,6 +15,7 @@ from extractor.ingestion.errors import (
 )
 from extractor.ingestion.docx import extract_docx_document
 from extractor.ingestion.pdf import PdfIngestionResult, extract_pdf_document
+from extractor.ingestion.html import extract_html_document
 
 
 TEXT_SUFFIXES = {".txt", ".text"}
@@ -108,6 +109,9 @@ async def _extract_document_content(
 
     if document_format == "docx":
         return await asyncio.to_thread(extract_docx_document, source_path)
+
+    if document_format == "html":
+        return await asyncio.to_thread(extract_html_document, source_path, source_bytes)
 
     # This branch is unreachable when detect_document_format is used, but keeps
     # this boundary explicit if the supported formats expand.

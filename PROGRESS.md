@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 2 is complete and the board remains open.
-- Next required work: Phase 34 Step 3 - add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 3 is complete and the board remains open.
+- Next required work: Phase 34 Step 4 - add EML ingestion fixtures, adapter, metadata, body selection, and failure handling.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Step 3 HTML Ingestion
+
+- Completed Phase 34 Step 3.
+- Added HTML fixture coverage for title/meta metadata, declared charset, visible heading/paragraph/list/table text, table cell spans, header labels, generated separators, unmapped decoded text, empty visible text rejection, and unsupported charset rejection.
+- Added `src/extractor/ingestion/html.py` for standard-library HTML decoding and visible text extraction, plus `src/extractor/ingestion/html_tables.py` for table span materialization.
+- Routed detected `html` documents through the HTML adapter.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with unsupported HTML ingestion
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` passed with 6 passed
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 35 passed
+  - `wc -l src/extractor/ingestion/html.py src/extractor/ingestion/html_tables.py tests/unit/test_ingestion_docx_html_email.py` reported 353, 146, and 324 lines
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-29 — Phase 34 Step 2 DOCX Ingestion
 

@@ -208,3 +208,117 @@ def test_ingest_docx_rejects_malformed_missing_document_and_empty_text(
             await ingest_document(empty)
 
     asyncio.run(run_check())
+
+
+def test_ingest_html_populates_metadata_layout_table_and_unmapped_source_map(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        source = tmp_path / "notice.html"
+        source.write_text(
+            """<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Insurance Notice</title>
+    <meta name="author" content="Risk Team">
+  </head>
+  <body>
+    <h1>Insurance Requirements</h1>
+    <p>Vendor shall maintain coverage &amp; endorsements.</p>
+    <ul>
+      <li>Additional insured endorsement required.</li>
+    </ul>
+    <table>
+      <tr><th>Coverage</th><th>Limit</th></tr>
+      <tr><td>General Liability</td><td>$2,000,000</td></tr>
+    </table>
+    <script>ignoredScript()</script>
+    <style>.ignored { color: red; }</style>
+  </body>
+</html>
+""",
+            encoding="utf-8",
+        )
+
+        document = await ingest_document(source)
+
+        assert document.format == "html"
+        assert document.metadata.source_name == "notice.html"
+        assert document.metadata.mime_type == "text/html"
+        assert document.metadata.parser_name == "stdlib-html"
+        assert document.metadata.declared_encoding == "utf-8"
+        assert {entry.key: entry.value for entry in document.metadata.raw_metadata} == {
+            "meta:author": "Risk Team",
+            "title": "Insurance Notice",
+        }
+        assert document.text == (
+            "Insurance Requirements\n"
+            "Vendor shall maintain coverage & endorsements.\n"
+            "Additional insured endorsement required.\n"
+            "Coverage Limit\n"
+            "General Liability $2,000,000"
+        )
+        assert len(document.page_map) == 1
+        assert document.page_map[0].start_char == 0
+        assert document.page_map[0].end_char == len(document.text)
+        assert tuple(segment.kind for segment in document.source_map) == (
+            "unmapped",
+            "generated",
+            "unmapped",
+            "generated",
+            "unmapped",
+            "generated",
+            "unmapped",
+            "generated",
+            "unmapped",
+        )
+        assert all(segment.source_start_byte is None for segment in document.source_map)
+        assert tuple(span.role for span in document.layout_spans) == (
+            "heading",
+            "paragraph",
+            "list_item",
+            "table",
+            "table_cell",
+            "table_cell",
+            "table_cell",
+            "table_cell",
+        )
+        assert len(document.table_spans) == 1
+        table = document.table_spans[0]
+        assert [cell.row_index for cell in table.cells] == [0, 0, 1, 1]
+        assert [cell.column_index for cell in table.cells] == [0, 1, 0, 1]
+        assert [cell.header_labels for cell in table.cells] == [
+            (),
+            (),
+            ("Coverage",),
+            ("Limit",),
+        ]
+        fourth_cell = table.cells[3].text_range
+        assert document.text[fourth_cell.start_char : fourth_cell.end_char] == "$2,000,000"
+
+    asyncio.run(run_check())
+
+
+def test_ingest_html_rejects_empty_visible_text_and_unsupported_charset(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        empty = tmp_path / "empty.html"
+        empty.write_text(
+            """<html><body><script>ignored()</script><style>p { color: red; }</style></body></html>""",
+            encoding="utf-8",
+        )
+
+        unsupported_charset = tmp_path / "unsupported.html"
+        unsupported_charset.write_bytes(
+            b'<html><head><meta charset="x-unknown"></head><body><p>alpha</p></body></html>'
+        )
+
+        with pytest.raises(IngestionError, match="yielded no visible text"):
+            await ingest_document(empty)
+
+        with pytest.raises(IngestionError, match="unsupported charset"):
+            await ingest_document(unsupported_charset)
+
+    asyncio.run(run_check())
