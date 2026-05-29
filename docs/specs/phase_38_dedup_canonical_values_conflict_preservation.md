@@ -1,9 +1,9 @@
 # Phase 38 - Dedup, Canonical Values, and Conflict Preservation
 
-Status: draft, not approved.
+Status: approved for implementation.
 
 Date drafted: 2026-05-29
-Date approved: not approved.
+Date approved: 2026-05-29
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` sections `5. Dedup` and
 `8. Reconciler`, `docs/PROJECT_OVERVIEW.md` highest-leverage item 4,

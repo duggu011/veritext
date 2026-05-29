@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is in spec draft.
-- Next required work: Phase 38 spec readiness checks, then board opening if approved.
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 1 of 11.
+- Next required work: Phase 38 Step 1 - add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
 - Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Board Opening
+
+- Approved the Phase 38 spec for implementation under operator-trust resume mode after readiness checks found no open questions, unresolved draft markers, architecture-rule changes, invariant risk, prompt-body changes, or unclear gate interpretations.
+- Opened `docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md` with eleven implementation steps from the approved spec.
+- Updated `docs/boards/README.md` to show Phase 38 as `BOARD OPEN`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped board-opening change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/README.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`
+  - `rg -n "Phase 38|phase_38_dedup_canonical_values_conflict_preservation.md|BOARD OPEN|approved|Step 1|Prompt Changes|Open Questions" docs/boards/README.md PROGRESS.md docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`
+- Next: Phase 38 Step 1 - add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
 
 ### 2026-05-29 - Phase 37 Acceptance and Phase 38 Spec Draft
 
