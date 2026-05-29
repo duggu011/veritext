@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 3 is complete and the board remains open.
-- Next required work: Phase 34 Step 4 - add EML ingestion fixtures, adapter, metadata, body selection, and failure handling.
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 4 is complete and the board remains open.
+- Next required work: Phase 34 Step 5 - add audit readback, source-support regression, and prompt-neutrality verification.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Step 4 EML Ingestion
+
+- Completed Phase 34 Step 4.
+- Added EML fixture coverage for plain-text body preference over HTML alternatives, HTML-body fallback, generated header labels, unmapped decoded body text, selected header metadata, body charset metadata, attachment rejection, unsupported charset rejection, and empty-body rejection.
+- Added `src/extractor/ingestion/email.py` for standard-library RFC 5322 parsing, multipart alternative validation, body selection, body decoding, metadata extraction, and generated/unmapped source-map assembly.
+- Routed detected `email` documents through the EML adapter.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion_email.py -q` first failed with unsupported EML ingestion
+  - `python3 -m pytest tests/unit/test_ingestion_email.py -q` passed with 3 passed
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py -q` passed with 9 passed
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py tests/unit/test_contracts.py -q` passed with 38 passed
+  - `wc -l src/extractor/ingestion/email.py tests/unit/test_ingestion_email.py src/extractor/ingestion/documents.py` reported 355, 184, and 172 lines
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-29 — Phase 34 Step 3 HTML Ingestion
 
