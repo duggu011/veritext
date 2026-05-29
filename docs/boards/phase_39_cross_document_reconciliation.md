@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 9 of 11
+Step: 10 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+Next: Step 11 - fill the Phase 39 board summary and stop for operator acceptance.
 
 ---
 
@@ -28,7 +28,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 7: Extend audit inspection and reporter output for additive cross-document fields.
 - [x] Step 8: Add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 - [x] Step 9: Add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
-- [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- [x] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - [ ] Step 11: Fill the Phase 39 board summary and stop for operator acceptance.
 
 ---
@@ -120,6 +120,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 10 | `make test` passed with 368 passed and 2 skipped; `make lint`; `make smoke` passed with 1 passed; `git diff --check`; `git diff --exit-code -- prompts`; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual data points, 21 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual data points, 49 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched, 0 unmatched, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-29 |
 | Step 9 | `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py -q` failed while refining a test ordering assertion, then failed RED with expected missing `CrossDocumentSourceRef.conflict_status`; `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py -q` passed with 1 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_orchestrator.py -q` passed with 24 passed; `git diff --check`; `wc -l tests/unit/test_phase_39_cross_document_acceptance.py src/extractor/contracts/cross_document.py src/extractor/reconciler/cross_document.py` reported 221, 180, and 337 lines. | PASS | 2026-05-29 |
 | Step 8 | `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py -q` failed RED with 2 expected missing-entrypoint failures and 1 passing CLI regression; `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py -q` passed with 25 passed; `git diff --check`; `wc -l src/extractor/orchestrator/cross_document.py src/extractor/orchestrator/models.py src/extractor/orchestrator/__init__.py tests/unit/test_phase_39_cross_document_orchestrator.py` reported 181, 71, 21, and 123 lines. | PASS | 2026-05-29 |
 | Step 7 | `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` failed RED with 2 expected missing cross-document inspection/reporter failures; `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 45 passed; `git diff --check`; `wc -l src/extractor/audit/inspection.py src/extractor/reporter/models.py src/extractor/reporter/service.py src/extractor/reporter/__init__.py src/extractor/audit/cross_document_records.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py` reported 351, 128, 337, 27, 90, 327, 335, and 109 lines. | PASS | 2026-05-29 |
@@ -131,13 +132,13 @@ _(No issues yet.)_
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
 - [ ] Phase Summary filled in
 - [ ] `PROGRESS.md` updated
 
@@ -160,9 +161,10 @@ Reverse chronological. Log every session.
 - Completed Step 7: extended audit inspection and reporter output for additive cross-document fields.
 - Completed Step 8: added the Python multi-document batch orchestration entrypoint while keeping CLI behavior unchanged.
 - Completed Step 9: added source-neutral equivalent unit coverage for cross-document evaluation acceptance and preserved local conflict metadata on source refs.
+- Completed Step 10: ran final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - Issues found: none.
-- Tests: board-opening and Steps 1-9 verification passed as recorded above.
-- Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- Tests: board-opening and Steps 1-10 verification passed as recorded above.
+- Next: Step 11 - fill the Phase 39 board summary and stop for operator acceptance.
 
 ---
 
