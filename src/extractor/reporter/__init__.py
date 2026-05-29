@@ -31,7 +31,12 @@ from extractor.reporter.signing import (
     write_signed_report_manifest,
 )
 from extractor.reporter.static_provenance import build_static_provenance_artifact
-from extractor.reporter.static_provenance_html import render_static_provenance_html
+from extractor.reporter.static_provenance_html import (
+    StaticProvenanceHtmlError,
+    StaticProvenanceHtmlWriteResult,
+    render_static_provenance_html,
+    write_static_provenance_html,
+)
 
 __all__ = [
     "CrossDocumentReport",
@@ -41,6 +46,8 @@ __all__ = [
     "ReportSigningError",
     "ReportWriteResult",
     "RunDiffWriteResult",
+    "StaticProvenanceHtmlError",
+    "StaticProvenanceHtmlWriteResult",
     "build_static_provenance_artifact",
     "canonical_json_bytes",
     "canonical_json_sha256",
@@ -58,4 +65,5 @@ __all__ = [
     "write_refusal_report",
     "write_report",
     "write_run_diff_report",
+    "write_static_provenance_html",
 ]

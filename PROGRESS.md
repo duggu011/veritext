@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is board-open at Step 3 of 8.
-- Next required work: Phase 42 Step 4 - implement static HTML writing with output hash and byte-length reporting.
+- Current status: Phase 42 Static Provenance Artifact is board-open at Step 4 of 8.
+- Next required work: Phase 42 Step 5 - extend `veritext-report` with the provenance command and CLI tests.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Step 4 Static Provenance HTML Writer
+
+- Completed Phase 42 Step 4.
+- Added static provenance HTML writing with a typed write-result model, SHA-256 and byte-length reporting, deterministic parent-directory creation, and explicit directory-output rejection.
+- Exported `write_static_provenance_html`, `StaticProvenanceHtmlWriteResult`, and `StaticProvenanceHtmlError` from `extractor.reporter`.
+- Added `tests/unit/test_phase_42_static_provenance_writer.py` with output hash, byte-length, rendered content, and directory rejection coverage.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped Step 4 change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py -q` failed RED with 2 expected missing writer export failures, then passed with 2 passed
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 19 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `wc -l src/extractor/reporter/static_provenance_html.py tests/unit/test_phase_42_static_provenance_writer.py src/extractor/reporter/__init__.py` reported 248, 68, and 69 lines
+- Next: Phase 42 Step 5 - extend `veritext-report` with the provenance command and CLI tests.
 
 ### 2026-05-30 - Phase 42 Step 3 Static Provenance HTML Rendering
 

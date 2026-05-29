@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 3 of 8
+Step: 4 of 8
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -13,7 +13,7 @@ Phase 42 opened after operator approval to begin spec work and operator-trust
 readiness checks found no open questions, unfinished-work markers, prompt changes, or
 scope conflicts with the Phase 41 static-artifact allowance.
 
-Next: Step 4 - implement static HTML writing with output hash and byte-length reporting.
+Next: Step 5 - extend `veritext-report` with the provenance command and CLI tests.
 
 ---
 
@@ -24,7 +24,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 1: Add static provenance view contracts and source-context validation tests.
 - [x] Step 2: Implement typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited `Document`/rejections.
 - [x] Step 3: Add deterministic HTML rendering and escaping tests.
-- [ ] Step 4: Implement static HTML writing with output hash and byte-length reporting.
+- [x] Step 4: Implement static HTML writing with output hash and byte-length reporting.
 - [ ] Step 5: Extend `veritext-report` with the provenance command and CLI tests.
 - [ ] Step 6: Add source-neutral acceptance coverage.
 - [ ] Step 7: Run final phase gates.
@@ -72,6 +72,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/reporter/static_provenance_html.py:1` | Added deterministic static HTML rendering for typed provenance artifacts with standard-library HTML escaping. | Step 3 |
 | `src/extractor/reporter/__init__.py:1` | Exported `render_static_provenance_html`. | Step 3 |
 | `tests/unit/test_phase_42_static_provenance_rendering.py:1` | Added RED/GREEN coverage for deterministic rendering, escaping source/value text, offsets, warnings, and optional-trail absence. | Step 3 |
+| `src/extractor/reporter/static_provenance_html.py:1` | Added static HTML file writing with typed result, SHA-256, byte-length reporting, parent directory creation, and directory-output rejection. | Step 4 |
+| `src/extractor/reporter/__init__.py:1` | Exported `write_static_provenance_html`, `StaticProvenanceHtmlWriteResult`, and `StaticProvenanceHtmlError`. | Step 4 |
+| `tests/unit/test_phase_42_static_provenance_writer.py:1` | Added RED/GREEN coverage for writing static HTML, output hash/byte-length reporting, and directory-path rejection. | Step 4 |
 
 ---
 
@@ -102,6 +105,7 @@ _(No issues yet.)_
 | Step 1 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_contracts.py -q` failed RED with 3 expected missing export failures, then passed with 3 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_contracts.py -q` passed with 19 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/contracts/static_provenance.py tests/unit/test_phase_42_static_provenance_contracts.py src/extractor/contracts/__init__.py` reported 257, 176, and 222 lines. | PASS | 2026-05-30 |
 | Step 2 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_builder.py -q` failed RED with 3 expected missing builder export failures, then passed with 3 passed after correcting a test fixture run-ID mismatch; `python3 -m pytest tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 15 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/static_provenance.py tests/unit/test_phase_42_static_provenance_builder.py src/extractor/reporter/__init__.py` reported 229, 183, and 59 lines. | PASS | 2026-05-30 |
 | Step 3 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_rendering.py -q` failed RED with 2 expected missing renderer export failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 17 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/static_provenance.py src/extractor/reporter/static_provenance_html.py tests/unit/test_phase_42_static_provenance_rendering.py src/extractor/reporter/__init__.py` reported 229, 203, 117, and 61 lines. | PASS | 2026-05-30 |
+| Step 4 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py -q` failed RED with 2 expected missing writer export failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 19 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/static_provenance_html.py tests/unit/test_phase_42_static_provenance_writer.py src/extractor/reporter/__init__.py` reported 248, 68, and 69 lines. | PASS | 2026-05-30 |
 
 ### Final Gate
 
@@ -121,6 +125,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - Step 4
+
+- Resumed at Step 4.
+- Completed: added static provenance HTML writing with typed result, SHA-256, byte-length reporting, parent directory creation, and directory-output rejection.
+- Issues found: none.
+- Tests: Step 4 tests passed as recorded above.
+- Next: Step 5 - extend `veritext-report` with the provenance command and CLI tests.
 
 ### 2026-05-30 - Step 3
 

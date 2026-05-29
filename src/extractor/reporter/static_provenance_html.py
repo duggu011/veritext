@@ -1,8 +1,48 @@
 from __future__ import annotations
 
+import hashlib
 import html
+from pathlib import Path
 
+from pydantic import BaseModel, ConfigDict
+
+from extractor.contracts.base import NonEmptyStr, NonNegativeInt, Sha256Hex
 from extractor.contracts import StaticProvenanceArtifact, StaticProvenanceWarning
+
+
+class StaticProvenanceHtmlError(RuntimeError):
+    """Raised when a static provenance HTML artifact cannot be written."""
+
+
+class StaticProvenanceHtmlWriteResult(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    artifact: StaticProvenanceArtifact
+    output_path: NonEmptyStr
+    output_sha256: Sha256Hex
+    output_byte_length: NonNegativeInt
+
+
+def write_static_provenance_html(
+    *,
+    artifact: StaticProvenanceArtifact,
+    output_path: str | Path,
+) -> StaticProvenanceHtmlWriteResult:
+    rendered = render_static_provenance_html(artifact)
+    output = Path(output_path)
+    if output.exists() and output.is_dir():
+        raise StaticProvenanceHtmlError(
+            f"Static provenance output path is a directory: {output}"
+        )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(rendered, encoding="utf-8")
+    output_bytes = rendered.encode("utf-8")
+    return StaticProvenanceHtmlWriteResult(
+        artifact=artifact,
+        output_path=str(output),
+        output_sha256=hashlib.sha256(output_bytes).hexdigest(),
+        output_byte_length=len(output_bytes),
+    )
 
 
 def render_static_provenance_html(artifact: StaticProvenanceArtifact) -> str:
@@ -200,4 +240,9 @@ def _attr(value: object) -> str:
     return _e(value)
 
 
-__all__ = ["render_static_provenance_html"]
+__all__ = [
+    "StaticProvenanceHtmlError",
+    "StaticProvenanceHtmlWriteResult",
+    "render_static_provenance_html",
+    "write_static_provenance_html",
+]
