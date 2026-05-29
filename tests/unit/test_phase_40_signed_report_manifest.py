@@ -47,7 +47,7 @@ def test_write_signed_report_manifest_binds_report_and_audit_identities(tmp_path
     async def run_check() -> None:
         config = load_config(env={}, include_local=False)
         output_path = tmp_path / "reports" / "run-1.json"
-        env = {"VERITEXT_REPORT_SIGNING_KEY": "phase-40-secret"}
+        env = {"REPORT_SIGNING_KEY": "phase-40-secret"}
         data_point = make_data_point().model_copy(update={"confidence": 0.9})
 
         async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:

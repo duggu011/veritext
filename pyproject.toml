@@ -28,6 +28,7 @@ dev = []
 veritext = "extractor.cli.main:main"
 veritext-eval = "extractor.evals.cli:main"
 veritext-audit = "extractor.audit.cli:main"
+veritext-report = "extractor.reporter.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/extractor"]

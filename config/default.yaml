@@ -50,7 +50,7 @@ reporting:
     enabled: false
     algorithm: hmac-sha256
     key_id: local-dev
-    key_env: VERITEXT_REPORT_SIGNING_KEY
+    key_env: REPORT_SIGNING_KEY
     manifest_suffix: .manifest.json
   confidence_buckets:
     - bucket_name: verified

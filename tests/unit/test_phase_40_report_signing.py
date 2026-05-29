@@ -41,7 +41,7 @@ def test_config_sha256_is_stable_and_does_not_include_process_secret(
     config = load_config(env={}, include_local=False)
     first_hash = config_sha256(config)
 
-    monkeypatch.setenv("VERITEXT_REPORT_SIGNING_KEY", "super-secret")
+    monkeypatch.setenv("REPORT_SIGNING_KEY", "super-secret")
 
     assert config_sha256(config) == first_hash
     assert config_sha256(

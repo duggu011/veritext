@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 7 of 11
+Step: 8 of 11
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:9. Reporter`; `docs/PROJECT_OVERVIEW.m
 
 Phase 40 opened after operator continuation accepted Phase 39 and the Phase 40 draft spec passed readiness checks with no open questions.
 
-Next: Step 8 - add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
+Next: Step 9 - add focused source-neutral run diff/signature acceptance coverage.
 
 ---
 
@@ -26,7 +26,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 5: Add audit integrity-chain persistence and readback.
 - [x] Step 6: Extend reporter services with detached signed manifest writing and verification for existing report schemas.
 - [x] Step 7: Add deterministic run diff service and report writer.
-- [ ] Step 8: Add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
+- [x] Step 8: Add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
 - [ ] Step 9: Add focused source-neutral run diff/signature acceptance coverage.
 - [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - [ ] Step 11: Fill the Phase 40 board summary and stop for operator acceptance.
@@ -91,6 +91,15 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_phase_40_run_diff.py:1` | Added RED/GREEN coverage for deterministic report diffs and run diff JSON writing. | Step 7 |
 | `src/extractor/reporter/diff.py:1` | Added deterministic `report.v2` diff service and run diff report writer. | Step 7 |
 | `src/extractor/reporter/__init__.py:1` | Exported run diff service and writer. | Step 7 |
+| `tests/unit/test_phase_40_report_cli.py:1` | Added RED/GREEN coverage for `veritext-report diff`, `sign`, `verify`, and pyproject script registration. | Step 8 |
+| `src/extractor/reporter/cli.py:1` | Added `veritext-report` CLI with `diff`, `sign`, and `verify` subcommands. | Step 8 |
+| `src/extractor/reporter/__main__.py:1` | Added module entrypoint for the report CLI. | Step 8 |
+| `pyproject.toml:1` | Registered the `veritext-report` console script. | Step 8 |
+| `src/extractor/config/models.py:1` | Updated default signing key env name so report signing secrets are not parsed as `VERITEXT_` config overrides. | Step 8 |
+| `config/default.yaml:1` | Updated canonical signing key env default to `REPORT_SIGNING_KEY`. | Step 8 |
+| `tests/unit/test_phase_40_reporting_config.py:1` | Updated reporting config expectations for the non-`VERITEXT_` signing secret env var. | Step 8 |
+| `tests/unit/test_phase_40_report_signing.py:1` | Updated config-hash signing-secret test for the non-`VERITEXT_` signing secret env var. | Step 8 |
+| `tests/unit/test_phase_40_signed_report_manifest.py:1` | Updated signed manifest test env for the non-`VERITEXT_` signing secret env var. | Step 8 |
 
 ---
 
@@ -117,6 +126,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 8 | `python3 -m pytest tests/unit/test_phase_40_report_cli.py -q` failed RED with expected missing `extractor.reporter.cli`, then initially exposed report JSON datetime loading and `VERITEXT_` signing-secret env collision gaps; `python3 -m pytest tests/unit/test_phase_40_report_cli.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_cli.py tests/unit/test_reporter.py -q` passed with 24 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_report_cli.py src/extractor/reporter/cli.py src/extractor/reporter/__main__.py pyproject.toml src/extractor/config/models.py config/default.yaml` reported 123, 195, 5, 41, 185, and 61 lines. | PASS | 2026-05-30 |
 | Step 7 | `python3 -m pytest tests/unit/test_phase_40_run_diff.py -q` failed RED with expected missing `diff_reports` export, then passed with 2 passed after correcting the test fixture to satisfy existing normalization invariants; `python3 -m pytest tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_reporter.py -q` passed with 16 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_run_diff.py src/extractor/reporter/diff.py src/extractor/reporter/__init__.py` reported 134, 228, and 57 lines. | PASS | 2026-05-30 |
 | Step 6 | `python3 -m pytest tests/unit/test_phase_40_signed_report_manifest.py -q` failed RED with expected missing `verify_signed_report_manifest` export, then passed with 1 passed; `python3 -m pytest tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_audit_integrity.py tests/unit/test_reporter.py tests/unit/test_audit_store.py tests/unit/test_config.py -q` passed with 39 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_signed_report_manifest.py src/extractor/reporter/signing.py src/extractor/reporter/__init__.py` reported 99, 376, and 47 lines. | PASS | 2026-05-30 |
 | Step 5 | `python3 -m pytest tests/unit/test_phase_40_audit_integrity.py -q` failed RED with 2 expected missing `AuditStore` method failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_40_audit_integrity.py tests/unit/test_phase_40_report_signing.py tests/unit/test_audit_store.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_reporter.py -q` passed with 24 passed; `git diff --check`; `wc -l tests/unit/test_phase_40_audit_integrity.py src/extractor/audit/integrity_records.py src/extractor/audit/schema.py src/extractor/audit/store.py` reported 77, 78, 155, and 42 lines. | PASS | 2026-05-30 |
@@ -153,9 +163,10 @@ Reverse chronological. Log every session.
 - Completed Step 5: added additive audit integrity-chain persistence and readback.
 - Completed Step 6: added detached signed report manifest writing and verification with audit integrity event recording.
 - Completed Step 7: added deterministic `report.v2` run diff service and JSON writer.
+- Completed Step 8: added `veritext-report` CLI subcommands for diff, sign, and verify while preserving existing `veritext` and `veritext-audit` behavior.
 - Issues found: none.
-- Tests: board-opening and Steps 1-7 verification passed as recorded above.
-- Next: Step 8 - add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
+- Tests: board-opening and Steps 1-8 verification passed as recorded above.
+- Next: Step 9 - add focused source-neutral run diff/signature acceptance coverage.
 
 ---
 

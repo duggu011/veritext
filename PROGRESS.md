@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 8 of 11.
-- Next required work: Phase 40 Step 8 - add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 9 of 11.
+- Next required work: Phase 40 Step 9 - add focused source-neutral run diff/signature acceptance coverage.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 8 Report CLI
+
+- Completed Phase 40 Step 8.
+- Added `veritext-report` with `diff`, `sign`, and `verify` subcommands while preserving existing `veritext` and `veritext-audit` behavior.
+- Fixed report CLI JSON loading to use Pydantic JSON-mode validation for timestamp fields.
+- Changed the default signing secret env var to `REPORT_SIGNING_KEY` so secrets are not parsed as `VERITEXT_` config overrides.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped CLI change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_report_cli.py -q` failed RED with expected missing `extractor.reporter.cli`, then initially exposed report JSON datetime loading and `VERITEXT_` signing-secret env collision gaps
+  - `python3 -m pytest tests/unit/test_phase_40_report_cli.py -q` passed with 3 passed
+  - `python3 -m pytest tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_cli.py tests/unit/test_reporter.py -q` passed with 24 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_report_cli.py src/extractor/reporter/cli.py src/extractor/reporter/__main__.py pyproject.toml src/extractor/config/models.py config/default.yaml` reported 123, 195, 5, 41, 185, and 61 lines
+- Next: Phase 40 Step 9 - add focused source-neutral run diff/signature acceptance coverage.
 
 ### 2026-05-30 - Phase 40 Step 7 Run Diff Service
 

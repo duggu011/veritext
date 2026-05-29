@@ -106,7 +106,7 @@ class ReportSigningConfig(ConfigModel):
     enabled: bool = Field(default=False, strict=True)
     algorithm: ReportSignatureAlgorithm = "hmac-sha256"
     key_id: NonEmptyStr = "local-dev"
-    key_env: NonEmptyStr = "VERITEXT_REPORT_SIGNING_KEY"
+    key_env: NonEmptyStr = "REPORT_SIGNING_KEY"
     manifest_suffix: NonEmptyStr = ".manifest.json"
 
 

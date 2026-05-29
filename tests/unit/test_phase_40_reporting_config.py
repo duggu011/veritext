@@ -28,7 +28,7 @@ def test_default_reporting_config_file_loads() -> None:
     assert config.reporting.signing.enabled is False
     assert config.reporting.signing.algorithm == "hmac-sha256"
     assert config.reporting.signing.key_id == "local-dev"
-    assert config.reporting.signing.key_env == "VERITEXT_REPORT_SIGNING_KEY"
+    assert config.reporting.signing.key_env == "REPORT_SIGNING_KEY"
     assert config.reporting.signing.manifest_suffix == ".manifest.json"
     assert tuple(bucket.bucket_name for bucket in config.reporting.confidence_buckets) == (
         "verified",
