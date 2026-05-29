@@ -4,12 +4,27 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking has completed implementation and final verification; awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 35. Do not start Phase 36 without explicit operator continuation.
-- Acceptance context: Phase 35 implemented layout-aware chunking while preserving exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
+- Last completed phase: Phase 35 - Layout-Aware Chunking
+- Current status: Phase 36 Lens Taxonomy and Normalization Contracts is in spec draft.
+- Next required work: operator review of `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`; after approval, open the Phase 36 board before implementation.
+- Next-phase context: Phase 36 should add source-grounded lens taxonomy and value-normalization contracts before prompt/executor expansion, preserving verbatim values, exact source spans, audit payloads, and current four-lens runtime compatibility.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Acceptance and Phase 36 Spec Draft
+
+- Accepted Phase 35 after operator continuation.
+- Marked Phase 35 complete in `docs/boards/README.md` and updated the Phase 35 board handoff.
+- Drafted `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md` from the executor, dedup, and reconciler roadmap plus current candidate/data-point contracts.
+- Scoped Phase 36 to typed lens taxonomy, verbatim/canonical value contracts, normalization policy metadata, audit compatibility, and prompt-neutrality.
+- Kept new executable lenses, prompt changes, LLM normalization, dedup key changes, conflict preservation, and cross-document reconciliation out of scope.
+- Preserved the known unrelated local `AGENTS.md` drift.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/README.md docs/boards/phase_35_layout_aware_chunking.md`
+  - `rg -n "Phase 35|Phase 36|phase_36_lens_taxonomy_and_normalization_contracts.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/phase_35_layout_aware_chunking.md`
+  - `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this acceptance/spec-draft step
+- Next: operator review of the Phase 36 spec draft. Do not start Phase 36 implementation until the spec is approved and its board is opened.
 
 ### 2026-05-29 — Phase 35 Step 6 Final Verification
 

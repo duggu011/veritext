@@ -9,9 +9,9 @@ Last session: 2026-05-29
 Spec: `docs/specs/phase_35_layout_aware_chunking.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 35 implementation and final verification are complete. Stop here for operator acceptance; do not start Phase 36 without explicit operator continuation.
+Phase 35 was accepted by the operator on 2026-05-29. Phase 36 is open as a spec draft; do not start implementation until the Phase 36 spec is approved and its board is opened.
 
-Next: operator acceptance of Phase 35.
+Next: operator review of `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`.
 
 ---
 
@@ -85,6 +85,10 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/phase_35_layout_aware_chunking.md:1` | Recorded final verification, Phase 35 summary, and acceptance handoff. | Step 6 |
 | `docs/boards/README.md:1` | Marked Phase 35 as awaiting operator acceptance. | Step 6 |
 | `PROGRESS.md:1` | Recorded Step 6 final verification and acceptance handoff. | Step 6 |
+| `docs/boards/README.md:1` | Marked Phase 35 complete and opened Phase 36 as a spec draft. | Acceptance |
+| `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md:1` | Drafted the Phase 36 lens taxonomy and normalization contracts spec. | Acceptance |
+| `docs/boards/phase_35_layout_aware_chunking.md:1` | Recorded Phase 35 operator acceptance. | Acceptance |
+| `PROGRESS.md:1` | Recorded Phase 35 acceptance and Phase 36 spec-draft handoff. | Acceptance |
 
 ---
 
@@ -118,6 +122,7 @@ _(No issues yet.)_
 | 4 | `python3 -m pytest tests/unit/test_chunker_layout_aware.py -q` first failed against the legacy fixed-window path, then passed after layout-aware packing; `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker.py -q` passed with 7 passed; `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 63 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/packing.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_layout_aware.py` reported 323, 198, and 176 lines. | PASS | 2026-05-29 |
 | 5 | `python3 -m pytest tests/unit/test_chunker_hierarchy.py -q` first failed with missing hierarchy metadata and resume dependency validation, then passed with 3 passed; `python3 -m pytest tests/unit/test_chunker_hierarchy.py tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` passed with 73 passed; `git diff --exit-code -- prompts` passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/tokenizer.py src/extractor/orchestrator/state.py tests/unit/test_chunker_hierarchy.py` reported 235, 376, and 116 lines. | PASS | 2026-05-29 |
 | 6 | `make test` passed with 323 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, 21 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, 49 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-29 |
+| Acceptance | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/README.md docs/boards/phase_35_layout_aware_chunking.md`; `rg -n "Phase 35|Phase 36|phase_36_lens_taxonomy_and_normalization_contracts.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/phase_35_layout_aware_chunking.md`; `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this acceptance step. | PASS with noted unrelated drift | 2026-05-29 |
 
 ### Final Gate
 
@@ -136,6 +141,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Acceptance
+
+- Resumed from the completed Phase 35 final gate after operator continuation.
+- Completed: accepted Phase 35, marked it complete in the board index, and opened Phase 36 as a spec draft.
+- Issues found: none in Phase 35.
+- Tests: no Phase 35 runtime behavior changed in this acceptance step; documentation verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: operator review of `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`. Do not start Phase 36 until the spec is approved and its board is opened.
 
 ### 2026-05-29 - Session 1
 
