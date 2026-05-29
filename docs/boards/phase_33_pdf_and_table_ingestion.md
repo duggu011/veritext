@@ -5,11 +5,11 @@
 Step: 6 of 6
 Branch: main
 Started: 2026-05-11
-Last session: 2026-05-11
+Last session: 2026-05-29
 Spec: `docs/specs/phase_33_pdf_and_table_ingestion.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 33 implementation and final verification are complete. Awaiting operator acceptance before Phase 34.
+Phase 33 was accepted by the operator on 2026-05-29. Phase 34 is open as a spec draft; do not start implementation until the Phase 34 spec is approved and its board is opened.
 
 ---
 
@@ -115,6 +115,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Acceptance
+
+- Resumed from the completed Phase 33 final gate after operator continuation.
+- Completed: accepted Phase 33, marked it complete in the board index, and opened Phase 34 as a spec draft.
+- Issues found: none in Phase 33.
+- Tests: no Phase 33 runtime behavior changed in this acceptance step.
+- Next: operator review of `docs/specs/phase_34_docx_html_email_ingestion.md`.
 
 ### 2026-05-11 - Session 1
 

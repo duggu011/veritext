@@ -4,12 +4,28 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 32 - Boundary-Preserving Ingestion Model
-- Current status: Phase 33 implementation and final verification complete; awaiting operator acceptance before Phase 34.
-- Next required work: Operator acceptance of Phase 33, then open Phase 34 only after explicit continuation.
-- Next-phase context: Phase 33 PDF and Table Ingestion should populate real PDF/table boundary evidence without weakening generated/unmapped source-map semantics. Phase 34 DOCX, HTML, and Email Ingestion remains downstream.
+- Last completed phase: Phase 33 - PDF and Table Ingestion
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion is open as a spec draft.
+- Next required work: Operator review and approval of `docs/specs/phase_34_docx_html_email_ingestion.md`; then create the Phase 34 board only after explicit approval/continuation.
+- Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 33 Acceptance and Phase 34 Spec Draft
+
+- Accepted Phase 33 after operator continuation.
+- Marked Phase 33 complete in `docs/boards/README.md`.
+- Opened Phase 34 in spec-draft state.
+- Drafted `docs/specs/phase_34_docx_html_email_ingestion.md` from the ingestion roadmap, Phase 32 boundary contracts, Phase 33 PDF/table ingestion lessons, and current ingestion code.
+- Scoped Phase 34 to DOCX, HTML, and `.eml` email ingestion, with `.msg`, OCR, attachments, spreadsheet ingestion, web crawling, prompt changes, runtime LLM behavior, domain-pack runtime behavior, config changes, and architecture-rule changes explicitly out of scope.
+- No source code, prompts, configs, eval fixtures, or runtime extraction behavior changed.
+- Verification:
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/README.md` returned no matches
+  - `rg -n "Phase 34|phase_34_docx_html_email_ingestion.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/phase_33_pdf_and_table_ingestion.md` found the expected pointers
+  - `git diff --check`
+  - `git status --short`
+  - `git log --oneline -10`
+  - `cmp -s AGENTS.md CLAUDE.md` returned `1` because a pre-existing local `AGENTS.md` edit appends three shell command lines; this acceptance/spec-draft commit leaves that unrelated drift uncommitted
 
 ### 2026-05-11 — Phase 33 Implementation and Final Verification
 
