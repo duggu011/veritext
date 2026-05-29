@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 1 of 11
+Step: 4 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8
 
 Phase 38 opened after operator continuation accepted Phase 37 and the Phase 38 draft spec passed readiness checks with no open questions.
 
-Next: Step 1 - add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
+Next: Step 4 - add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
 
 ---
 
@@ -19,9 +19,9 @@ Next: Step 1 - add RED tests for canonical key contracts, legacy payload readabi
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
-- [ ] Step 2: Add canonical value key helpers and dedup cluster contracts.
-- [ ] Step 3: Extend dedup to drop `chunk_id` from duplicate identity where safe, use canonical keys, preserve deterministic clusters, and keep stable rejection trails.
+- [x] Step 1: Add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
+- [x] Step 2: Add canonical value key helpers and dedup cluster contracts.
+- [x] Step 3: Extend dedup to drop `chunk_id` from duplicate identity where safe, use canonical keys, preserve deterministic clusters, and keep stable rejection trails.
 - [ ] Step 4: Add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
 - [ ] Step 5: Extend `DataPoint` and reconciler materialization to populate supporting source spans from contributing candidates.
 - [ ] Step 6: Add reconciler conflict detection and stable unresolved conflict metadata.
@@ -66,6 +66,11 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md:1` | Active Phase 38 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `src/extractor/contracts/dedup.py:1` | Added typed canonical value key and dedup cluster contracts. | Steps 2-3 |
+| `src/extractor/contracts/__init__.py:1` | Exported Phase 38 dedup contracts. | Steps 2-3 |
+| `src/extractor/contracts/models.py:304` | Added legacy-safe additive `DataPoint` provenance and conflict defaults. | Steps 1-3 |
+| `src/extractor/executor/dedup.py:1` | Added canonical value key helpers, cross-chunk dedup identity, canonical duplicate merging, and cluster detail. | Steps 2-3 |
+| `tests/unit/test_phase_38_dedup_conflict_contracts.py:1` | Added RED/GREEN coverage for Phase 38 dedup contracts and behavior. | Step 1 |
 
 ---
 
@@ -92,6 +97,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Steps 1-3 | `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py` failed RED with 6 expected failures before production changes; `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`. | PASS | 2026-05-29 |
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/README.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`; `rg -n "Phase 38|phase_38_dedup_canonical_values_conflict_preservation.md|BOARD OPEN|approved|Step 1|Prompt Changes|Open Questions" docs/boards/README.md PROGRESS.md docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`. | PASS | 2026-05-29 |
 
 ### Final Gate
@@ -111,6 +117,17 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 2
+
+- Completed Steps 1-3.
+- Added RED tests for canonical value key contracts, dedup cluster contracts, legacy `DataPoint` additive defaults, cross-chunk duplicate merging, canonical duplicate merging, and distinct conflict preservation.
+- Added typed `CanonicalValueKey` and `DedupCluster` contracts.
+- Updated dedup to drop `chunk_id` from duplicate identity where absolute source span identity or canonicalized value identity makes a merge safe, preserve deterministic primary selection, expose cluster details, and keep duplicate rejection trails stable.
+- Added legacy-safe default `DataPoint` provenance and conflict fields for old payload readability.
+- Issues found: none.
+- Tests: Step 1 RED and Steps 1-3 GREEN verification passed as recorded above.
+- Next: Step 4 - add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
 
 ### 2026-05-29 - Session 1
 

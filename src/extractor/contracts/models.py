@@ -308,6 +308,10 @@ class DataPoint(ContractModel):
     critic_report_ids: tuple[NonEmptyStr, ...] = Field(min_length=1)
     verifier_report_ids: tuple[NonEmptyStr, ...] = Field(min_length=1)
     reconciliation_decision_id: NonEmptyStr
+    supporting_source_spans: tuple[SourceSpan, ...] = ()
+    conflict_status: Literal["none", "unresolved"] = "none"
+    conflict_group_id: NonEmptyStr | None = None
+    conflict_reason: NonEmptyStr | None = None
     value_verbatim: NonEmptyStr | None = None
     value_canonical: NonEmptyStr | None = None
     value_kind: ValueKind = "text"

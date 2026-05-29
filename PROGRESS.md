@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 1 of 11.
-- Next required work: Phase 38 Step 1 - add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 4 of 11.
+- Next required work: Phase 38 Step 4 - add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
 - Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Steps 1-3 Dedup Canonical Keys
+
+- Completed Phase 38 Steps 1-3.
+- Added RED/GREEN tests for canonical key contracts, dedup cluster contracts, legacy `DataPoint` additive defaults, cross-chunk duplicate merging, canonical duplicate merging, and distinct conflict preservation.
+- Added typed `CanonicalValueKey` and `DedupCluster` contracts and exported them from `extractor.contracts`.
+- Updated dedup to use conservative canonical value keys, drop `chunk_id` from safe duplicate identity, preserve deterministic primary selection, expose dedup cluster detail, and keep duplicate rejection trails stable.
+- Added legacy-safe default `DataPoint` provenance and conflict fields for old payload readability.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped implementation change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py` failed RED with 6 expected failures before production changes
+  - `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`
+  - `git diff --check`
+- Next: Phase 38 Step 4 - add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
 
 ### 2026-05-29 - Phase 38 Board Opening
 

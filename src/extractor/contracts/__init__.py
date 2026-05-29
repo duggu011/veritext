@@ -17,6 +17,11 @@ from extractor.contracts.ingestion import (
     validate_ingestion_boundaries,
 )
 from extractor.contracts.documents import Document, PageSpan
+from extractor.contracts.dedup import (
+    CanonicalValueKey,
+    CanonicalValueSource,
+    DedupCluster,
+)
 from extractor.contracts.models import (
     CategoryDefinition,
     Chunk,
@@ -77,6 +82,8 @@ __all__ = [
     "ApprovedSchemaMetadata",
     "BoundaryValidationContext",
     "BoundingBox",
+    "CanonicalValueKey",
+    "CanonicalValueSource",
     "CategoryDefinition",
     "Chunk",
     "ChunkKind",
@@ -86,6 +93,7 @@ __all__ = [
     "CriticIssue",
     "CriticReport",
     "DataPoint",
+    "DedupCluster",
     "Document",
     "DocumentMetadata",
     "DomainPackMetadata",
