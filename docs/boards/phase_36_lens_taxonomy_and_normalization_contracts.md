@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 1 of 6
+Step: 6 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:4. Executor`; `docs/PROJECT_OVERVIEW.m
 
 Phase 36 opened under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
 
-Next: Step 1 - Add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
+Next: Step 6 - Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
 
@@ -19,11 +19,11 @@ Next: Step 1 - Add lens taxonomy and normalization contract tests, including leg
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
-- [ ] Step 2: Add focused Pydantic taxonomy and normalization modules plus public exports.
-- [ ] Step 3: Extend `LensCandidate` and `DataPoint` additively with verbatim/canonical value metadata and validation.
-- [ ] Step 4: Populate candidate normalization metadata during server-side materialization without changing executor prompt bodies or tool payload requirements.
-- [ ] Step 5: Carry normalization metadata through reconciler materialization, audit readback, and compact inspection output while preserving ID-only reconciler behavior.
+- [x] Step 1: Add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
+- [x] Step 2: Add focused Pydantic taxonomy and normalization modules plus public exports.
+- [x] Step 3: Extend `LensCandidate` and `DataPoint` additively with verbatim/canonical value metadata and validation.
+- [x] Step 4: Populate candidate normalization metadata during server-side materialization without changing executor prompt bodies or tool payload requirements.
+- [x] Step 5: Carry normalization metadata through reconciler materialization, audit readback, and compact inspection output while preserving ID-only reconciler behavior.
 - [ ] Step 6: Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
@@ -63,6 +63,15 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md:1` | Active Phase 36 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_phase_36_lens_normalization_contracts.py:1` | Added RED/GREEN coverage for lens taxonomy contracts, normalization policy contracts, legacy payload readability, canonicalization metadata validation, contract-only lens execution rejection, executor materialization, and reconciler propagation. | Steps 1-5 |
+| `src/extractor/contracts/lens_taxonomy.py:1` | Added typed Phase 36 lens taxonomy registry with executable-vs-contract-only runtime status validation. | Step 2 |
+| `src/extractor/contracts/normalization.py:1` | Added value-kind, normalization status, normalization policy, field policy, registry, and shared metadata validation contracts. | Step 2 |
+| `src/extractor/contracts/__init__.py:1` | Exported Phase 36 taxonomy and normalization contracts. | Step 2 |
+| `src/extractor/contracts/models.py:1` | Added defaulted verbatim/canonical value metadata fields and validation to `LensCandidate` and `DataPoint` while preserving legacy payload readability. | Step 3 |
+| `src/extractor/executor/materialization.py:1` | Populated server-derived normalization metadata during candidate materialization without changing executor prompt bodies or LLM tool payloads. | Step 4 |
+| `src/extractor/reconciler/materialization.py:1` | Carried selected source candidate normalization metadata into final data points while preserving ID-only reconciler behavior. | Step 5 |
+| `tests/unit/test_audit_inspection.py:1` | Added compact audit-inspection coverage for candidate and data-point normalization metadata. | Step 5 |
+| `src/extractor/audit/inspection.py:1` | Included normalization metadata in compact audit inspection details. | Step 5 |
 
 ---
 
@@ -90,6 +99,11 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/README.md docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`; `rg -n "Phase 36|phase_36_lens_taxonomy_and_normalization_contracts.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`; `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this phase. | PASS with noted unrelated drift | 2026-05-29 |
+| 1 | `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` first failed with missing Phase 36 contract exports, then passed the initial contract set with 6 passed after adding focused contracts and defaulted metadata fields. | PASS | 2026-05-29 |
+| 2 | `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` passed with taxonomy and normalization policy contracts; `wc -l src/extractor/contracts/normalization.py src/extractor/contracts/lens_taxonomy.py src/extractor/contracts/models.py` later reported 131, 177, and 392 lines. | PASS | 2026-05-29 |
+| 3 | `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` passed legacy `LensCandidate`/`DataPoint` payload readability and canonicalization metadata validation. | PASS | 2026-05-29 |
+| 4 | `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` first failed because executor materialization left `value_verbatim` unset, then passed with 8 passed after server-side normalization metadata population. | PASS | 2026-05-29 |
+| 5 | `python3 -m pytest tests/unit/test_audit_inspection.py -q` first failed with missing `value_verbatim` in compact inspection output, then `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_phase_36_lens_normalization_contracts.py -q` passed with 10 passed; `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_audit_inspection.py tests/unit/test_contracts.py tests/unit/test_executor.py tests/unit/test_reconciler.py tests/unit/test_dedup.py tests/unit/test_audit_store.py tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py -q` passed with 95 passed; `git diff --exit-code -- prompts` passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/contracts/normalization.py src/extractor/contracts/lens_taxonomy.py src/extractor/contracts/models.py src/extractor/executor/materialization.py src/extractor/reconciler/materialization.py src/extractor/audit/inspection.py tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_audit_inspection.py` reported 131, 177, 392, 92, 389, 294, 322, and 281 lines. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -113,9 +127,14 @@ Reverse chronological. Log every session.
 
 - Resumed from the Phase 36 spec draft under operator-trust resume mode.
 - Completed: approved the Phase 36 spec for implementation, opened this board, pinned gate interpretations, and updated active phase tracking.
-- Issues found: none for board opening.
-- Tests: board-opening verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 1 - add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
+- Completed Step 1: added focused RED/GREEN tests for lens taxonomy contracts, normalization policy contracts, legacy candidate/data-point payload readability, canonicalization metadata validation, and planned-only lens execution rejection.
+- Completed Step 2: added focused Pydantic taxonomy and normalization modules plus public exports.
+- Completed Step 3: extended `LensCandidate` and `DataPoint` additively with verbatim/canonical metadata and strict normalization validation.
+- Completed Step 4: populated server-derived normalization metadata during executor materialization without changing prompt bodies or tool payloads.
+- Completed Step 5: carried normalization metadata through reconciler materialization and compact audit inspection while preserving ID-only reconciler behavior.
+- Issues found: none.
+- Tests: board-opening and Steps 1-5 red/green/regression verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
 

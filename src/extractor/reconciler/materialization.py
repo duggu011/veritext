@@ -266,6 +266,13 @@ def _build_data_point(
         critic_report_ids=critic_report_ids,
         verifier_report_ids=verifier_report_ids,
         reconciliation_decision_id=decision_id,
+        value_verbatim=source_candidate.value_verbatim,
+        value_canonical=source_candidate.value_canonical,
+        value_kind=source_candidate.value_kind,
+        normalization_status=source_candidate.normalization_status,
+        normalization_policy_id=source_candidate.normalization_policy_id,
+        normalization_policy_version=source_candidate.normalization_policy_version,
+        normalization_notes=source_candidate.normalization_notes,
     )
 
 

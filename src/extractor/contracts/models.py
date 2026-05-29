@@ -19,6 +19,11 @@ from extractor.contracts.base import (
     Timestamp,
 )
 from extractor.contracts.documents import Document, PageSpan
+from extractor.contracts.normalization import (
+    NormalizationStatus,
+    ValueKind,
+    validate_normalization_metadata,
+)
 from extractor.contracts.schema_metadata import (
     ApprovedSchemaMetadata,
     build_planner_generated_schema_metadata,
@@ -213,6 +218,13 @@ class LensCandidate(ContractModel):
     source_span: SourceSpan
     confidence: Confidence
     executor_call_id: NonEmptyStr
+    value_verbatim: NonEmptyStr | None = None
+    value_canonical: NonEmptyStr | None = None
+    value_kind: ValueKind = "text"
+    normalization_status: NormalizationStatus = "not_normalized"
+    normalization_policy_id: NonEmptyStr | None = None
+    normalization_policy_version: NonEmptyStr | None = None
+    normalization_notes: NonEmptyStr | None = None
 
     @model_validator(mode="after")
     def validate_source_identity(self) -> LensCandidate:
@@ -220,6 +232,15 @@ class LensCandidate(ContractModel):
             raise ValueError("source_span doc_id must match candidate doc_id")
         if self.source_span.chunk_id != self.chunk_id:
             raise ValueError("source_span chunk_id must match candidate chunk_id")
+        validate_normalization_metadata(
+            value=self.value,
+            value_verbatim=self.value_verbatim,
+            value_canonical=self.value_canonical,
+            normalization_status=self.normalization_status,
+            normalization_policy_id=self.normalization_policy_id,
+            normalization_policy_version=self.normalization_policy_version,
+            normalization_notes=self.normalization_notes,
+        )
         return self
 
 
@@ -287,11 +308,27 @@ class DataPoint(ContractModel):
     critic_report_ids: tuple[NonEmptyStr, ...] = Field(min_length=1)
     verifier_report_ids: tuple[NonEmptyStr, ...] = Field(min_length=1)
     reconciliation_decision_id: NonEmptyStr
+    value_verbatim: NonEmptyStr | None = None
+    value_canonical: NonEmptyStr | None = None
+    value_kind: ValueKind = "text"
+    normalization_status: NormalizationStatus = "not_normalized"
+    normalization_policy_id: NonEmptyStr | None = None
+    normalization_policy_version: NonEmptyStr | None = None
+    normalization_notes: NonEmptyStr | None = None
 
     @model_validator(mode="after")
     def validate_source_identity(self) -> DataPoint:
         if self.source_span.doc_id != self.doc_id:
             raise ValueError("source_span doc_id must match data point doc_id")
+        validate_normalization_metadata(
+            value=self.value,
+            value_verbatim=self.value_verbatim,
+            value_canonical=self.value_canonical,
+            normalization_status=self.normalization_status,
+            normalization_policy_id=self.normalization_policy_id,
+            normalization_policy_version=self.normalization_policy_version,
+            normalization_notes=self.normalization_notes,
+        )
         return self
 
 

@@ -38,6 +38,22 @@ from extractor.contracts.models import (
     SourceSpan,
     VerifierReport,
 )
+from extractor.contracts.lens_taxonomy import (
+    LensDefinition,
+    LensRegistry,
+    LensRuntimeStatus,
+    LensTaxonomyName,
+    default_lens_registry,
+)
+from extractor.contracts.normalization import (
+    FieldNormalizationPolicy,
+    NormalizationMode,
+    NormalizationPolicy,
+    NormalizationPolicyRegistry,
+    NormalizationStatus,
+    ValueKind,
+    validate_normalization_metadata,
+)
 from extractor.contracts.schema_metadata import (
     ApprovedSchemaMetadata,
     DomainPackMetadata,
@@ -82,6 +98,10 @@ __all__ = [
     "LayoutSpan",
     "LensBudget",
     "LensCandidate",
+    "LensDefinition",
+    "LensRegistry",
+    "LensRuntimeStatus",
+    "LensTaxonomyName",
     "MetadataEntry",
     "OcrConfidenceSpan",
     "PageSpan",
@@ -104,5 +124,13 @@ __all__ = [
     "VerifierReport",
     "build_planner_generated_schema_metadata",
     "canonical_schema_hash",
+    "default_lens_registry",
+    "FieldNormalizationPolicy",
+    "NormalizationMode",
+    "NormalizationPolicy",
+    "NormalizationPolicyRegistry",
+    "NormalizationStatus",
+    "ValueKind",
+    "validate_normalization_metadata",
     "validate_ingestion_boundaries",
 ]

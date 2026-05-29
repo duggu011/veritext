@@ -124,6 +124,8 @@ def make_candidate(candidate_id: str) -> LensCandidate:
         source_span=make_source_span(),
         confidence=0.8,
         executor_call_id=f"executor-{candidate_id}",
+        value_verbatim="hello world",
+        normalization_status="verbatim_only",
     )
 
 
@@ -222,6 +224,8 @@ async def seed_audit_db(db_path: Path) -> None:
                 critic_report_ids=("critic-candidate-1", "critic-candidate-2"),
                 verifier_report_ids=("verifier-candidate-1", "verifier-candidate-2"),
                 reconciliation_decision_id="decision-1",
+                value_verbatim="hello world",
+                normalization_status="verbatim_only",
             )
         )
 
@@ -248,6 +252,10 @@ def test_inspect_audit_database_returns_acceptance_and_detail_summary(tmp_path: 
         assert result["acceptance_checks"]["critic_batches_le_6"]["passed"] is True
         assert result["acceptance_checks"]["verifier_cache_read_tokens_nonzero"]["passed"] is True
         assert result["details"]["candidate_rejections"][0]["stage"] == "dedup"
+        assert result["details"]["candidates"][0]["value_verbatim"] == "hello world"
+        assert result["details"]["candidates"][0]["normalization_status"] == "verbatim_only"
+        assert result["details"]["data_points"][0]["value_verbatim"] == "hello world"
+        assert result["details"]["data_points"][0]["normalization_status"] == "verbatim_only"
         assert result["details"]["data_points"][0]["contributing_candidate_ids"] == (
             "candidate-1",
             "candidate-2",

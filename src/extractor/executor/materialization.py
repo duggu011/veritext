@@ -52,6 +52,7 @@ def build_candidate(
         source_span=source_span,
         confidence=payload.confidence,
         executor_call_id=executor_call_id,
+        **_normalization_metadata(value=payload.value, source_text=source_text),
     )
 
 
@@ -69,6 +70,23 @@ def _derive_byte_offsets(
     prefix_bytes = len(chunk.text[:relative_start].encode("utf-8"))
     text_bytes = len(source_text.encode("utf-8"))
     return chunk.start_byte + prefix_bytes, chunk.start_byte + prefix_bytes + text_bytes
+
+
+def _normalization_metadata(*, value: str, source_text: str) -> dict[str, object]:
+    if value == source_text:
+        return {
+            "value_verbatim": source_text,
+            "value_kind": "text",
+            "normalization_status": "verbatim_only",
+        }
+    return {
+        "value_verbatim": source_text,
+        "value_canonical": value,
+        "value_kind": "text",
+        "normalization_status": "canonicalized",
+        "normalization_policy_id": "source-traced-label",
+        "normalization_policy_version": "1",
+    }
 
 
 __all__ = ["build_candidate"]

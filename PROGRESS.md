@@ -5,11 +5,31 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 35 - Layout-Aware Chunking
-- Current status: Phase 36 Lens Taxonomy and Normalization Contracts is at Step 1 of 6.
-- Next required work: Phase 36 Step 1 - add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
+- Current status: Phase 36 Lens Taxonomy and Normalization Contracts is at Step 6 of 6.
+- Next required work: Phase 36 Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 - Next-phase context: Phase 36 should add source-grounded lens taxonomy and value-normalization contracts before prompt/executor expansion, preserving verbatim values, exact source spans, audit payloads, and current four-lens runtime compatibility.
 
 ## Session Log
+
+### 2026-05-29 — Phase 36 Steps 1-5 Lens Taxonomy and Normalization Contracts
+
+- Completed Phase 36 Steps 1-5 as one cohesive contract/provenance change.
+- Added typed lens taxonomy contracts that separate executable current lenses from planned contract-only roles.
+- Added normalization policy/value-kind contracts and shared metadata validation.
+- Extended `LensCandidate` and `DataPoint` additively with verbatim/canonical value metadata while preserving legacy audit payload readability.
+- Populated server-derived normalization metadata in executor candidate materialization without changing prompts or tool payloads.
+- Carried selected source candidate normalization metadata through reconciler materialization and compact audit inspection while preserving ID-only reconciler behavior.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` first failed with missing Phase 36 contract exports, then passed after contracts and metadata fields
+  - `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` later failed with missing executor/reconciler normalization propagation, then passed with 8 passed
+  - `python3 -m pytest tests/unit/test_audit_inspection.py -q` first failed with missing normalization fields in compact inspection output
+  - `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_phase_36_lens_normalization_contracts.py -q` passed with 10 passed
+  - `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_audit_inspection.py tests/unit/test_contracts.py tests/unit/test_executor.py tests/unit/test_reconciler.py tests/unit/test_dedup.py tests/unit/test_audit_store.py tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py -q` passed with 95 passed
+  - `git diff --exit-code -- prompts`
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/contracts/normalization.py src/extractor/contracts/lens_taxonomy.py src/extractor/contracts/models.py src/extractor/executor/materialization.py src/extractor/reconciler/materialization.py src/extractor/audit/inspection.py tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_audit_inspection.py` reported 131, 177, 392, 92, 389, 294, 322, and 281 lines
+- Next: Phase 36 Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ### 2026-05-29 — Phase 36 Board Opening
 
