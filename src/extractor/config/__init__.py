@@ -4,7 +4,9 @@ from extractor.config.loader import ConfigError, default_config_dir, load_config
 from extractor.config.log_setup import configure_logging
 from extractor.config.models import (
     AuditConfig,
+    ChunkBoundaryMode,
     ChunkingConfig,
+    ChunkTokenizerPolicy,
     DomainPacksConfig,
     ExecutionConfig,
     ExtractorConfig,
@@ -22,7 +24,9 @@ from extractor.config.run_context import bind_run_context, get_run_context, mayb
 
 __all__ = [
     "AuditConfig",
+    "ChunkBoundaryMode",
     "ChunkingConfig",
+    "ChunkTokenizerPolicy",
     "ConfigError",
     "DomainPacksConfig",
     "ExecutionConfig",

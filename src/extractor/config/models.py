@@ -14,6 +14,8 @@ SchemaCoverageThreshold = Annotated[float, Field(strict=True, ge=0.0, le=1.0)]
 LLMProvider = Literal["anthropic", "openai", "openai_compatible"]
 ReasoningEffort = Literal["minimal", "low", "medium", "high"]
 LLMStageGroup = Literal["planner", "executor", "critic", "verifier", "reconciler"]
+ChunkBoundaryMode = Literal["token_window", "layout_aware"]
+ChunkTokenizerPolicy = Literal["tiktoken"]
 
 
 class ConfigModel(BaseModel):
@@ -56,6 +58,9 @@ class ChunkingConfig(ConfigModel):
     tokenizer: NonEmptyStr
     window_tokens: PositiveInt
     overlap_tokens: NonNegativeInt
+    boundary_mode: ChunkBoundaryMode = "token_window"
+    tokenizer_policy: ChunkTokenizerPolicy = "tiktoken"
+    allow_oversized_atomic_chunks: bool = Field(default=True, strict=True)
 
     @model_validator(mode="after")
     def validate_overlap(self) -> ChunkingConfig:
@@ -114,7 +119,9 @@ class RunContext(ConfigModel):
 
 __all__ = [
     "AuditConfig",
+    "ChunkBoundaryMode",
     "ChunkingConfig",
+    "ChunkTokenizerPolicy",
     "DomainPacksConfig",
     "ExecutionConfig",
     "ExtractorConfig",

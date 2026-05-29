@@ -23,6 +23,9 @@ chunking:
   tokenizer: cl100k_base
   window_tokens: 1200
   overlap_tokens: 120
+  boundary_mode: token_window
+  tokenizer_policy: tiktoken
+  allow_oversized_atomic_chunks: true
 execution:
   max_stage_concurrency: 4
   max_chunk_concurrency: 2

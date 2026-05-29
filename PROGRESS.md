@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking board is open at Step 1 of 6.
-- Next required work: Phase 35 Step 1 - add contract and config tests for additive chunk metadata, legacy chunk payload readback, tokenizer-policy validation, and unchanged public imports.
+- Current status: Phase 35 Layout-Aware Chunking is at Step 2 of 6.
+- Next required work: Phase 35 Step 2 - split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 - Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Step 1 Chunk Contracts and Config
+
+- Completed Phase 35 Step 1.
+- Added focused tests in `tests/unit/test_phase_35_chunk_contracts.py` instead of growing already oversized contract and audit test files.
+- Added defaulted `Chunk` metadata for hierarchy, boundary provenance, dependencies, split reason, and tokenizer policy while keeping old chunk payload JSON readable.
+- Added chunking config fields for `boundary_mode`, `tokenizer_policy`, and `allow_oversized_atomic_chunks` with legacy token-window defaults in `config/default.yaml`.
+- Preserved existing public contract/config imports while adding exported literal types for the new metadata/config fields.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_35_chunk_contracts.py -q` first failed with missing chunk metadata and config policy fields, then passed with 6 passed
+  - `python3 -m pytest tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_chunker.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 49 passed
+  - `make lint`
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_35_chunk_contracts.py src/extractor/contracts/models.py src/extractor/config/models.py` reported 146, 355, and 137 lines
+- Next: Phase 35 Step 2 - split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 
 ### 2026-05-29 — Phase 35 Board Opening
 

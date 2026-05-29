@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 1 of 6
+Step: 2 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md
 
 Phase 35 opened under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
 
-Next: Step 1 - Add contract and config tests for additive chunk metadata, legacy chunk payload readback, tokenizer-policy validation, and unchanged public imports.
+Next: Step 2 - Split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 
 ---
 
@@ -19,7 +19,7 @@ Next: Step 1 - Add contract and config tests for additive chunk metadata, legacy
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add contract and config tests for additive chunk metadata, legacy chunk payload readback, tokenizer-policy validation, and unchanged public imports.
+- [x] Step 1: Add contract and config tests for additive chunk metadata, legacy chunk payload readback, tokenizer-policy validation, and unchanged public imports.
 - [ ] Step 2: Split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 - [ ] Step 3: Add boundary collection and validation from page maps, layout spans, and table spans.
 - [ ] Step 4: Add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
@@ -63,6 +63,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_35_layout_aware_chunking.md:1` | Active Phase 35 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_phase_35_chunk_contracts.py:1` | Added Phase 35 RED/GREEN tests for defaulted chunk metadata, legacy chunk audit readback, tokenizer-policy config validation, and legacy token-window defaults. | Step 1 |
+| `src/extractor/contracts/models.py:1` | Added defaulted chunk metadata fields and typed chunk metadata literals while preserving legacy payload readability. | Step 1 |
+| `src/extractor/contracts/__init__.py:1` | Exported additive chunk metadata literal types without removing existing public contract imports. | Step 1 |
+| `src/extractor/config/models.py:1` | Added boundary mode, tokenizer policy, and oversized atomic chunk config fields with strict validation and legacy defaults. | Step 1 |
+| `src/extractor/config/__init__.py:1` | Exported additive chunking config literal types without removing existing public config imports. | Step 1 |
+| `config/default.yaml:1` | Declared Phase 35 chunking defaults in canonical runtime config. | Step 1 |
 
 ---
 
@@ -90,6 +96,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_35_layout_aware_chunking.md docs/boards/README.md docs/boards/phase_35_layout_aware_chunking.md`; `rg -n "Phase 35|phase_35_layout_aware_chunking.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_35_layout_aware_chunking.md docs/boards/phase_35_layout_aware_chunking.md`; `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this phase. | PASS with noted unrelated drift | 2026-05-29 |
+| 1 | `python3 -m pytest tests/unit/test_phase_35_chunk_contracts.py -q` first failed with missing chunk metadata and config policy fields, then passed with 6 passed; `python3 -m pytest tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_chunker.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 49 passed; `make lint` passed; `git diff --check` passed; `wc -l tests/unit/test_phase_35_chunk_contracts.py src/extractor/contracts/models.py src/extractor/config/models.py` reported 146, 355, and 137 lines. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -113,9 +120,10 @@ Reverse chronological. Log every session.
 
 - Resumed at Step 0 from the Phase 35 spec draft after operator `start`.
 - Completed: approved the Phase 35 spec for implementation, opened this board, pinned open-question resolutions and gate interpretations, and updated active phase tracking.
+- Completed Step 1: added additive chunk metadata and chunking config contracts, legacy chunk payload readback coverage, tokenizer-policy validation, and focused tests without growing oversized existing test files.
 - Issues found: none.
-- Tests: board-opening verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 1 - add contract and config tests for additive chunk metadata, legacy chunk payload readback, tokenizer-policy validation, and unchanged public imports.
+- Tests: board-opening and Step 1 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: Step 2 - split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 
 ---
 

@@ -25,6 +25,17 @@ from extractor.contracts.schema_metadata import (
     canonical_schema_hash,
 )
 
+ChunkKind = Literal["document", "section", "paragraph", "list_item", "table", "mixed", "overflow"]
+ChunkSplitReason = Literal[
+    "boundary",
+    "token_window",
+    "atomic_table_overflow",
+    "oversized_sentence",
+    "oversized_paragraph",
+    "overlap_adjusted",
+]
+ChunkTokenizerPolicy = Literal["tiktoken"]
+
 
 class Chunk(ContractModel):
     chunk_id: NonEmptyStr
@@ -37,6 +48,15 @@ class Chunk(ContractModel):
     end_byte: NonNegativeInt
     start_token: NonNegativeInt
     end_token: NonNegativeInt
+    chunk_kind: ChunkKind = "mixed"
+    section_path: tuple[NonEmptyStr, ...] = ()
+    layout_span_ids: tuple[NonEmptyStr, ...] = ()
+    table_ids: tuple[NonEmptyStr, ...] = ()
+    page_numbers: tuple[PositiveInt, ...] = ()
+    parent_chunk_id: NonEmptyStr | None = None
+    depends_on_chunk_ids: tuple[NonEmptyStr, ...] = ()
+    split_reason: ChunkSplitReason = "token_window"
+    tokenizer_policy: ChunkTokenizerPolicy = "tiktoken"
 
     @model_validator(mode="after")
     def validate_offsets(self) -> Chunk:
@@ -313,7 +333,10 @@ class LLMCallLog(ContractModel):
 __all__ = [
     "CategoryDefinition",
     "Chunk",
+    "ChunkKind",
     "ChunkPolicy",
+    "ChunkSplitReason",
+    "ChunkTokenizerPolicy",
     "CriticIssue",
     "CriticReport",
     "DataPoint",
