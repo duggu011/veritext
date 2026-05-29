@@ -47,7 +47,7 @@ Selection examples:
 - Counterparty.name or Organization.name needs entity.
 - TerminationEvent.summary or AcquisitionEvent.summary needs event; add entity only if participants are separate fields.
 - PolicyRequirement.summary can often use claim only; add number when cadence or deadline values are fields.
-- ContractDefinition.definition_text or GlossaryTerm.meaning needs definition.
+- DefinedTerm.definition_text or GlossaryEntry.meaning needs definition.
 - RegulationCitation.reference or StandardControl.clause needs citation.
 - Deadline.date or PolicyPeriod.duration needs temporal.
 - DosageInstruction.amount, CapacityMetric.measurement, or AvailabilityMetric.rate needs quantity_with_unit when the unit or denominator is part of the field meaning.

@@ -5,11 +5,34 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 36 - Lens Taxonomy and Normalization Contracts
-- Current status: Phase 37 Expanded Lenses Round 1 is at Step 7 of 8.
-- Next required work: Phase 37 Step 7 - run final project, smoke, lint, prompt-change review, and evaluation gates.
+- Current status: Phase 37 Expanded Lenses Round 1 is complete and awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 37. Do not start Phase 38 without explicit operator continuation.
 - Next-phase context: Phase 37 expands executable source-grounded lenses with operator-authorized prompt text while preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 37 Final Gates and Summary
+
+- Completed Phase 37 Steps 7-8.
+- Ran final project, smoke, lint, prompt-change review, source-neutrality, and evaluation gates.
+- Fixed and logged ISS-001 after `make test` caught a legal-pack-specific planner prompt example in `prompts/planner/select_strategy.md`; replaced it with a source-neutral definition example.
+- Prompt review for Phase 37 covered `prompts/executor/citation.md`, `prompts/executor/definition.md`, `prompts/executor/quantity_with_unit.md`, `prompts/executor/temporal.md`, `prompts/planner/allocate_budget.md`, and `prompts/planner/select_strategy.md`.
+- Filled the Phase 37 final gate and phase summary.
+- Verification:
+  - `make test` first failed on `tests/unit/test_phase28_source_neutrality.py` because `prompts/planner/select_strategy.md` contained `ContractDefinition`
+  - `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` reproduced the failure, then passed with 1 passed after the source-neutral prompt fix
+  - `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py tests/unit/test_prompt_schema_quality.py -q` passed with 16 passed
+  - `make test` passed with 337 passed and 2 skipped
+  - `make lint`
+  - `make smoke` passed with 1 passed
+  - `git diff --check`
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual data points, 21 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual data points, 49 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+- Next: operator acceptance of Phase 37. Do not start Phase 38 without explicit operator continuation.
 
 ### 2026-05-29 - Phase 37 Step 6 Source-Role Eval Fixture
 
