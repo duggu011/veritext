@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 9 of 11
+Step: 10 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8
 
 Phase 38 opened after operator continuation accepted Phase 37 and the Phase 38 draft spec passed readiness checks with no open questions.
 
-Next: Step 9 - decide whether focused source-neutral dedup/conflict fixture coverage is needed for evaluation acceptance.
+Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ---
 
@@ -27,7 +27,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 6: Add reconciler conflict detection and stable unresolved conflict metadata.
 - [x] Step 7: Add validation or retry complaints for silent rejection of otherwise valid conflicting candidates.
 - [x] Step 8: Extend audit inspection and report/eval tests for additive fields.
-- [ ] Step 9: Add focused source-neutral dedup/conflict fixture coverage if needed for evaluation acceptance.
+- [x] Step 9: Add focused source-neutral dedup/conflict fixture coverage if needed for evaluation acceptance. Not needed after source-neutral unit, reporter, audit, and eval invariant coverage.
 - [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - [ ] Step 11: Fill the Phase 38 board summary and stop for operator acceptance.
 
@@ -108,6 +108,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 9 | `rg -n "same_field_distinct_canonical_values|supporting_source_spans|supporting_source_span|conflict_status|conflict_group_id" tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_audit_inspection.py tests/unit/test_phase_38_dedup_conflict_contracts.py`. Existing source-neutral tests cover the behavior; no new fixture was needed before final evaluation gates. | PASS | 2026-05-29 |
 | Step 8 | `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py` failed RED with 2 expected failures before audit/eval implementation; `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py`; `git diff --check`; `wc -l src/extractor/evals/scoring.py src/extractor/evals/invariants.py src/extractor/audit/inspection.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py`. | PASS | 2026-05-29 |
 | Steps 4-7 | `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py` failed RED with 2 expected failures before materialization/conflict changes and later failed RED with 1 expected validation failure before Step 7; `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`; `wc -l src/extractor/canonical_values.py src/extractor/reconciler/batching.py src/extractor/reconciler/conflicts.py src/extractor/reconciler/materialization.py tests/unit/test_phase_38_reconciler_conflicts.py`. | PASS | 2026-05-29 |
 | Steps 1-3 | `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py` failed RED with 6 expected failures before production changes; `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`. | PASS | 2026-05-29 |
@@ -130,6 +131,15 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 5
+
+- Completed Step 9 as a no-new-fixture decision.
+- Reviewed Phase 38 source-neutral test coverage for canonical conflict preservation, supporting source spans, audit inspection, reporter serialization, and eval invariant checks.
+- Decision: no focused Phase 38 fixture is needed before final gates because source-neutral unit/report/eval coverage already exercises the new behavior and existing evaluation fixtures remain compatibility gates.
+- Issues found: none.
+- Tests: Step 9 coverage check passed as recorded above.
+- Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ### 2026-05-29 - Session 4
 

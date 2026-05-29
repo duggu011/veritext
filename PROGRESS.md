@@ -5,11 +5,21 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 9 of 11.
-- Next required work: Phase 38 Step 9 - decide whether focused source-neutral dedup/conflict fixture coverage is needed for evaluation acceptance.
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 10 of 11.
+- Next required work: Phase 38 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Step 9 Fixture Decision
+
+- Completed Phase 38 Step 9 as a no-new-fixture decision.
+- Reviewed Phase 38 source-neutral test coverage for canonical conflict preservation, supporting source spans, audit inspection, reporter serialization, and eval invariant checks.
+- Decision: no focused Phase 38 fixture is needed before final gates because source-neutral unit/report/eval coverage already exercises the new behavior and existing evaluation fixtures remain compatibility gates.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped tracking change.
+- Verification:
+  - `rg -n "same_field_distinct_canonical_values|supporting_source_spans|supporting_source_span|conflict_status|conflict_group_id" tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_audit_inspection.py tests/unit/test_phase_38_dedup_conflict_contracts.py`
+- Next: Phase 38 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ### 2026-05-29 - Phase 38 Step 8 Audit and Report Coverage
 
