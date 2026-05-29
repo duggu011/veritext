@@ -253,7 +253,7 @@ Future phases are derived from `docs/PROJECT_OVERVIEW.md`, not improvised from i
 
 Accuracy, generalization, and provenance phases come before deployment-economics phases unless the operator explicitly reorders them. Cost work is valid, but it must not weaken exact span matching, byte/character offsets, audit logging, forced tool use, Pydantic contracts, invariant enforcement, or no-silent-drop rejection accounting.
 
-The current architecture rules ban adding a web UI, REST API, Docker, CI/CD, vector DBs, embeddings, fine-tuning hooks, and agent frameworks. Any future roadmap item that needs one of those capabilities must first amend `AGENTS.md` / `CLAUDE.md` through an explicit approved phase.
+The current architecture rules ban adding a web UI, REST API, Docker, CI/CD, vector DBs, embeddings, fine-tuning hooks, and agent frameworks except for the narrow Phase 41 allowances recorded in `AGENTS.md` / `CLAUDE.md`: deterministic static HTML report files, deterministic repository CI checks, and non-UI governance records in later approved phases. Any future roadmap item that needs broader capability must first amend `AGENTS.md` / `CLAUDE.md` through an explicit approved phase.
 
 ---
 

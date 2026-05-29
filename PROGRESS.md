@@ -5,11 +5,32 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 40 - Signed Reports and Run Diffs
-- Current status: Phase 41 Architecture Rule Amendment for Viewer, Governance, and CI has a draft spec with open questions.
-- Next required work: resolve Phase 41 architecture-rule amendment questions before approving the spec or opening a board.
-- Next-phase context: Phase 41 must explicitly decide whether to allow deterministic static HTML artifacts, CI gates, and governance records, or defer them. It must not approve web UI, REST API, Docker, vector DB, embedding, local model serving, external signing services, agent frameworks, or invariant-weakening shortcuts by implication.
+- Current status: Phase 41 Architecture Rule Amendment for Viewer, Governance, and CI is complete on the board and awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 41 before any Phase 42 work begins.
+- Next-phase context: Phase 42 is renamed to Static Provenance Artifact, If Approved. It remains gated by Phase 41 acceptance and may only implement deterministic static report artifacts as local files; web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 41 Architecture Rule Amendment
+
+- Interpreted operator `approved` as approval of the conservative default recorded in the Phase 41 draft.
+- Approved `docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md` and opened `docs/boards/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md`.
+- Added byte-identical Phase 41 architecture-rule allowances to `AGENTS.md` and `CLAUDE.md`.
+- Allowed only later-approved deterministic static HTML report files, deterministic repository CI checks, and non-UI governance records.
+- Kept web UI, web servers, REST APIs, dynamic browser apps, Docker, deployment packaging, vector DBs, embeddings, local model serving, broad CI/CD, secret-backed external services, agent frameworks, active-learning loops, and fine-tuning behavior banned.
+- Updated `WORKFLOW.md` and `docs/boards/README.md` to reflect the narrow allowances.
+- Renamed planned Phase 42 to "Static Provenance Artifact, If Approved" to avoid web UI ambiguity.
+- Filled the Phase 41 board summary and left the phase awaiting operator acceptance before Phase 42.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/README.md WORKFLOW.md` returned no matches
+  - `rg -n "Phase 41 allowances|Deterministic static HTML report artifacts may be generated as local files|Repository CI may run deterministic verification|Non-UI governance records may be file-based|Static Provenance Artifact|Status: approved|Date approved|BOARD OPEN" AGENTS.md CLAUDE.md docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/README.md WORKFLOW.md`
+  - `wc -l docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md AGENTS.md CLAUDE.md WORKFLOW.md docs/boards/README.md PROGRESS.md` reported 220, 139, 227, 227, 270, 192, and 3313 lines before final tracking updates
+  - `make test`, `make lint`, `make smoke`, and evaluation suites were not run because Phase 41 changed documentation and workflow policy only.
+- Next: operator acceptance of Phase 41.
 
 ### 2026-05-30 - Phase 40 Acceptance and Phase 41 Spec Draft
 

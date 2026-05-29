@@ -1,9 +1,9 @@
 # Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
 
-Status: draft.
+Status: approved for implementation.
 
 Date drafted: 2026-05-30
-Date approved: _(not approved)_
+Date approved: 2026-05-30
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` section `9. Reporter`,
 `docs/PROJECT_OVERVIEW.md` section `13. Evaluation`,
@@ -147,6 +147,26 @@ If the operator wants a minimal amendment, the conservative default is:
 This default preserves the extraction kernel's current architecture while
 unblocking the smallest practical provenance-review surface.
 
+## Approved Resolutions
+
+The operator approved the conservative default on 2026-05-30.
+
+- Deterministic static HTML report artifacts are allowed only in later approved
+  reporter phases, as local files with no web server, REST API, client-side data
+  fetching, persistent browser/local state, dynamic browser app, or extraction
+  behavior changes.
+- Repository CI is allowed only in later approved phases for deterministic
+  repository verification such as unit tests, lint, smoke, prompt-neutrality
+  checks, and explicit evaluation suites. Deployment packaging and
+  secret-dependent external services remain banned.
+- Non-UI governance records are allowed only in later approved phases as
+  file-based or SQLite/audit-DB-backed records. Human review UI,
+  active-learning behavior, and fine-tuning behavior remain deferred.
+- The exact architecture-rule amendment must be added byte-identically to
+  `AGENTS.md` and `CLAUDE.md`.
+- Phase 42 should be renamed from "HTML Provenance Viewer, If Approved" to
+  "Static Provenance Artifact, If Approved" to avoid web UI ambiguity.
+
 ## Invariant Impact
 
 Phase 41 must not weaken I1-I9. If any amendment text could reduce exact
@@ -196,14 +216,5 @@ the final Phase 41 gate unless the phase unexpectedly touches executable code.
 
 ## Open Questions Before Approval
 
-1. Should Phase 41 allow deterministic static generated HTML artifacts in a
-   later approved phase while keeping web UI, web servers, and REST APIs banned?
-2. Should Phase 41 allow any CI integration, limited to deterministic repository
-   checks and evaluation gates, or should CI/CD remain fully banned?
-3. Should Phase 41 allow non-UI governance records, or defer governance workflow
-   entirely until after the viewer decision?
-4. If an amendment is approved, what exact architecture-rule text should be
-   added to `AGENTS.md` and `CLAUDE.md`?
-5. Should Phase 42 remain "HTML Provenance Viewer" if static HTML is approved,
-   or should it be renamed to emphasize "Static Provenance Artifact" and avoid
-   web UI ambiguity?
+_(None; resolved by operator approval of the conservative default on
+2026-05-30.)_

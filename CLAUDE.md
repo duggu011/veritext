@@ -109,7 +109,11 @@ Source lives under `src/extractor/<stage>/`. Tests live under `tests/{unit,integ
 ## Architecture Rules
 
 - Use Python 3.11+ with direct Anthropic and OpenAI Python SDK calls only.
-- Do not add LangChain, LlamaIndex, CrewAI, AutoGen, Haystack, DSPy, agent frameworks, web UI, REST API, Docker, CI/CD, vector DBs, embeddings, or fine-tuning hooks.
+- Do not add LangChain, LlamaIndex, CrewAI, AutoGen, Haystack, DSPy, agent frameworks, web UI, REST API, Docker, CI/CD, vector DBs, embeddings, or fine-tuning hooks except for the narrow Phase 41 allowances below.
+- Phase 41 allowances, usable only in later approved phases:
+  - Deterministic static HTML report artifacts may be generated as local files by the reporter. They must not require a web server, REST API, client-side data fetching, persistent browser/local state, dynamic browser app, or extraction behavior changes.
+  - Repository CI may run deterministic verification such as unit tests, lint, smoke, prompt-neutrality checks, and explicit evaluation suites. It must not perform deployment packaging or depend on secret-backed external services.
+  - Non-UI governance records may be file-based or SQLite/audit-DB-backed, including reviewer IDs, decisions, timestamps, and review status. They must not add a human review UI, active-learning loop, or fine-tuning behavior.
 - Use Pydantic v2 models for all inter-stage contracts.
 - Use SQLite through `aiosqlite` for audit state.
 - Use `asyncio` for stage-level parallelism.
@@ -206,7 +210,7 @@ Stop and ask the operator when:
 - A design decision has multiple valid options.
 - You are tempted to patch around a symptom instead of fixing the root cause.
 - You find a high-severity issue. Log it on the board, then ask.
-- A future roadmap item requires changing architecture rules such as the current web UI, REST API, Docker, CI/CD, vector DB, embedding, or framework bans.
+- A future roadmap item requires changing architecture rules outside the narrow Phase 41 allowances, such as the current web UI, REST API, Docker, vector DB, embedding, or framework bans.
 
 ---
 
