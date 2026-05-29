@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 4 is complete and the board remains open.
-- Next required work: Phase 34 Step 5 - add audit readback, source-support regression, and prompt-neutrality verification.
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 5 is complete and the board remains open.
+- Next required work: Phase 34 Step 6 - add final project and evaluation verification.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Step 5 Audit and Source-Support Regressions
+
+- Completed Phase 34 Step 5.
+- Added `tests/unit/test_phase_34_ingestion_boundaries.py` covering DOCX, HTML, and EML audit payload readback plus source-support rejection for generated and unmapped ranges.
+- Confirmed prompt-neutrality: no files under `prompts/` changed.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py -q` first exposed a test async-generator construction defect
+  - `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py -q` passed with 2 passed
+  - `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py tests/unit/test_audit_document_boundaries.py tests/unit/test_source_support.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py -q` passed with 15 passed
+  - `git diff --exit-code -- prompts`
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py tests/unit/test_phase_34_ingestion_boundaries.py tests/unit/test_audit_document_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q` passed with 44 passed
+  - `wc -l tests/unit/test_phase_34_ingestion_boundaries.py` reported 157 lines
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-29 — Phase 34 Step 4 EML Ingestion
 

@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 4 of 6
+Step: 5 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
 Spec: `docs/specs/phase_34_docx_html_email_ingestion.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 4 is complete. Next up: Step 5 - add audit readback, source-support regression, and prompt-neutrality verification.
+Step 5 is complete. Next up: Step 6 - add final project and evaluation verification.
 
 ---
 
@@ -21,7 +21,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 2: Add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [x] Step 3: Add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [x] Step 4: Add EML ingestion fixtures, adapter, metadata, body selection, and failure handling.
-- [ ] Step 5: Add audit readback, source-support regression, and prompt-neutrality verification.
+- [x] Step 5: Add audit readback, source-support regression, and prompt-neutrality verification.
 - [ ] Step 6: Add final project and evaluation verification.
 
 ---
@@ -75,6 +75,7 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_ingestion_email.py:1` | Added EML coverage for plain-text preference, HTML fallback, generated header labels, unmapped body text, metadata, attachment rejection, unsupported charset rejection, and empty-body rejection. | Step 4 |
 | `src/extractor/ingestion/documents.py:1` | Routed detected `email` documents into the EML adapter. | Step 4 |
 | `src/extractor/ingestion/email.py:1` | Added standard-library RFC 5322 parsing, multipart alternative body selection, HTML-body fallback, metadata extraction, generated header labels, and explicit rejection paths. | Step 4 |
+| `tests/unit/test_phase_34_ingestion_boundaries.py:1` | Added DOCX, HTML, and EML audit readback plus source-support rejection regressions for generated and unmapped ranges. | Step 5 |
 
 ---
 
@@ -106,6 +107,7 @@ _(No issues yet.)_
 | 2 | `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with unsupported DOCX ingestion, then passed with 4 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` first exposed the legacy `.docx` unsupported-format assertion, then passed with 33 passed after moving that fixture to `.rtf`; `wc -l src/extractor/ingestion/docx.py src/extractor/ingestion/docx_metadata.py` reported 359 and 95 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 | 3 | `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with unsupported HTML ingestion, then passed with 6 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 35 passed; `wc -l src/extractor/ingestion/html.py src/extractor/ingestion/html_tables.py tests/unit/test_ingestion_docx_html_email.py` reported 353, 146, and 324 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 | 4 | `python3 -m pytest tests/unit/test_ingestion_email.py -q` first failed with unsupported EML ingestion, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py tests/unit/test_contracts.py -q` passed with 38 passed; `wc -l src/extractor/ingestion/email.py tests/unit/test_ingestion_email.py src/extractor/ingestion/documents.py` reported 355, 184, and 172 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
+| 5 | `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py -q` first exposed a test async-generator construction defect, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py tests/unit/test_audit_document_boundaries.py tests/unit/test_source_support.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py -q` passed with 15 passed; `git diff --exit-code -- prompts` passed with no prompt changes; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py tests/unit/test_phase_34_ingestion_boundaries.py tests/unit/test_audit_document_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q` passed with 44 passed; `wc -l tests/unit/test_phase_34_ingestion_boundaries.py` reported 157 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -131,10 +133,11 @@ Reverse chronological. Log every session.
 - Completed Step 2: added standard-library DOCX package/XML ingestion, core-property metadata extraction, paragraph/heading/list/table layout spans, table cell spans with header labels, generated newline separators, and unmapped decoded DOCX text.
 - Completed Step 3: added standard-library HTML decoding, visible text extraction, title/meta metadata, paragraph/heading/list/table layout spans, table cell spans with header labels, generated newline separators, and unmapped decoded HTML text.
 - Completed Step 4: added standard-library EML parsing, plain-body preference, HTML fallback, generated header labels, unmapped decoded body text, metadata, and explicit rejection of attachments, unsupported charsets, and empty body text.
+- Completed Step 5: added audit readback and source-support regressions for DOCX, HTML, and EML, and confirmed prompts remain unchanged.
 - Preserved compatibility by keeping unsupported-format coverage on `.rtf` now that `.docx` is supported.
 - Issues found: none.
-- Tests: Step 2, Step 3, and Step 4 red/green, adjacent ingestion compatibility, `wc -l`, `make lint`, and `git diff --check` verification passed as recorded above.
-- Next: Step 5 - add audit readback, source-support regression, and prompt-neutrality verification.
+- Tests: Step 2, Step 3, Step 4, and Step 5 red/green/regression checks, adjacent ingestion compatibility, prompt-neutrality, `wc -l`, `make lint`, and `git diff --check` verification passed as recorded above.
+- Next: Step 6 - add final project and evaluation verification.
 
 ### 2026-05-29 - Session 1
 
