@@ -5,11 +5,21 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 11 of 11.
-- Next required work: Phase 40 Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
+- Current status: Phase 40 Signed Reports and Run Diffs is summarized and awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 40. Do not begin Phase 41 without explicit continuation after acceptance.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Summary and Handoff
+
+- Completed Phase 40 Step 11.
+- Filled the Phase 40 board summary with shipped scope, deferred items, and downstream lessons.
+- Left Phase 40 awaiting operator acceptance; Phase 41 must not start without explicit continuation after acceptance.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped phase-summary change.
+- Verification:
+  - Phase 40 final gates passed in Step 10 as recorded above.
+- Next: operator acceptance of Phase 40.
 
 ### 2026-05-30 - Phase 40 Step 10 Final Gates
 

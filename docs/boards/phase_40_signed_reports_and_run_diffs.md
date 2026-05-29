@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 10 of 11
+Step: 11 of 11
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:9. Reporter`; `docs/PROJECT_OVERVIEW.m
 
 Phase 40 opened after operator continuation accepted Phase 39 and the Phase 40 draft spec passed readiness checks with no open questions.
 
-Next: Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
+Next: operator acceptance of Phase 40. Do not begin Phase 41 without explicit continuation after acceptance.
 
 ---
 
@@ -29,7 +29,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 8: Add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
 - [x] Step 9: Add focused source-neutral run diff/signature acceptance coverage.
 - [x] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
-- [ ] Step 11: Fill the Phase 40 board summary and stop for operator acceptance.
+- [x] Step 11: Fill the Phase 40 board summary and stop for operator acceptance.
 
 ---
 
@@ -69,8 +69,8 @@ Every file this phase creates or modifies. Updated as work happens.
 |---|---|---|
 | `docs/specs/phase_40_signed_reports_and_run_diffs.md:1` | Approved Phase 40 spec after readiness checks. | Board opening |
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
-| `docs/boards/phase_40_signed_reports_and_run_diffs.md:1` | Active Phase 40 board. | Board opening |
-| `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `docs/boards/phase_40_signed_reports_and_run_diffs.md:1` | Active Phase 40 board, final gates, and phase summary. | Board opening; Steps 10-11 |
+| `PROGRESS.md:1` | Current gate, board-opening session log, final gates, and phase-summary handoff. | Board opening; Steps 10-11 |
 | `tests/unit/test_phase_40_report_integrity_contracts.py:1` | Added RED/GREEN coverage for signed report, audit integrity, and run diff contracts. | Steps 1-2 |
 | `src/extractor/contracts/report_integrity.py:1` | Added Phase 40 report artifact, confidence bucket, signature, integrity event, signed manifest, and run diff contracts. | Step 2 |
 | `src/extractor/contracts/__init__.py:1` | Exported Phase 40 report integrity contracts. | Step 2 |
@@ -146,7 +146,7 @@ _(No issues yet.)_
 - [x] `git diff --check` passes
 - [x] Evaluation gates pass, if this phase changes extraction behavior
 - [x] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
+- [x] Phase Summary filled in
 - [x] `PROGRESS.md` updated
 
 ---
@@ -169,9 +169,10 @@ Reverse chronological. Log every session.
 - Completed Step 8: added `veritext-report` CLI subcommands for diff, sign, and verify while preserving existing `veritext` and `veritext-audit` behavior.
 - Completed Step 9: added source-neutral acceptance coverage for signed manifest verification, confidence buckets, source hashes, and run diffs.
 - Completed Step 10: ran final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- Completed Step 11: filled the Phase 40 summary and prepared the operator acceptance handoff.
 - Issues found: none.
 - Tests: board-opening and Steps 1-10 verification passed as recorded above.
-- Next: Step 11 - fill the Phase 40 board summary and stop for operator acceptance.
+- Next: operator acceptance of Phase 40. Do not begin Phase 41 without explicit continuation after acceptance.
 
 ---
 
@@ -183,14 +184,14 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: ...
-- Deferred: ...
-- Added beyond spec: ...
+- Built as specified: additive report integrity contracts, reporting signing/confidence-bucket config, canonical JSON/config/file hashing, `hmac-sha256` signing and verification helpers, additive audit integrity-chain persistence, detached signed report manifests for existing report artifacts, deterministic `report.v2` run diffs, `veritext-report diff/sign/verify`, and source-neutral acceptance coverage.
+- Deferred: public-key signatures and external key management remain deferred by spec; HTML viewer, REST API, web UI, CI/CD, Docker, vector DBs, embeddings, and agent frameworks remain out of scope and gated by later approved phases.
+- Added beyond spec: no scope expansion. The configured signing key environment variable default is `REPORT_SIGNING_KEY` so signing secrets are not parsed as `VERITEXT_` runtime config overrides.
 
 ### Lessons for downstream phases
 
-- ...
+- Detached manifests let downstream review tools verify report bytes and audit identity without mutating `report.v2`, `refusal.v1`, or `cross_document_report.v1`.
+- Run diffs are intentionally conservative and source-neutral. Ambiguous matching remains visible rather than guessed, so any future richer diff must preserve typed refs, exact source spans, confidence, and conflict metadata.
+- Phase 41 must handle architecture-rule amendments before any viewer, governance UI, or CI work. Phase 40 added the non-UI integrity surface those later phases can consume.
