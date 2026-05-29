@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 36 - Lens Taxonomy and Normalization Contracts
-- Current status: Phase 37 Expanded Lenses Round 1 is at Step 6 of 8.
-- Next required work: Phase 37 Step 6 - add focused fixture or evaluation coverage for source-role-neutral recall improvement without fixture-specific source patches.
+- Current status: Phase 37 Expanded Lenses Round 1 is at Step 7 of 8.
+- Next required work: Phase 37 Step 7 - run final project, smoke, lint, prompt-change review, and evaluation gates.
 - Next-phase context: Phase 37 expands executable source-grounded lenses with operator-authorized prompt text while preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 37 Step 6 Source-Role Eval Fixture
+
+- Completed Phase 37 Step 6.
+- Added `evals/fixtures/phase_37_lens_roles/` with source-role-neutral expected spans for definition, citation, temporal, and quantity-with-unit recall.
+- Added `evals/suites/phase_37_expanded_lenses_round_1.json` with strict global, category, field, exact-provenance, and invariant gates.
+- Added `tests/unit/test_phase_37_eval_suite.py` to assert fixture inclusion, role coverage, metrics, and provenance behavior without growing the existing suite test file past 400 lines.
+- Verification:
+  - `python3 -m pytest tests/unit/test_eval_suites.py -q` failed RED with a missing Phase 37 suite manifest
+  - `python3 -m pytest tests/unit/test_phase_37_eval_suite.py tests/unit/test_eval_suites.py tests/unit/test_evals.py -q` passed with 26 passed
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations
+  - `wc -l tests/unit/test_phase_37_eval_suite.py tests/unit/test_eval_suites.py evals/fixtures/phase_37_lens_roles/source.txt evals/fixtures/phase_37_lens_roles/expected.json evals/fixtures/phase_37_lens_roles/report.example.json evals/suites/phase_37_expanded_lenses_round_1.json` reported 46, 361, 5, 57, 136, and 108 lines
+- Next: Phase 37 Step 7 - run final project, smoke, lint, prompt-change review, and evaluation gates.
 
 ### 2026-05-29 - Phase 37 Steps 1-5 Expanded Executable Lenses
 

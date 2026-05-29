@@ -1,0 +1,57 @@
+{
+  "case_id": "phase_37_lens_roles",
+  "source_path": "source.txt",
+  "thresholds": {
+    "max_invariant_violations": 0,
+    "min_f1": 1.0,
+    "min_precision": 1.0,
+    "min_provenance_recall": 1.0,
+    "min_recall": 1.0
+  },
+  "expected_data_points": [
+    {
+      "category": "DefinedTerm",
+      "end_byte": 115,
+      "end_char": 115,
+      "expected_id": "expected-definition-business-day",
+      "field_name": "definition_text",
+      "source_text": "\"Business Day\" means any day other than a Saturday, Sunday, or public holiday",
+      "start_byte": 38,
+      "start_char": 38,
+      "value": "\"Business Day\" means any day other than a Saturday, Sunday, or public holiday"
+    },
+    {
+      "category": "SourceCitation",
+      "end_byte": 193,
+      "end_char": 193,
+      "expected_id": "expected-citation-control-schedule",
+      "field_name": "reference_text",
+      "source_text": "Section 4.2 of the control schedule",
+      "start_byte": 158,
+      "start_char": 158,
+      "value": "Section 4.2 of the control schedule"
+    },
+    {
+      "category": "TemporalRequirement",
+      "end_byte": 281,
+      "end_char": 281,
+      "expected_id": "expected-temporal-review-window",
+      "field_name": "time_window",
+      "source_text": "within 30 calendar days after notice",
+      "start_byte": 245,
+      "start_char": 245,
+      "value": "within 30 calendar days after notice"
+    },
+    {
+      "category": "QuantityWithUnit",
+      "end_byte": 375,
+      "end_char": 375,
+      "expected_id": "expected-quantity-uptime-threshold",
+      "field_name": "quantity_text",
+      "source_text": "99.9% uptime per month",
+      "start_byte": 353,
+      "start_char": 353,
+      "value": "99.9% uptime per month"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+Section 1. Definitions.
+Defined Term: "Business Day" means any day other than a Saturday, Sunday, or public holiday.
+Reference: Compliance evidence must cite Section 4.2 of the control schedule.
+Timing: The reviewer must complete the assessment within 30 calendar days after notice.
+Measurement: The service credit applies when availability falls below 99.9% uptime per month.

@@ -1,0 +1,136 @@
+{
+  "data_points": [
+    {
+      "category": "DefinedTerm",
+      "confidence": 0.94,
+      "contributing_candidate_ids": [
+        "candidate-definition-business-day"
+      ],
+      "critic_report_ids": [
+        "critic-definition-business-day"
+      ],
+      "data_point_id": "dp-definition-business-day",
+      "doc_id": "doc-phase-37-lens-roles",
+      "field_name": "definition_text",
+      "reconciliation_decision_id": "decision-definition-business-day",
+      "run_id": "run-phase-37-lens-roles",
+      "source_span": {
+        "chunk_id": "chunk-phase-37-1",
+        "doc_id": "doc-phase-37-lens-roles",
+        "end_byte": 115,
+        "end_char": 115,
+        "start_byte": 38,
+        "start_char": 38,
+        "text": "\"Business Day\" means any day other than a Saturday, Sunday, or public holiday"
+      },
+      "value": "\"Business Day\" means any day other than a Saturday, Sunday, or public holiday",
+      "verifier_report_ids": [
+        "verifier-definition-business-day"
+      ]
+    },
+    {
+      "category": "SourceCitation",
+      "confidence": 0.92,
+      "contributing_candidate_ids": [
+        "candidate-citation-control-schedule"
+      ],
+      "critic_report_ids": [
+        "critic-citation-control-schedule"
+      ],
+      "data_point_id": "dp-citation-control-schedule",
+      "doc_id": "doc-phase-37-lens-roles",
+      "field_name": "reference_text",
+      "reconciliation_decision_id": "decision-citation-control-schedule",
+      "run_id": "run-phase-37-lens-roles",
+      "source_span": {
+        "chunk_id": "chunk-phase-37-1",
+        "doc_id": "doc-phase-37-lens-roles",
+        "end_byte": 193,
+        "end_char": 193,
+        "start_byte": 158,
+        "start_char": 158,
+        "text": "Section 4.2 of the control schedule"
+      },
+      "value": "Section 4.2 of the control schedule",
+      "verifier_report_ids": [
+        "verifier-citation-control-schedule"
+      ]
+    },
+    {
+      "category": "TemporalRequirement",
+      "confidence": 0.91,
+      "contributing_candidate_ids": [
+        "candidate-temporal-review-window"
+      ],
+      "critic_report_ids": [
+        "critic-temporal-review-window"
+      ],
+      "data_point_id": "dp-temporal-review-window",
+      "doc_id": "doc-phase-37-lens-roles",
+      "field_name": "time_window",
+      "reconciliation_decision_id": "decision-temporal-review-window",
+      "run_id": "run-phase-37-lens-roles",
+      "source_span": {
+        "chunk_id": "chunk-phase-37-1",
+        "doc_id": "doc-phase-37-lens-roles",
+        "end_byte": 281,
+        "end_char": 281,
+        "start_byte": 245,
+        "start_char": 245,
+        "text": "within 30 calendar days after notice"
+      },
+      "value": "within 30 calendar days after notice",
+      "verifier_report_ids": [
+        "verifier-temporal-review-window"
+      ]
+    },
+    {
+      "category": "QuantityWithUnit",
+      "confidence": 0.9,
+      "contributing_candidate_ids": [
+        "candidate-quantity-uptime-threshold"
+      ],
+      "critic_report_ids": [
+        "critic-quantity-uptime-threshold"
+      ],
+      "data_point_id": "dp-quantity-uptime-threshold",
+      "doc_id": "doc-phase-37-lens-roles",
+      "field_name": "quantity_text",
+      "reconciliation_decision_id": "decision-quantity-uptime-threshold",
+      "run_id": "run-phase-37-lens-roles",
+      "source_span": {
+        "chunk_id": "chunk-phase-37-1",
+        "doc_id": "doc-phase-37-lens-roles",
+        "end_byte": 375,
+        "end_char": 375,
+        "start_byte": 353,
+        "start_char": 353,
+        "text": "99.9% uptime per month"
+      },
+      "value": "99.9% uptime per month",
+      "verifier_report_ids": [
+        "verifier-quantity-uptime-threshold"
+      ]
+    }
+  ],
+  "doc_id": "doc-phase-37-lens-roles",
+  "generated_at": "2026-05-29T00:00:00Z",
+  "output_data_point_ids": [
+    "dp-definition-business-day",
+    "dp-citation-control-schedule",
+    "dp-temporal-review-window",
+    "dp-quantity-uptime-threshold"
+  ],
+  "report_schema_version": "report.v2",
+  "run_id": "run-phase-37-lens-roles",
+  "schema_metadata": {
+    "schema_id": "schema:a6cec8697940",
+    "schema_version": "1",
+    "schema_hash": "a6cec8697940c44ae73e630584de9af9910519e6a3c808cc7dddb6d6eac4323c",
+    "source_kind": "planner_generated",
+    "domain_pack_id": null,
+    "document_class": null,
+    "created_from": "planner",
+    "refined_from_schema_id": null
+  }
+}

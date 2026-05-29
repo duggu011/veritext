@@ -1,0 +1,108 @@
+{
+  "suite_id": "phase_37_expanded_lenses_round_1",
+  "description": "Focused Phase 37 fixture for source-role-neutral definition, citation, temporal, and quantity-with-unit recall with strict provenance gates.",
+  "fixtures": [
+    {
+      "fixture_id": "phase_37_lens_roles",
+      "case_path": "evals/fixtures/phase_37_lens_roles/expected.json",
+      "report_path": "evals/fixtures/phase_37_lens_roles/report.example.json"
+    }
+  ],
+  "thresholds": {
+    "global": {
+      "max_invariant_violations": 0,
+      "min_f1": 1.0,
+      "min_precision": 1.0,
+      "min_provenance_recall": 1.0,
+      "min_recall": 1.0
+    },
+    "categories": [
+      {
+        "category": "DefinedTerm",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "QuantityWithUnit",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "SourceCitation",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "TemporalRequirement",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      }
+    ],
+    "fields": [
+      {
+        "category": "DefinedTerm",
+        "field_name": "definition_text",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "QuantityWithUnit",
+        "field_name": "quantity_text",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "SourceCitation",
+        "field_name": "reference_text",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      },
+      {
+        "category": "TemporalRequirement",
+        "field_name": "time_window",
+        "thresholds": {
+          "max_invariant_violations": 0,
+          "min_f1": 1.0,
+          "min_precision": 1.0,
+          "min_provenance_recall": 1.0,
+          "min_recall": 1.0
+        }
+      }
+    ]
+  }
+}
