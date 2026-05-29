@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI** | Status: BOARD OPEN | Spec: [approved](../specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | Board: [board](phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 42 - Static Provenance Artifact, If Approved** | Status: NOT OPENED | Spec: _(not opened)_ | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -39,8 +39,8 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 38 - Dedup, Canonical Values, and Conflict Preservation | [approved](../specs/phase_38_dedup_canonical_values_conflict_preservation.md) | [board](phase_38_dedup_canonical_values_conflict_preservation.md) | COMPLETE (2026-05-29) |
 | 39 - Cross-Document Reconciliation | [approved](../specs/phase_39_cross_document_reconciliation.md) | [board](phase_39_cross_document_reconciliation.md) | COMPLETE (2026-05-30) |
 | 40 - Signed Reports and Run Diffs | [approved](../specs/phase_40_signed_reports_and_run_diffs.md) | [board](phase_40_signed_reports_and_run_diffs.md) | COMPLETE (2026-05-30) |
-| 41 - Architecture Rule Amendment for Viewer, Governance, and CI | [approved](../specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | [board](phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | BOARD OPEN; awaiting operator acceptance |
-| 42 - Static Provenance Artifact, If Approved | _(not opened)_ | _(not opened)_ | PLANNED; gated by Phase 41 acceptance |
+| 41 - Architecture Rule Amendment for Viewer, Governance, and CI | [approved](../specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | [board](phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | COMPLETE (2026-05-30) |
+| 42 - Static Provenance Artifact, If Approved | _(not opened)_ | _(not opened)_ | NOT OPENED; requires explicit continuation before spec work |
 | 43 - Cost Observability and Cost-per-Correct-Fact | _(not opened)_ | _(not opened)_ | PLANNED |
 | 44 - Stage Model Comparison | _(not opened)_ | _(not opened)_ | PLANNED |
 | 45 - Deployment-Economics Cost Cuts | _(not opened)_ | _(not opened)_ | PLANNED |

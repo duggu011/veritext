@@ -4,12 +4,26 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 40 - Signed Reports and Run Diffs
-- Current status: Phase 41 Architecture Rule Amendment for Viewer, Governance, and CI is complete on the board and awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 41 before any Phase 42 work begins.
-- Next-phase context: Phase 42 is renamed to Static Provenance Artifact, If Approved. It remains gated by Phase 41 acceptance and may only implement deterministic static report artifacts as local files; web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
+- Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
+- Current status: Phase 42 Static Provenance Artifact, If Approved is the next active phase and is not opened.
+- Next required work: explicit operator continuation to begin Phase 42 spec work through the board/spec creation workflow.
+- Next-phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 41 Acceptance
+
+- Accepted Phase 41 after operator approval.
+- Marked Phase 41 complete in `docs/boards/README.md` and updated the Phase 41 board handoff.
+- Set Phase 42 as the next active phase with no spec or board opened yet.
+- Did not begin Phase 42 spec work; an explicit operator continuation is required.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `rg -n "Phase 42 - Static Provenance Artifact|NOT OPENED|COMPLETE \\(2026-05-30\\)|Phase 41 Acceptance|explicit operator continuation" docs/boards/README.md docs/boards/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md PROGRESS.md`
+- Next: explicit operator continuation to begin Phase 42 spec work.
 
 ### 2026-05-30 - Phase 41 Architecture Rule Amendment
 

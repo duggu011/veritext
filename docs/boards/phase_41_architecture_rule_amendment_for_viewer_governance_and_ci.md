@@ -9,9 +9,9 @@ Last session: 2026-05-30
 Spec: `docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:9. Reporter`; `docs/PROJECT_OVERVIEW.md:13. Evaluation`; `docs/PROJECT_OVERVIEW.md:14. Human review and governance`; `docs/phase_26_plus_roadmap.md`
 
-Phase 41 opened after explicit operator approval of the conservative architecture-rule amendment default and is ready for operator acceptance.
+Phase 41 opened after explicit operator approval of the conservative architecture-rule amendment default and was accepted by the operator on 2026-05-30.
 
-Next: operator acceptance of Phase 41; Phase 42 remains gated.
+Next: explicit operator continuation to begin Phase 42 spec work.
 
 ---
 
@@ -112,6 +112,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - Acceptance
+
+- Accepted by operator approval on 2026-05-30.
+- Completed: marked Phase 41 accepted, updated `docs/boards/README.md` so Phase 41 is complete and Phase 42 is the next active not-opened phase, and updated `PROGRESS.md`.
+- Issues found: none.
+- Tests: acceptance documentation checks passed as recorded in `PROGRESS.md`.
+- Next: explicit operator continuation to begin Phase 42 spec work.
 
 ### 2026-05-30 - Session 1
 
