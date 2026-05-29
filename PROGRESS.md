@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 5 is complete and the board remains open.
-- Next required work: Phase 34 Step 6 - add final project and evaluation verification.
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion implementation is complete and ready for operator acceptance.
+- Next required work: operator acceptance of Phase 34 before opening Phase 35 - Layout-Aware Chunking.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Step 6 Final Verification
+
+- Completed Phase 34 Step 6.
+- Filled the Phase 34 board summary and final gate checklist.
+- Confirmed Phase 34 stayed inside scope: no OCR, `.msg`, attachments, spreadsheet ingestion, web crawling, prompt changes, runtime LLM changes, domain-pack runtime changes, config changes, or architecture-rule changes.
+- Verification:
+  - `make test` first failed because `tiktoken` could not resolve `openaipublic.blob.core.windows.net` inside the restricted sandbox
+  - `make test` passed with approved network access (`305 passed, 2 skipped`)
+  - `make lint`
+  - `make smoke` passed with 1 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
 
 ### 2026-05-29 — Phase 34 Step 5 Audit and Source-Support Regressions
 

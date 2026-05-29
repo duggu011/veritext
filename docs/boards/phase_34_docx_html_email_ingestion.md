@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 5 of 6
+Step: 6 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
 Spec: `docs/specs/phase_34_docx_html_email_ingestion.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 5 is complete. Next up: Step 6 - add final project and evaluation verification.
+Step 6 is complete. Phase 34 implementation is ready for operator acceptance before Phase 35 opens.
 
 ---
 
@@ -22,7 +22,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [x] Step 4: Add EML ingestion fixtures, adapter, metadata, body selection, and failure handling.
 - [x] Step 5: Add audit readback, source-support regression, and prompt-neutrality verification.
-- [ ] Step 6: Add final project and evaluation verification.
+- [x] Step 6: Add final project and evaluation verification.
 
 ---
 
@@ -76,6 +76,8 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/ingestion/documents.py:1` | Routed detected `email` documents into the EML adapter. | Step 4 |
 | `src/extractor/ingestion/email.py:1` | Added standard-library RFC 5322 parsing, multipart alternative body selection, HTML-body fallback, metadata extraction, generated header labels, and explicit rejection paths. | Step 4 |
 | `tests/unit/test_phase_34_ingestion_boundaries.py:1` | Added DOCX, HTML, and EML audit readback plus source-support rejection regressions for generated and unmapped ranges. | Step 5 |
+| `docs/boards/phase_34_docx_html_email_ingestion.md:1` | Recorded final verification and Phase 34 summary. | Step 6 |
+| `PROGRESS.md:1` | Recorded Step 6 final verification and acceptance handoff. | Step 6 |
 
 ---
 
@@ -108,18 +110,19 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with unsupported HTML ingestion, then passed with 6 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 35 passed; `wc -l src/extractor/ingestion/html.py src/extractor/ingestion/html_tables.py tests/unit/test_ingestion_docx_html_email.py` reported 353, 146, and 324 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 | 4 | `python3 -m pytest tests/unit/test_ingestion_email.py -q` first failed with unsupported EML ingestion, then passed with 3 passed; `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py tests/unit/test_contracts.py -q` passed with 38 passed; `wc -l src/extractor/ingestion/email.py tests/unit/test_ingestion_email.py src/extractor/ingestion/documents.py` reported 355, 184, and 172 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 | 5 | `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py -q` first exposed a test async-generator construction defect, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_34_ingestion_boundaries.py tests/unit/test_audit_document_boundaries.py tests/unit/test_source_support.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py -q` passed with 15 passed; `git diff --exit-code -- prompts` passed with no prompt changes; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_ingestion_email.py tests/unit/test_phase_34_ingestion_boundaries.py tests/unit/test_audit_document_boundaries.py tests/unit/test_source_support.py tests/unit/test_contracts.py -q` passed with 44 passed; `wc -l tests/unit/test_phase_34_ingestion_boundaries.py` reported 157 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
+| 6 | `make test` first failed because `tiktoken` could not resolve `openaipublic.blob.core.windows.net` inside the restricted sandbox, then passed with approved network access (`305 passed, 2 skipped`); `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-29 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -134,10 +137,11 @@ Reverse chronological. Log every session.
 - Completed Step 3: added standard-library HTML decoding, visible text extraction, title/meta metadata, paragraph/heading/list/table layout spans, table cell spans with header labels, generated newline separators, and unmapped decoded HTML text.
 - Completed Step 4: added standard-library EML parsing, plain-body preference, HTML fallback, generated header labels, unmapped decoded body text, metadata, and explicit rejection of attachments, unsupported charsets, and empty body text.
 - Completed Step 5: added audit readback and source-support regressions for DOCX, HTML, and EML, and confirmed prompts remain unchanged.
+- Completed Step 6: ran final project tests, smoke, lint, prompt-neutrality, and evaluation gates.
 - Preserved compatibility by keeping unsupported-format coverage on `.rtf` now that `.docx` is supported.
 - Issues found: none.
-- Tests: Step 2, Step 3, Step 4, and Step 5 red/green/regression checks, adjacent ingestion compatibility, prompt-neutrality, `wc -l`, `make lint`, and `git diff --check` verification passed as recorded above.
-- Next: Step 6 - add final project and evaluation verification.
+- Tests: Step 2, Step 3, Step 4, Step 5, and Step 6 red/green/regression/final verification passed as recorded above.
+- Next: operator acceptance of Phase 34 before Phase 35 opens.
 
 ### 2026-05-29 - Session 1
 
@@ -158,14 +162,14 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: _(pending implementation)_
-- Deferred: _(pending implementation)_
-- Added beyond spec: _(pending implementation)_
+- Built as specified: additive `docx`, `html`, and `email` format support; standard-library DOCX, HTML, and EML adapters; metadata, logical page maps, generated/unmapped source maps, layout spans, table spans where structurally available, explicit malformed/empty/unsupported rejection paths, audit readback coverage, and source-support rejection coverage.
+- Deferred: none within the approved Phase 34 scope. OCR, `.msg`, attachment extraction, spreadsheet ingestion, web crawling, prompt changes, runtime LLM changes, domain-pack runtime changes, config changes, and architecture-rule changes remained out of scope as specified.
+- Added beyond spec: no product/runtime surface beyond the approved ingestion adapters and regression tests.
 
 ### Lessons for downstream phases
 
-- _(pending implementation)_
+- DOCX, HTML, and EML decoded text should continue to be treated as `unmapped` until a future phase proves raw source-byte mapping into the original container/encoded bytes.
+- HTML and EML table/body adapters can reuse the same boundary contracts as PDF and DOCX; no new format-specific contract fields were needed.
+- Final `make test` may need network access once per environment to fetch/cache `tiktoken` encoding data; after cache population the failure is not related to Phase 34 code.
