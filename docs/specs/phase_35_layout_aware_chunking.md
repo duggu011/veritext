@@ -1,14 +1,15 @@
 # Phase 35 - Layout-Aware Chunking
 
-Status: draft, awaiting operator approval.
+Status: approved for implementation.
 
 Date drafted: 2026-05-29
+Date approved: 2026-05-29
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` sections `2. Chunker`,
 `Highest-leverage accuracy/provenance improvements, ranked`, `Target domains
 (ranked by fit)`, `Configurable surface`, and `Non-configurable core`;
 `docs/phase_26_plus_roadmap.md`; `docs/boards/README.md`; `PROGRESS.md`;
-Phase 34 board and completed commits through `dc98bce`.
+Phase 34 board and completed commits through `125432e`.
 
 ## Goal
 
