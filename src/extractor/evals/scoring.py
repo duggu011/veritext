@@ -17,6 +17,7 @@ from extractor.evals.models import (
     FieldMetricBreakdown,
     InvariantViolation,
 )
+from extractor.evals.invariants import report_invariant_violations
 from extractor.reporter import ExtractionReport
 
 
@@ -68,7 +69,7 @@ def evaluate_report_file(case_path: str | Path, report_path: str | Path) -> Eval
 
 
 def evaluate_report(case: EvaluationCase, report: ExtractionReport) -> EvaluationResult:
-    invariant_violations = _report_invariant_violations(case, report)
+    invariant_violations = report_invariant_violations(case, report)
     matches, missing_expected_ids, unexpected_data_point_ids = _match_data_points(
         expected=case.expected_data_points,
         actual=report.data_points,
@@ -305,54 +306,6 @@ def _match_data_points(
         if data_point.data_point_id not in used_actual
     ]
     return matches, missing_expected_ids, unexpected_data_point_ids
-
-
-def _report_invariant_violations(
-    case: EvaluationCase,
-    report: ExtractionReport,
-) -> list[InvariantViolation]:
-    violations: list[InvariantViolation] = []
-    source_bytes = case.source_text.encode("utf-8")
-    for data_point in report.data_points:
-        span = data_point.source_span
-        if span.end_char > len(case.source_text) or span.end_byte > len(source_bytes):
-            violations.append(
-                InvariantViolation(
-                    code="source_span_out_of_bounds",
-                    message="Data point source span exceeds the evaluation source text.",
-                    data_point_id=data_point.data_point_id,
-                )
-            )
-            continue
-
-        expected_start_byte = len(case.source_text[: span.start_char].encode("utf-8"))
-        expected_end_byte = len(case.source_text[: span.end_char].encode("utf-8"))
-        if span.start_byte != expected_start_byte or span.end_byte != expected_end_byte:
-            violations.append(
-                InvariantViolation(
-                    code="source_span_byte_offset_mismatch",
-                    message="Data point byte offsets are not aligned to character offsets.",
-                    data_point_id=data_point.data_point_id,
-                )
-            )
-
-        if case.source_text[span.start_char : span.end_char] != span.text:
-            violations.append(
-                InvariantViolation(
-                    code="source_span_text_mismatch",
-                    message="Data point source_span.text does not match source text at offsets.",
-                    data_point_id=data_point.data_point_id,
-                )
-            )
-        if source_bytes[span.start_byte : span.end_byte] != span.text.encode("utf-8"):
-            violations.append(
-                InvariantViolation(
-                    code="source_span_byte_mismatch",
-                    message="Data point source_span.text does not match source bytes at offsets.",
-                    data_point_id=data_point.data_point_id,
-                )
-            )
-    return violations
 
 
 def _match_key(point: ExpectedDataPoint) -> tuple[str, str, str]:

@@ -224,6 +224,10 @@ async def seed_audit_db(db_path: Path) -> None:
                 critic_report_ids=("critic-candidate-1", "critic-candidate-2"),
                 verifier_report_ids=("verifier-candidate-1", "verifier-candidate-2"),
                 reconciliation_decision_id="decision-1",
+                supporting_source_spans=(make_source_span(),),
+                conflict_status="unresolved",
+                conflict_group_id="conflict-1",
+                conflict_reason="same_field_distinct_canonical_values",
                 value_verbatim="hello world",
                 normalization_status="verbatim_only",
             )
@@ -256,6 +260,13 @@ def test_inspect_audit_database_returns_acceptance_and_detail_summary(tmp_path: 
         assert result["details"]["candidates"][0]["normalization_status"] == "verbatim_only"
         assert result["details"]["data_points"][0]["value_verbatim"] == "hello world"
         assert result["details"]["data_points"][0]["normalization_status"] == "verbatim_only"
+        assert result["details"]["data_points"][0]["supporting_source_span_count"] == 1
+        assert result["details"]["data_points"][0]["conflict_status"] == "unresolved"
+        assert result["details"]["data_points"][0]["conflict_group_id"] == "conflict-1"
+        assert (
+            result["details"]["data_points"][0]["conflict_reason"]
+            == "same_field_distinct_canonical_values"
+        )
         assert result["details"]["data_points"][0]["contributing_candidate_ids"] == (
             "candidate-1",
             "candidate-2",

@@ -159,6 +159,55 @@ def test_write_report_serializes_output_and_completes_manifest(tmp_path: Path) -
     asyncio.run(run_check())
 
 
+def test_write_report_serializes_phase_38_additive_data_point_fields(
+    tmp_path: Path,
+) -> None:
+    async def run_check() -> None:
+        manifest = make_manifest()
+        source_span = SourceSpan(
+            doc_id="doc-1",
+            chunk_id="chunk-2",
+            start_char=19,
+            end_char=34,
+            start_byte=19,
+            end_byte=34,
+            text="Margin declined",
+        )
+        data_point = make_data_point().model_copy(
+            update={
+                "supporting_source_spans": (source_span,),
+                "conflict_status": "unresolved",
+                "conflict_group_id": "conflict-1",
+                "conflict_reason": "same_field_distinct_canonical_values",
+            }
+        )
+        output_path = tmp_path / "reports" / "run-1.json"
+
+        async with AuditStore(tmp_path / "audit.sqlite3") as audit_store:
+            await seed_audit_store(audit_store, manifest, (data_point,))
+            await write_report(
+                manifest=manifest,
+                data_points=(data_point,),
+                schema_metadata=make_schema_metadata(),
+                output_path=output_path,
+                audit_store=audit_store,
+                generated_at=COMPLETED,
+            )
+
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+        serialized_point = payload["data_points"][0]
+        assert payload["report_schema_version"] == "report.v2"
+        assert serialized_point["supporting_source_spans"][0]["text"] == "Margin declined"
+        assert serialized_point["conflict_status"] == "unresolved"
+        assert serialized_point["conflict_group_id"] == "conflict-1"
+        assert (
+            serialized_point["conflict_reason"]
+            == "same_field_distinct_canonical_values"
+        )
+
+    asyncio.run(run_check())
+
+
 def test_write_report_rejects_missing_audited_data_point_without_output(tmp_path: Path) -> None:
     async def run_check() -> None:
         manifest = make_manifest()

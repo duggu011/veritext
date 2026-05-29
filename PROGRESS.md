@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 8 of 11.
-- Next required work: Phase 38 Step 8 - extend audit inspection and report/eval tests for additive fields.
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 9 of 11.
+- Next required work: Phase 38 Step 9 - decide whether focused source-neutral dedup/conflict fixture coverage is needed for evaluation acceptance.
 - Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Step 8 Audit and Report Coverage
+
+- Completed Phase 38 Step 8.
+- Added RED/GREEN audit inspection coverage for `supporting_source_span_count`, `conflict_status`, `conflict_group_id`, and `conflict_reason`.
+- Added report serialization coverage proving Phase 38 additive data point fields remain in `report.v2`.
+- Added evaluation invariant coverage for supporting source spans and moved source-span invariant checks into `src/extractor/evals/invariants.py` to keep `scoring.py` under the file-size limit.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped implementation change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py` failed RED with 2 expected failures before audit/eval implementation
+  - `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py`
+  - `git diff --check`
+  - `wc -l src/extractor/evals/scoring.py src/extractor/evals/invariants.py src/extractor/audit/inspection.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py`
+- Next: Phase 38 Step 9 - decide whether focused source-neutral dedup/conflict fixture coverage is needed for evaluation acceptance.
 
 ### 2026-05-29 - Phase 38 Steps 4-7 Conflict Preservation
 

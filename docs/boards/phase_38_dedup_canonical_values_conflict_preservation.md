@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 8 of 11
+Step: 9 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8
 
 Phase 38 opened after operator continuation accepted Phase 37 and the Phase 38 draft spec passed readiness checks with no open questions.
 
-Next: Step 8 - extend audit inspection and report/eval tests for additive fields.
+Next: Step 9 - decide whether focused source-neutral dedup/conflict fixture coverage is needed for evaluation acceptance.
 
 ---
 
@@ -26,7 +26,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 5: Extend `DataPoint` and reconciler materialization to populate supporting source spans from contributing candidates.
 - [x] Step 6: Add reconciler conflict detection and stable unresolved conflict metadata.
 - [x] Step 7: Add validation or retry complaints for silent rejection of otherwise valid conflicting candidates.
-- [ ] Step 8: Extend audit inspection and report/eval tests for additive fields.
+- [x] Step 8: Extend audit inspection and report/eval tests for additive fields.
 - [ ] Step 9: Add focused source-neutral dedup/conflict fixture coverage if needed for evaluation acceptance.
 - [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - [ ] Step 11: Fill the Phase 38 board summary and stop for operator acceptance.
@@ -76,6 +76,12 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/reconciler/conflicts.py:1` | Added stable unresolved conflict marking for canonicalized same-field disagreements. | Step 6 |
 | `src/extractor/reconciler/batching.py:1` | Added validation complaints for omitted or rejected canonicalized same-field conflicts. | Step 7 |
 | `tests/unit/test_phase_38_reconciler_conflicts.py:1` | Added RED/GREEN coverage for supporting spans, conflict metadata, and conflict omission complaints. | Steps 4-7 |
+| `src/extractor/audit/inspection.py:1` | Added compact inspection fields for supporting source span count and conflict metadata. | Step 8 |
+| `src/extractor/evals/invariants.py:1` | Added reusable report invariant checks for primary and supporting source spans. | Step 8 |
+| `src/extractor/evals/scoring.py:1` | Routed evaluation invariant checks through the new invariant helper. | Step 8 |
+| `tests/unit/test_audit_inspection.py:1` | Added audit inspection coverage for Phase 38 additive fields. | Step 8 |
+| `tests/unit/test_reporter.py:1` | Added report serialization coverage for Phase 38 additive fields without changing `report.v2`. | Step 8 |
+| `tests/unit/test_evals.py:1` | Added evaluation invariant coverage for supporting source spans. | Step 8 |
 
 ---
 
@@ -102,6 +108,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 8 | `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py` failed RED with 2 expected failures before audit/eval implementation; `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py`; `git diff --check`; `wc -l src/extractor/evals/scoring.py src/extractor/evals/invariants.py src/extractor/audit/inspection.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py`. | PASS | 2026-05-29 |
 | Steps 4-7 | `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py` failed RED with 2 expected failures before materialization/conflict changes and later failed RED with 1 expected validation failure before Step 7; `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`; `wc -l src/extractor/canonical_values.py src/extractor/reconciler/batching.py src/extractor/reconciler/conflicts.py src/extractor/reconciler/materialization.py tests/unit/test_phase_38_reconciler_conflicts.py`. | PASS | 2026-05-29 |
 | Steps 1-3 | `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py` failed RED with 6 expected failures before production changes; `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`. | PASS | 2026-05-29 |
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/README.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`; `rg -n "Phase 38|phase_38_dedup_canonical_values_conflict_preservation.md|BOARD OPEN|approved|Step 1|Prompt Changes|Open Questions" docs/boards/README.md PROGRESS.md docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`. | PASS | 2026-05-29 |
@@ -123,6 +130,16 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 4
+
+- Completed Step 8.
+- Added RED/GREEN audit inspection coverage for `supporting_source_span_count`, `conflict_status`, `conflict_group_id`, and `conflict_reason`.
+- Added report serialization coverage proving Phase 38 additive data point fields remain in `report.v2`.
+- Added evaluation invariant coverage for supporting source spans and moved source-span invariant checks into `src/extractor/evals/invariants.py` to keep `scoring.py` under the file-size limit.
+- Issues found: none.
+- Tests: Step 8 RED and GREEN verification passed as recorded above.
+- Next: Step 9 - decide whether focused source-neutral dedup/conflict fixture coverage is needed for evaluation acceptance.
 
 ### 2026-05-29 - Session 3
 

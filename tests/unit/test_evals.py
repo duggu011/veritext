@@ -231,6 +231,33 @@ def test_evaluate_report_flags_source_span_invariant_breaks() -> None:
     assert statement_metrics.invariant_violation_count == 2
 
 
+def test_evaluate_report_flags_supporting_source_span_invariant_breaks() -> None:
+    case = load_evaluation_case(CASE_PATH)
+    report = load_report()
+    bad_supporting_span = report.data_points[0].source_span.model_copy(
+        update={
+            "start_char": len(case.source_text) + 10,
+            "end_char": len(case.source_text) + 20,
+            "start_byte": len(case.source_text.encode("utf-8")) + 10,
+            "end_byte": len(case.source_text.encode("utf-8")) + 20,
+            "text": "not in source",
+        }
+    )
+    broken_point = report.data_points[0].model_copy(
+        update={"supporting_source_spans": (bad_supporting_span,)}
+    )
+    report = report.model_copy(
+        update={"data_points": (broken_point, *report.data_points[1:])}
+    )
+
+    result = evaluate_report(case, report)
+
+    assert result.passed is False
+    assert {violation.code for violation in result.invariant_violations} == {
+        "supporting_source_span_out_of_bounds"
+    }
+
+
 def test_load_evaluation_case_rejects_bad_expected_provenance(tmp_path: Path) -> None:
     fixture_dir = tmp_path / "case"
     fixture_dir.mkdir()
