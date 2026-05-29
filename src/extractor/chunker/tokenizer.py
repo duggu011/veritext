@@ -13,6 +13,7 @@ from extractor.chunker.token_offsets import (
     next_token_start_at_char_boundary,
     token_span_to_text_range,
 )
+from extractor.chunker.packing import PackedChunk, pack_boundary_aware_chunks
 from extractor.config import ChunkingConfig
 from extractor.contracts import Chunk, Document
 
@@ -35,6 +36,9 @@ def _chunk_document_sync(document: Document, config: ChunkingConfig) -> tuple[Ch
     tokens = encoding.encode(document.text, disallowed_special=())
     if not tokens:
         raise ChunkingError(f"Document has no tokens: {document.doc_id}")
+
+    if config.boundary_mode == "layout_aware":
+        return _chunk_document_layout_aware(document, config, encoding)
 
     try:
         offsets = build_token_offset_map(document.text, encoding, tokens)
@@ -69,6 +73,26 @@ def _chunk_document_sync(document: Document, config: ChunkingConfig) -> tuple[Ch
     if not chunks:
         raise ChunkingError(f"Document produced no chunks: {document.doc_id}")
     return tuple(chunks)
+
+
+def _chunk_document_layout_aware(
+    document: Document,
+    config: ChunkingConfig,
+    encoding: object,
+) -> tuple[Chunk, ...]:
+    packed_chunks = pack_boundary_aware_chunks(document, config, encoding)
+    chunks = tuple(
+        _build_chunk_from_packed(
+            document=document,
+            chunk_index=chunk_index,
+            packed_chunk=packed_chunk,
+            encoding=encoding,
+        )
+        for chunk_index, packed_chunk in enumerate(packed_chunks)
+    )
+    if not chunks:
+        raise ChunkingError(f"Document produced no chunks: {document.doc_id}")
+    return chunks
 
 
 def _load_encoding(tokenizer: str) -> object:
@@ -110,6 +134,48 @@ def _build_chunk(
         end_byte=text_range.end_byte,
         start_token=start_token,
         end_token=end_token,
+    )
+
+
+def _build_chunk_from_packed(
+    *,
+    document: Document,
+    chunk_index: int,
+    packed_chunk: PackedChunk,
+    encoding: object,
+) -> Chunk:
+    text = document.text[packed_chunk.start_char : packed_chunk.end_char]
+    start_byte = len(document.text[: packed_chunk.start_char].encode("utf-8"))
+    end_byte = len(document.text[: packed_chunk.end_char].encode("utf-8"))
+    start_token = len(encoding.encode(document.text[: packed_chunk.start_char], disallowed_special=()))
+    end_token = len(encoding.encode(document.text[: packed_chunk.end_char], disallowed_special=()))
+    if end_token <= start_token:
+        raise ChunkingError("Token window did not advance")
+
+    return Chunk(
+        chunk_id=_stable_chunk_id(
+            document=document,
+            chunk_index=chunk_index,
+            start_byte=start_byte,
+            end_byte=end_byte,
+            start_token=start_token,
+            end_token=end_token,
+        ),
+        doc_id=document.doc_id,
+        chunk_index=chunk_index,
+        text=text,
+        start_char=packed_chunk.start_char,
+        end_char=packed_chunk.end_char,
+        start_byte=start_byte,
+        end_byte=end_byte,
+        start_token=start_token,
+        end_token=end_token,
+        chunk_kind=packed_chunk.chunk_kind,
+        layout_span_ids=packed_chunk.layout_span_ids,
+        table_ids=packed_chunk.table_ids,
+        page_numbers=packed_chunk.page_numbers,
+        split_reason=packed_chunk.split_reason,
+        tokenizer_policy="tiktoken",
     )
 
 

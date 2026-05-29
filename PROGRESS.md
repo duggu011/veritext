@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking is at Step 4 of 6.
-- Next required work: Phase 35 Step 4 - add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
+- Current status: Phase 35 Layout-Aware Chunking is at Step 5 of 6.
+- Next required work: Phase 35 Step 5 - add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
 - Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Step 4 Layout-Aware Packing
+
+- Completed Phase 35 Step 4.
+- Added `src/extractor/chunker/packing.py` to pack validated layout/table blocks behind explicit `boundary_mode: layout_aware`.
+- Preserved the default `token_window` behavior while making layout-aware mode split oversized prose on sentence boundaries where possible, start headings in section chunks, keep tables atomic, and flag or reject oversized tables according to config.
+- Preserved exact `Document.text` slices and emitted chunk metadata for kind, layout span IDs, table IDs, page numbers, split reason, and tokenizer policy.
+- Verification:
+  - `python3 -m pytest tests/unit/test_chunker_layout_aware.py -q` first failed against the legacy fixed-window path, then passed after layout-aware packing
+  - `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker.py -q` passed with 7 passed
+  - `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 63 passed
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/chunker/packing.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_layout_aware.py` reported 323, 198, and 176 lines
+- Next: Phase 35 Step 5 - add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
 
 ### 2026-05-29 — Phase 35 Step 3 Boundary Collection
 
