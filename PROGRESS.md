@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation and the board is open.
-- Next required work: Phase 34 Step 2 - add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation; Step 2 is complete and the board remains open.
+- Next required work: Phase 34 Step 3 - add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Step 2 DOCX Ingestion
+
+- Completed Phase 34 Step 2.
+- Added DOCX fixture construction and coverage for core metadata, paragraph/heading/list extraction, table text, table cell spans, header labels, generated separators, unmapped decoded text, and malformed/missing/empty DOCX failures.
+- Added `src/extractor/ingestion/docx.py` for standard-library OpenXML package/XML extraction and `src/extractor/ingestion/docx_metadata.py` for core-property metadata.
+- Routed detected `docx` documents through the DOCX adapter.
+- Preserved unsupported-format compatibility coverage by moving the legacy unsupported fixture from `.docx` to `.rtf`.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with unsupported DOCX ingestion
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` passed with 4 passed
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` first exposed the legacy `.docx` unsupported-format assertion
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 33 passed
+  - `wc -l src/extractor/ingestion/docx.py src/extractor/ingestion/docx_metadata.py` reported 359 and 95 lines
+  - `make lint`
+  - `git diff --check`
 
 ### 2026-05-29 — Phase 34 Step 1 Format Detection and Compatibility
 

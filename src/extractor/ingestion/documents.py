@@ -13,6 +13,7 @@ from extractor.ingestion.errors import (
     IngestionError,
     UnsupportedDocumentFormatError,
 )
+from extractor.ingestion.docx import extract_docx_document
 from extractor.ingestion.pdf import PdfIngestionResult, extract_pdf_document
 
 
@@ -104,6 +105,9 @@ async def _extract_document_content(
             source_path,
             source_sha256=_sha256_hex(source_bytes),
         )
+
+    if document_format == "docx":
+        return await asyncio.to_thread(extract_docx_document, source_path)
 
     # This branch is unreachable when detect_document_format is used, but keeps
     # this boundary explicit if the supported formats expand.

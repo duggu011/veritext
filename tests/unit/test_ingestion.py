@@ -140,7 +140,7 @@ def test_ingest_pdf_uses_pdfplumber_pages_and_tracks_page_offsets(
 
 def test_ingest_rejects_unsupported_empty_and_invalid_utf8_sources(tmp_path: Path) -> None:
     async def run_check() -> None:
-        unsupported = tmp_path / "document.docx"
+        unsupported = tmp_path / "document.rtf"
         unsupported.write_bytes(b"content")
         empty_text = tmp_path / "empty.txt"
         empty_text.write_text("", encoding="utf-8")

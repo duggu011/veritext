@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 1 of 6
+Step: 2 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
 Spec: `docs/specs/phase_34_docx_html_email_ingestion.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Step 1 is complete. Next up: Step 2 - add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
+Step 2 is complete. Next up: Step 3 - add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 
 ---
 
@@ -18,7 +18,7 @@ Step 1 is complete. Next up: Step 2 - add DOCX ingestion fixtures, adapter, meta
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
 - [x] Step 1: Add format-detection and compatibility tests.
-- [ ] Step 2: Add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
+- [x] Step 2: Add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [ ] Step 3: Add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [ ] Step 4: Add EML ingestion fixtures, adapter, metadata, body selection, and failure handling.
 - [ ] Step 5: Add audit readback, source-support regression, and prompt-neutrality verification.
@@ -63,6 +63,11 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_ingestion_docx_html_email.py:1` | Added Phase 34 format-detection and `Document` contract compatibility tests. | Step 1 |
 | `src/extractor/contracts/base.py:1` | Extended `DocumentFormat` with `docx`, `html`, and `email`. | Step 1 |
 | `src/extractor/ingestion/documents.py:1` | Added suffix routing for `.docx`, `.html`, `.htm`, and `.eml`. | Step 1 |
+| `tests/unit/test_ingestion_docx_html_email.py:1` | Added DOCX fixture construction, metadata/layout/table/source-map assertions, and malformed/missing/empty DOCX rejection coverage. | Step 2 |
+| `tests/unit/test_ingestion.py:140` | Kept unsupported-format coverage on an actually unsupported `.rtf` suffix after `.docx` became supported. | Step 2 |
+| `src/extractor/ingestion/documents.py:1` | Routed detected `docx` documents into the DOCX adapter. | Step 2 |
+| `src/extractor/ingestion/docx.py:1` | Added standard-library OpenXML DOCX text, layout, table, and unmapped/generated source-map extraction. | Step 2 |
+| `src/extractor/ingestion/docx_metadata.py:1` | Added DOCX core-property metadata extraction for source name, MIME type, parser name, title, creator, created time, and modified time. | Step 2 |
 
 ---
 
@@ -91,6 +96,7 @@ _(No issues yet.)_
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/README.md docs/boards/phase_34_docx_html_email_ingestion.md`; `rg -n "Phase 34|phase_34_docx_html_email_ingestion.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/phase_34_docx_html_email_ingestion.md`; `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this phase. | PASS with noted unrelated drift | 2026-05-29 |
 | 1 | `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with missing format support, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 24 passed; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
+| 2 | `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with unsupported DOCX ingestion, then passed with 4 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_pdf_tables.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` first exposed the legacy `.docx` unsupported-format assertion, then passed with 33 passed after moving that fixture to `.rtf`; `wc -l src/extractor/ingestion/docx.py src/extractor/ingestion/docx_metadata.py` reported 359 and 95 lines; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -109,6 +115,15 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 2
+
+- Resumed at Step 2 after the DOCX RED tests were in place.
+- Completed Step 2: added standard-library DOCX package/XML ingestion, core-property metadata extraction, paragraph/heading/list/table layout spans, table cell spans with header labels, generated newline separators, and unmapped decoded DOCX text.
+- Preserved compatibility by keeping unsupported-format coverage on `.rtf` now that `.docx` is supported.
+- Issues found: none.
+- Tests: Step 2 red/green, adjacent ingestion compatibility, `wc -l`, `make lint`, and `git diff --check` verification passed as recorded above.
+- Next: Step 3 - add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 
 ### 2026-05-29 - Session 1
 
