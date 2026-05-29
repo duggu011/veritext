@@ -9,19 +9,6 @@ rejections, and report integrity.
 The system is optimized for extraction accuracy, auditability, and invariant
 enforcement. Speed, cost, and convenience are secondary.
 
-## Current State
-
-- Active board: Phase 42 - Static Provenance Artifact.
-- Phase 42 implementation is complete and awaiting operator acceptance; Phase
-  43 must not begin without explicit continuation after acceptance.
-- Accepted roadmap work through Phase 41 includes boundary-preserving
-  ingestion, layout-aware chunking, domain-pack/schema contracts, expanded
-  lenses, conflict-preserving deduplication, cross-document reconciliation,
-  signed reports, run diffs, and the narrow architecture allowance for local
-  static report artifacts.
-- Source of truth for current scope is `docs/boards/README.md`, then the active
-  board and spec.
-
 ## End-to-End Flow
 
 ```mermaid
@@ -213,7 +200,7 @@ veritext-eval \
 Score a suite:
 
 ```bash
-veritext-eval --suite evals/suites/phase_30_diverse_corpus_round_1.json
+veritext-eval --suite path/to/suite.json
 ```
 
 Additional suite modes cover adversarial fixtures, mutation checks, and
@@ -253,13 +240,8 @@ git diff --exit-code -- prompts
 | `config/` | Runtime configuration and domain packs. |
 | `prompts/` | Human-maintained prompt files and structured output contracts. |
 | `evals/` | Source-backed fixtures, reports, and suite manifests. |
-| `docs/boards/` | Active phase state, work logs, references, tests, and issues. |
 
-## Project Discipline
-
-Work starts from `docs/boards/README.md`, the active board, the active spec, and
-the relevant roadmap section in `docs/PROJECT_OVERVIEW.md`. Do not infer durable
-scope from chat alone.
+## Design Rules
 
 The runtime must remain domain-neutral. Do not add document-specific tokens,
 named entities, industry nouns, or fixture-specific patches to pass one example.
