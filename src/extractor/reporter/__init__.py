@@ -30,6 +30,7 @@ from extractor.reporter.signing import (
     verify_payload_signature,
     write_signed_report_manifest,
 )
+from extractor.reporter.static_provenance import build_static_provenance_artifact
 
 __all__ = [
     "CrossDocumentReport",
@@ -39,6 +40,7 @@ __all__ = [
     "ReportSigningError",
     "ReportWriteResult",
     "RunDiffWriteResult",
+    "build_static_provenance_artifact",
     "canonical_json_bytes",
     "canonical_json_sha256",
     "config_sha256",

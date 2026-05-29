@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is board-open at Step 1 of 8.
-- Next required work: Phase 42 Step 2 - implement typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited `Document`/rejections.
+- Current status: Phase 42 Static Provenance Artifact is board-open at Step 2 of 8.
+- Next required work: Phase 42 Step 3 - add deterministic HTML rendering and escaping tests.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Step 2 Static Provenance Artifact Builder
+
+- Completed Phase 42 Step 2.
+- Added `src/extractor/reporter/static_provenance.py` with typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, optional audited `Document`, and candidate rejections.
+- Exported `build_static_provenance_artifact` from `extractor.reporter`.
+- Added `tests/unit/test_phase_42_static_provenance_builder.py` with source-neutral builder coverage for manifest/document/rejection/diff binding, absent optional trail warnings, and source mismatch propagation.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped Step 2 change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_builder.py -q` failed RED with 3 expected missing builder export failures, then passed with 3 passed after correcting a test fixture run-ID mismatch
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 15 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `wc -l src/extractor/reporter/static_provenance.py tests/unit/test_phase_42_static_provenance_builder.py src/extractor/reporter/__init__.py` reported 229, 183, and 59 lines
+- Next: Phase 42 Step 3 - add deterministic HTML rendering and escaping tests.
 
 ### 2026-05-30 - Phase 42 Step 1 Static Provenance Contracts
 
