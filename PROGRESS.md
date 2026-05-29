@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 5 of 11.
-- Next required work: Phase 39 Step 5 - add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 6 of 11.
+- Next required work: Phase 39 Step 6 - add audit persistence and readback for cross-document manifests and results.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Step 5 Input Validation and Skipped Inputs
+
+- Completed Phase 39 Step 5.
+- Added RED/GREEN tests for duplicate data point rejection, missing document/schema skipped inputs, incomplete run skipped inputs, and missing manifest output skipped inputs.
+- Added cross-document input preparation and skipped-input accounting in `src/extractor/reconciler/cross_document_inputs.py`, keeping the core reconciliation service under the file-size limit.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped validation change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` failed RED with 3 expected validation/skipped-input failures before implementation
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py -q` passed with 6 passed
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_reconciler.py -q` passed with 24 passed
+  - `git diff --check`
+  - `wc -l src/extractor/reconciler/cross_document.py src/extractor/reconciler/cross_document_inputs.py src/extractor/reconciler/errors.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py` reported 334, 132, 12, 306, and 147 lines
+- Next: Phase 39 Step 6 - add audit persistence and readback for cross-document manifests and results.
 
 ### 2026-05-29 - Phase 39 Steps 3-4 Cross-Document Reconciliation Service
 

@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 4 of 11
+Step: 5 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: Step 5 - add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
+Next: Step 6 - add audit persistence and readback for cross-document manifests and results.
 
 ---
 
@@ -23,7 +23,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 2: Add cross-document Pydantic contracts and exports.
 - [x] Step 3: Add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 - [x] Step 4: Implement canonical-key-based cross-document reconciliation without LLM calls.
-- [ ] Step 5: Add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
+- [x] Step 5: Add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
 - [ ] Step 6: Add audit persistence and readback for cross-document manifests and results.
 - [ ] Step 7: Extend audit inspection and reporter output for additive cross-document fields.
 - [ ] Step 8: Add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
@@ -74,6 +74,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/contracts/__init__.py:1` | Exported Phase 39 cross-document contracts. | Step 2 |
 | `tests/unit/test_phase_39_cross_document_reconciliation.py:1` | Added RED/GREEN coverage for deterministic cross-document grouping, conflict surfacing, and unsafe raw-text non-merges. | Steps 3-4 |
 | `src/extractor/reconciler/cross_document.py:1` | Added deterministic canonical-key-based cross-document reconciliation service without LLM calls. | Step 4 |
+| `tests/unit/test_phase_39_cross_document_input_validation.py:1` | Added RED/GREEN coverage for duplicate data point rejection and skipped input accounting. | Step 5 |
+| `src/extractor/reconciler/cross_document_inputs.py:1` | Added cross-document input preparation, validation, and skipped-input accounting. | Step 5 |
+| `src/extractor/reconciler/errors.py:1` | Added a cross-document reconciliation error type shared by the service and input validation. | Step 5 |
 
 ---
 
@@ -100,6 +103,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 5 | `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` failed RED with 3 expected validation/skipped-input failures before implementation; `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py -q` passed with 6 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_reconciler.py -q` passed with 24 passed; `git diff --check`; `wc -l src/extractor/reconciler/cross_document.py src/extractor/reconciler/cross_document_inputs.py src/extractor/reconciler/errors.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py` reported 334, 132, 12, 306, and 147 lines. | PASS | 2026-05-29 |
 | Steps 3-4 | `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` failed RED with 3 expected missing-service failures; `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_reconciler.py -q` passed with 21 passed; `git diff --check`; `wc -l src/extractor/reconciler/cross_document.py tests/unit/test_phase_39_cross_document_reconciliation.py src/extractor/contracts/cross_document.py tests/unit/test_phase_39_cross_document_contracts.py` reported 328, 279, 169, and 280 lines. | PASS | 2026-05-29 |
 | Steps 1-2 | `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py -q` failed RED with 4 expected missing-contract export failures and 1 passed legacy compatibility test; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py -q` passed with 5 passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_phase_39_cross_document_contracts.py -q` passed with 24 passed; `git diff --check`; `wc -l src/extractor/contracts/cross_document.py src/extractor/contracts/__init__.py tests/unit/test_phase_39_cross_document_contracts.py` reported 169, 164, and 280 lines. | PASS | 2026-05-29 |
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md docs/boards/phase_39_cross_document_reconciliation.md` returned no matches; `rg -n "Status: approved|Date approved|Open Questions Before Approval|No static prompt body changes|Do not change existing CLI behavior|cross_document_report\\.v1|multi-document orchestration entrypoint|BOARD OPEN|Step 1" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md PROGRESS.md docs/boards/phase_39_cross_document_reconciliation.md`. | PASS | 2026-05-29 |
@@ -130,9 +134,10 @@ Reverse chronological. Log every session.
 - Completed Step 2: added cross-document Pydantic contracts and exports.
 - Completed Step 3: added RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 - Completed Step 4: added canonical-key-based cross-document reconciliation without LLM calls.
+- Completed Step 5: added validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
 - Issues found: none.
-- Tests: board-opening and Steps 1-4 verification passed as recorded above.
-- Next: Step 5 - add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
+- Tests: board-opening and Steps 1-5 verification passed as recorded above.
+- Next: Step 6 - add audit persistence and readback for cross-document manifests and results.
 
 ---
 

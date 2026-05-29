@@ -16,15 +16,14 @@ from extractor.contracts import (
     CrossDocumentSourceRef,
     DataPoint,
     Document,
+    RunManifest,
 )
+from extractor.reconciler.cross_document_inputs import prepare_cross_document_inputs
+from extractor.reconciler.errors import CrossDocumentReconciliationError
 
 
 DEFAULT_CROSS_DOCUMENT_POLICY_ID = "cross-document-default"
 DEFAULT_CROSS_DOCUMENT_POLICY_VERSION = "2026-05-29"
-
-
-class CrossDocumentReconciliationError(RuntimeError):
-    """Raised when cross-document reconciliation cannot preserve audit links."""
 
 
 def reconcile_cross_document_data_points(
@@ -33,14 +32,21 @@ def reconcile_cross_document_data_points(
     data_points: tuple[DataPoint, ...],
     documents: tuple[Document, ...],
     schema_metadata_by_run_id: Mapping[str, ApprovedSchemaMetadata],
+    run_manifests: tuple[RunManifest, ...] = (),
 ) -> CrossDocumentReconciliationResult:
     documents_by_id = _documents_by_id(documents)
-    refs_by_data_point_id = _source_refs_by_data_point_id(
+    prepared_inputs = prepare_cross_document_inputs(
         data_points=data_points,
+        documents_by_id=documents_by_id,
+        schema_metadata_by_run_id=schema_metadata_by_run_id,
+        run_manifests=run_manifests,
+    )
+    refs_by_data_point_id = _source_refs_by_data_point_id(
+        data_points=prepared_inputs.data_points,
         documents_by_id=documents_by_id,
     )
     group_specs = _build_group_specs(
-        data_points=data_points,
+        data_points=prepared_inputs.data_points,
         refs_by_data_point_id=refs_by_data_point_id,
         schema_metadata_by_run_id=schema_metadata_by_run_id,
         cross_document_run_id=cross_document_run_id,
@@ -55,11 +61,11 @@ def reconcile_cross_document_data_points(
     )
     return CrossDocumentReconciliationResult(
         cross_document_run_id=cross_document_run_id,
-        input_run_ids=tuple(sorted({data_point.run_id for data_point in data_points})),
-        input_doc_ids=tuple(sorted({data_point.doc_id for data_point in data_points})),
+        input_run_ids=prepared_inputs.input_run_ids,
+        input_doc_ids=prepared_inputs.input_doc_ids,
         groups=groups,
         conflicts=conflicts,
-        skipped_inputs=(),
+        skipped_inputs=prepared_inputs.skipped_inputs,
     )
 
 

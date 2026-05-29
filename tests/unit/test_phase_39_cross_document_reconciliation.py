@@ -10,6 +10,7 @@ from extractor.contracts import (
     DataPoint,
     Document,
     PageSpan,
+    RunManifest,
     SourceSpan,
 )
 
@@ -132,6 +133,32 @@ def make_schema_metadata() -> ApprovedSchemaMetadata:
         schema_hash=SCHEMA_HASH,
         source_kind="planner_generated",
         created_from="planner",
+    )
+
+
+def make_manifest(
+    *,
+    run_id: str,
+    doc_id: str,
+    status: str = "completed",
+    output_data_point_ids: tuple[str, ...],
+) -> RunManifest:
+    from datetime import datetime, timezone
+
+    started_at = datetime(2026, 5, 29, 12, 0, tzinfo=timezone.utc)
+    completed_at = (
+        datetime(2026, 5, 29, 12, 5, tzinfo=timezone.utc)
+        if status in {"completed", "refused"}
+        else None
+    )
+    return RunManifest(
+        run_id=run_id,
+        doc_id=doc_id,
+        audit_db_path="/tmp/audit.sqlite",
+        status=status,
+        started_at=started_at,
+        completed_at=completed_at,
+        output_data_point_ids=output_data_point_ids,
     )
 
 
