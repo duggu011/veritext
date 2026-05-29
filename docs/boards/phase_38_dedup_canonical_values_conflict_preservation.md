@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8
 
 Phase 38 opened after operator continuation accepted Phase 37 and the Phase 38 draft spec passed readiness checks with no open questions.
 
-Next: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
+Next: Phase 39 spec readiness and board opening if approved.
 
 ---
 
@@ -142,7 +142,8 @@ Reverse chronological. Log every session.
 - Filled the final gate and phase summary for operator acceptance.
 - Issues found: none.
 - Tests: final gate verification passed as recorded above.
-- Next: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
+- Accepted by operator continuation on 2026-05-29.
+- Next: Phase 39 spec readiness and board opening if approved.
 
 ### 2026-05-29 - Session 5
 

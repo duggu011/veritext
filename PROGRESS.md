@@ -4,12 +4,27 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation has completed final gates and is awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
-- Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
+- Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
+- Current status: Phase 39 Cross-Document Reconciliation is in spec draft.
+- Next required work: Phase 39 spec readiness checks, then board opening if approved.
+- Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Acceptance and Phase 39 Spec Draft
+
+- Accepted Phase 38 after operator continuation.
+- Marked Phase 38 complete in `docs/boards/README.md` and updated the Phase 38 board handoff.
+- Drafted `docs/specs/phase_39_cross_document_reconciliation.md` from the Reconciler roadmap, current single-document orchestrator/report model, Phase 38 canonical value keys, preserved supporting source spans, and unresolved conflict metadata.
+- Scoped Phase 39 to deterministic cross-document grouping over completed single-document outputs, separate per-document provenance, additive cross-document result contracts, audit persistence, and conflict surfacing.
+- Kept REST APIs, web UI, vector search, embeddings, CI, Docker, cross-document LLM prompt changes, domain-specific authority ranking, and report.v2 breaking changes out of scope.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md` returned no matches
+  - `rg -n "Phase 38|Phase 39|phase_39_cross_document_reconciliation.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|Open Questions|Prompt Changes" docs/boards/README.md PROGRESS.md docs/specs/phase_39_cross_document_reconciliation.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`
+  - `cmp -s AGENTS.md CLAUDE.md` confirmed the agent instruction files are byte-identical
+- Next: Phase 39 spec readiness checks, then board opening if approved.
 
 ### 2026-05-29 - Phase 38 Final Gates and Summary
 
