@@ -5,11 +5,30 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking is at Step 6 of 6.
-- Next required work: Phase 35 Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
-- Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
+- Current status: Phase 35 Layout-Aware Chunking has completed implementation and final verification; awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 35. Do not start Phase 36 without explicit operator continuation.
+- Acceptance context: Phase 35 implemented layout-aware chunking while preserving exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Step 6 Final Verification
+
+- Completed Phase 35 Step 6.
+- Ran final project, smoke, lint, prompt-neutrality, and evaluation gates.
+- Filled the Phase 35 board final gate and phase summary.
+- Confirmed Phase 35 stayed inside scope: no prompt body, runtime LLM, domain-pack, planner, executor, critic, verifier, reconciler, reporter, API, UI, or architecture-rule changes.
+- Verification:
+  - `make test` passed with 323 passed and 2 skipped
+  - `make lint`
+  - `make smoke` passed with 1 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, 21 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, 49 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+- Next: operator acceptance of Phase 35. Do not start Phase 36 without explicit operator continuation.
 
 ### 2026-05-29 — Phase 35 Step 5 Hierarchy and Resume Metadata
 

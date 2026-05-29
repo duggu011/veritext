@@ -9,9 +9,9 @@ Last session: 2026-05-29
 Spec: `docs/specs/phase_35_layout_aware_chunking.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 35 opened under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
+Phase 35 implementation and final verification are complete. Stop here for operator acceptance; do not start Phase 36 without explicit operator continuation.
 
-Next: Step 6 - Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
+Next: operator acceptance of Phase 35.
 
 ---
 
@@ -24,7 +24,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Add boundary collection and validation from page maps, layout spans, and table spans.
 - [x] Step 4: Add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
 - [x] Step 5: Add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
-- [ ] Step 6: Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
+- [x] Step 6: Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
 
@@ -82,6 +82,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_chunker_hierarchy.py:1` | Added RED/GREEN coverage for section hierarchy metadata, dependency metadata, audit readback, and resume validation failures. | Step 5 |
 | `src/extractor/chunker/tokenizer.py:1` | Added post-materialization hierarchy and dependency metadata for layout-aware section chunks. | Step 5 |
 | `src/extractor/orchestrator/state.py:1` | Added resume validation for chunk parent and dependency references. | Step 5 |
+| `docs/boards/phase_35_layout_aware_chunking.md:1` | Recorded final verification, Phase 35 summary, and acceptance handoff. | Step 6 |
+| `docs/boards/README.md:1` | Marked Phase 35 as awaiting operator acceptance. | Step 6 |
+| `PROGRESS.md:1` | Recorded Step 6 final verification and acceptance handoff. | Step 6 |
 
 ---
 
@@ -114,18 +117,19 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_chunker_boundaries.py -q` first failed with missing `extractor.chunker.boundaries`, then passed after collector implementation; `python3 -m pytest tests/unit/test_chunker_boundaries.py tests/unit/test_chunker.py -q` passed with 8 passed; `python3 -m pytest tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 60 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/boundaries.py src/extractor/chunker/errors.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_boundaries.py` reported 221, 5, 132, and 144 lines. | PASS | 2026-05-29 |
 | 4 | `python3 -m pytest tests/unit/test_chunker_layout_aware.py -q` first failed against the legacy fixed-window path, then passed after layout-aware packing; `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker.py -q` passed with 7 passed; `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 63 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/packing.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_layout_aware.py` reported 323, 198, and 176 lines. | PASS | 2026-05-29 |
 | 5 | `python3 -m pytest tests/unit/test_chunker_hierarchy.py -q` first failed with missing hierarchy metadata and resume dependency validation, then passed with 3 passed; `python3 -m pytest tests/unit/test_chunker_hierarchy.py tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` passed with 73 passed; `git diff --exit-code -- prompts` passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/tokenizer.py src/extractor/orchestrator/state.py tests/unit/test_chunker_hierarchy.py` reported 235, 376, and 116 lines. | PASS | 2026-05-29 |
+| 6 | `make test` passed with 323 passed and 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, 21 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, 49 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source-sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-29 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -142,9 +146,10 @@ Reverse chronological. Log every session.
 - Completed Step 3: added page, layout, and table boundary collection/validation with explicit `ChunkingError` failures for unreconciled page gaps and spans outside declared pages.
 - Completed Step 4: added explicit layout-aware chunk packing for headings, paragraph sentence boundaries, atomic oversized tables, and oversized-table rejection.
 - Completed Step 5: added section hierarchy metadata, dependency metadata, chunk audit readback coverage, resume dependency validation, and prompt-neutrality verification.
+- Completed Step 6: ran final project, smoke, lint, prompt-neutrality, and evaluation gates; filled the final gate and phase summary.
 - Issues found: none.
-- Tests: board-opening and Steps 1-5 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
+- Tests: board-opening and Steps 1-6 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: operator acceptance of Phase 35. Do not start Phase 36 without explicit operator continuation.
 
 ---
 
@@ -156,14 +161,15 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: pending.
-- Deferred: pending.
-- Added beyond spec: pending.
+- Built as specified: additive chunk metadata and config; reusable token offset helpers; page/layout/table boundary collection and validation; explicit `boundary_mode: layout_aware` packing for headings, paragraphs, sentence boundaries, and atomic tables; oversized atomic chunk flagging or rejection; section hierarchy and dependency metadata; audit readback; resume validation; prompt-neutrality verification; and final evaluation gates.
+- Deferred: none within the approved Phase 35 scope. Downstream planner/executor consumption of chunk dependency metadata remains Phase 36+ work as specified.
+- Added beyond spec: no runtime LLM, prompt body, domain-pack, planner, executor, critic, verifier, reconciler, reporter, API, UI, or architecture-rule changes.
 
 ### Lessons for downstream phases
 
-- Pending.
+- Default chunking remains `token_window`; layout-aware behavior is explicit through `boundary_mode: layout_aware`.
+- Dependency metadata is persisted and resume-validated, but downstream LLM stages do not consume it yet.
+- Table and prose packing now depend on typed boundary contracts, not document names, domain nouns, or fixture-specific text.
+- Whitespace-only gaps are folded into adjacent blocks so emitted chunks remain contiguous exact `Document.text` slices with valid offsets.
