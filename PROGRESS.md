@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is implementation-complete and awaiting operator acceptance.
+- Current status: Phase 42 Static Provenance Artifact is implementation-complete and awaiting operator acceptance; the top-level README has been refreshed as an operator-requested docs-only follow-up.
 - Next required work: operator acceptance of Phase 42; do not begin Phase 43 without explicit continuation after acceptance.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - README Docs Follow-up
+
+- Refreshed `README.md` with current project status, a Mermaid pipeline/provenance flow diagram, supported source formats and output artifacts, setup notes, extraction/audit/report/evaluation commands, development gates, repository map, and project discipline.
+- Updated the Phase 42 board with the docs-only follow-up, references, tests, and handoff state.
+- Preserved the Phase 42 acceptance gate; Phase 43 has not started.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `python3 -m compileall -q src tests`
+  - `git status --short`
+  - `git log --oneline -10`
+- Next: operator acceptance of Phase 42.
 
 ### 2026-05-30 - Phase 42 Summary and Handoff
 

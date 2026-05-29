@@ -15,6 +15,9 @@ scope conflicts with the Phase 41 static-artifact allowance.
 
 Phase 42 implementation is complete and awaiting operator acceptance.
 
+README refresh completed as an operator-requested docs-only follow-up. Phase 42
+remains awaiting operator acceptance; Phase 43 has not started.
+
 ---
 
 ## Implementation Steps
@@ -80,6 +83,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `config/default.yaml:1` | Added default `reporting.static_provenance_context_radius`. | Step 5 |
 | `tests/unit/test_phase_42_static_provenance_cli.py:1` | Added RED/GREEN CLI coverage for static provenance writing and missing audited document rejection. | Step 5 |
 | `tests/unit/test_phase_42_static_provenance_acceptance.py:1` | Added source-neutral acceptance coverage combining generic data point provenance, signed manifest identity, rejection trail, static artifact construction, HTML writing, and output hashing. | Step 6 |
+| `README.md:1` | Refreshed the top-level project guide with current status, Mermaid flow diagram, supported inputs/outputs, setup, CLI examples, provenance artifact commands, evaluation commands, development gates, repository map, and project discipline. | Docs follow-up |
+| `docs/boards/phase_42_static_provenance_artifact.md:1` | Recorded the README docs-only follow-up, references, test results, and next-step handoff. | Docs follow-up |
+| `PROGRESS.md:1` | Recorded the README docs-only follow-up and verification status while preserving the Phase 42 acceptance gate. | Docs follow-up |
 
 ---
 
@@ -115,6 +121,7 @@ _(No issues yet.)_
 | Step 6 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py -q` passed with 1 passed after fixing the fixture to avoid an unrelated audited-candidate FK requirement; `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 42 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l tests/unit/test_phase_42_static_provenance_acceptance.py` reported 187 lines. | PASS | 2026-05-30 |
 | Step 7 | `make test` passed with 400 passed and 2 skipped; `make lint`; `make smoke` passed with 1 passed; `git diff --check`; `git diff --exit-code -- prompts`; `git status --short` showed only unrelated `?? .codex/`; `git log --oneline -10` showed Phase 42 commits through `62fe38d`. Evaluation gates were not run because Phase 42 did not change extraction behavior or prompt bodies. | PASS | 2026-05-30 |
 | Step 8 | Filled the Phase 42 board summary and updated `PROGRESS.md`; `git diff --check`; `git diff --exit-code -- prompts`; `git status --short` showed summary/board tracking edits plus unrelated `?? .codex/`; `git log --oneline -10` showed Phase 42 commits through `e2d47cd`. | PASS | 2026-05-30 |
+| Docs follow-up | `git diff --check`; `git diff --exit-code -- prompts`; `python3 -m compileall -q src tests`; `git status --short`; `git log --oneline -10`. | PASS | 2026-05-30 |
 
 ### Final Gate
 
@@ -134,6 +141,18 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - README Docs Follow-up
+
+- Resumed after Phase 42 implementation completion and operator handoff.
+- Completed: refreshed `README.md` with current project status, a Mermaid
+  pipeline/provenance flow diagram, supported input/output artifacts, setup,
+  extraction/audit/report/evaluation commands, development gates, repository
+  map, and project discipline.
+- Issues found: none.
+- Tests: docs follow-up checks passed as recorded above.
+- Next: operator acceptance of Phase 42; do not begin Phase 43 without explicit
+  continuation after acceptance.
 
 ### 2026-05-30 - Step 7
 
