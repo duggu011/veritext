@@ -46,6 +46,7 @@ schema_registry:
   require_approved_schema: false
   minimum_schema_coverage: 0.65
 reporting:
+  static_provenance_context_radius: 80
   signing:
     enabled: false
     algorithm: hmac-sha256

@@ -125,6 +125,7 @@ def default_confidence_buckets() -> tuple[ConfidenceBucketConfig, ...]:
 
 class ReportingConfig(ConfigModel):
     signing: ReportSigningConfig = Field(default_factory=ReportSigningConfig)
+    static_provenance_context_radius: NonNegativeInt = 80
     confidence_buckets: tuple[ConfidenceBucketConfig, ...] = Field(
         default_factory=default_confidence_buckets
     )

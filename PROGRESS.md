@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is board-open at Step 4 of 8.
-- Next required work: Phase 42 Step 5 - extend `veritext-report` with the provenance command and CLI tests.
+- Current status: Phase 42 Static Provenance Artifact is board-open at Step 5 of 8.
+- Next required work: Phase 42 Step 6 - add source-neutral acceptance coverage.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Step 5 Static Provenance CLI
+
+- Completed Phase 42 Step 5.
+- Added `veritext-report provenance` to load `report.v2`, read audited document and candidate rejection state, accept optional signed manifest and run diff inputs, and write a static provenance HTML artifact.
+- Added `reporting.static_provenance_context_radius` to `config/default.yaml` and `ExtractorConfig` so display context tuning stays in config.
+- Added `tests/unit/test_phase_42_static_provenance_cli.py` with CLI write coverage and missing audited document rejection coverage.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped Step 5 change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py -q` failed RED with missing `provenance` subcommand and then passed with 2 passed
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 38 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `wc -l src/extractor/reporter/cli.py tests/unit/test_phase_42_static_provenance_cli.py src/extractor/config/models.py config/default.yaml` reported 275, 102, 186, and 62 lines
+- Next: Phase 42 Step 6 - add source-neutral acceptance coverage.
 
 ### 2026-05-30 - Phase 42 Step 4 Static Provenance HTML Writer
 
