@@ -5,11 +5,30 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 35 - Layout-Aware Chunking
-- Current status: Phase 36 Lens Taxonomy and Normalization Contracts is at Step 6 of 6.
-- Next required work: Phase 36 Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
-- Next-phase context: Phase 36 should add source-grounded lens taxonomy and value-normalization contracts before prompt/executor expansion, preserving verbatim values, exact source spans, audit payloads, and current four-lens runtime compatibility.
+- Current status: Phase 36 Lens Taxonomy and Normalization Contracts completed implementation and final verification; awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
+- Next-phase context: Phase 37 should expand executable source-grounded lenses only after Phase 36 is accepted, preserving the new executable-vs-contract-only lens boundary, verbatim/canonical value split, exact source spans, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 36 Step 6 Final Verification
+
+- Completed Phase 36 Step 6.
+- Ran final project, smoke, lint, prompt-neutrality, extraction, robustness, mutation, and calibration gates.
+- Filled the Phase 36 board final gate and phase summary.
+- Confirmed Phase 36 stayed inside scope: no new executable lenses, prompt body changes, LLM tool payload requirements, dedup key changes, conflict behavior changes, cross-document reconciliation changes, reporter format changes, UI/API/CI/Docker/vector/embedding additions, or architecture-rule changes.
+- Verification:
+  - `make test` passed with 331 passed and 2 skipped
+  - `make lint`
+  - `make smoke` passed with 1 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, 21 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, 49 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+- Next: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
 
 ### 2026-05-29 — Phase 36 Steps 1-5 Lens Taxonomy and Normalization Contracts
 

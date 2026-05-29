@@ -9,9 +9,9 @@ Last session: 2026-05-29
 Spec: `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:4. Executor`; `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 36 opened under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
+Phase 36 implementation and final verification are complete.
 
-Next: Step 6 - Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
+Next: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
 
 ---
 
@@ -24,7 +24,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Extend `LensCandidate` and `DataPoint` additively with verbatim/canonical value metadata and validation.
 - [x] Step 4: Populate candidate normalization metadata during server-side materialization without changing executor prompt bodies or tool payload requirements.
 - [x] Step 5: Carry normalization metadata through reconciler materialization, audit readback, and compact inspection output while preserving ID-only reconciler behavior.
-- [ ] Step 6: Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
+- [x] Step 6: Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
 
@@ -72,6 +72,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/reconciler/materialization.py:1` | Carried selected source candidate normalization metadata into final data points while preserving ID-only reconciler behavior. | Step 5 |
 | `tests/unit/test_audit_inspection.py:1` | Added compact audit-inspection coverage for candidate and data-point normalization metadata. | Step 5 |
 | `src/extractor/audit/inspection.py:1` | Included normalization metadata in compact audit inspection details. | Step 5 |
+| `docs/boards/README.md:1` | Marked Phase 36 awaiting operator acceptance after final verification. | Step 6 |
+| `docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md:1` | Recorded final gate verification, work log, and phase summary. | Step 6 |
+| `PROGRESS.md:1` | Recorded Phase 36 final verification and handoff. | Step 6 |
 
 ---
 
@@ -104,18 +107,19 @@ _(No issues yet.)_
 | 3 | `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` passed legacy `LensCandidate`/`DataPoint` payload readability and canonicalization metadata validation. | PASS | 2026-05-29 |
 | 4 | `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py -q` first failed because executor materialization left `value_verbatim` unset, then passed with 8 passed after server-side normalization metadata population. | PASS | 2026-05-29 |
 | 5 | `python3 -m pytest tests/unit/test_audit_inspection.py -q` first failed with missing `value_verbatim` in compact inspection output, then `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_phase_36_lens_normalization_contracts.py -q` passed with 10 passed; `python3 -m pytest tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_audit_inspection.py tests/unit/test_contracts.py tests/unit/test_executor.py tests/unit/test_reconciler.py tests/unit/test_dedup.py tests/unit/test_audit_store.py tests/unit/test_domain_pack_loader.py tests/unit/test_schema_registry_contracts.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py -q` passed with 95 passed; `git diff --exit-code -- prompts` passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/contracts/normalization.py src/extractor/contracts/lens_taxonomy.py src/extractor/contracts/models.py src/extractor/executor/materialization.py src/extractor/reconciler/materialization.py src/extractor/audit/inspection.py tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_audit_inspection.py` reported 131, 177, 392, 92, 389, 294, 322, and 281 lines. | PASS | 2026-05-29 |
+| 6 | `make test` passed with 331 passed, 2 skipped; `make lint` passed; `make smoke` passed with 1 passed; `git diff --check` passed; `git diff --exit-code -- prompts` passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual/true positives, 21 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual/true positives, 49 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched data points, 0 unmatched data points, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-29 |
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -132,9 +136,10 @@ Reverse chronological. Log every session.
 - Completed Step 3: extended `LensCandidate` and `DataPoint` additively with verbatim/canonical metadata and strict normalization validation.
 - Completed Step 4: populated server-derived normalization metadata during executor materialization without changing prompt bodies or tool payloads.
 - Completed Step 5: carried normalization metadata through reconciler materialization and compact audit inspection while preserving ID-only reconciler behavior.
+- Completed Step 6: ran final project, smoke, lint, prompt-neutrality, Phase 29/30 extraction, Phase 31 adversarial/mutation, and calibration gates; filled the final gate and phase summary.
 - Issues found: none.
-- Tests: board-opening and Steps 1-5 red/green/regression verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
+- Tests: board-opening, Steps 1-5 red/green/regression verification, and Step 6 final verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: operator acceptance of Phase 36. Do not start Phase 37 without explicit operator continuation.
 
 ---
 
@@ -146,14 +151,15 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: pending.
-- Deferred: pending.
-- Added beyond spec: pending.
+- Built as specified: typed lens taxonomy contracts; executable-vs-contract-only lens validation; typed normalization policy/value-kind/status contracts; additive `LensCandidate` and `DataPoint` verbatim/canonical metadata; strict canonicalization validation; server-side executor materialization of normalization metadata without prompt/tool-payload changes; reconciler propagation from selected candidate to data point; compact audit inspection readback; legacy payload compatibility tests; prompt-neutrality and extraction evaluation gates.
+- Deferred: new executable lenses, prompt expansion, LLM normalization, dedup canonical-value/conflict behavior, cross-document reconciliation, reporter format changes, and architecture-rule changes remain for later phases.
+- Added beyond spec: none.
 
 ### Lessons for downstream phases
 
-- Pending.
+- Keep `LensName` executable-only and use `LensTaxonomyName` for planned roles until each new lens has runtime, prompt, budget, and verification support.
+- Treat `value` as a compatibility field. Use `value_verbatim` for auditor-facing source text and `value_canonical` for deterministic comparison metadata.
+- Canonical values remain metadata; exact source spans continue to point only at source text.
+- The current `source-traced-label` policy is server-derived metadata, not an LLM output requirement.
