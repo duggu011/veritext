@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 1 of 11.
-- Next required work: Phase 39 Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 3 of 11.
+- Next required work: Phase 39 Step 3 - add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Steps 1-2 Cross-Document Contracts
+
+- Completed Phase 39 Steps 1-2.
+- Added RED tests for cross-document source references, fact keys, fact groups, conflicts, reconciliation results, run manifests, and legacy single-document `DataPoint` payload readability.
+- Added typed cross-document contracts and exports without adding reconciliation, audit, reporter, orchestrator, CLI, prompt, or architecture-rule behavior.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped contract change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py -q` failed RED with 4 expected missing-contract export failures and 1 passed legacy compatibility test
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py -q` passed with 5 passed
+  - `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_phase_39_cross_document_contracts.py -q` passed with 24 passed
+  - `git diff --check`
+  - `wc -l src/extractor/contracts/cross_document.py src/extractor/contracts/__init__.py tests/unit/test_phase_39_cross_document_contracts.py` reported 169, 164, and 280 lines
+- Next: Phase 39 Step 3 - add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 
 ### 2026-05-29 - Phase 39 Board Opening
 

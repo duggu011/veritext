@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 0 of 11
+Step: 2 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
+Next: Step 3 - add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 
 ---
 
@@ -19,8 +19,8 @@ Next: Step 1 - add RED tests for cross-document contract models and legacy singl
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add RED tests for cross-document contract models and legacy single-document payload compatibility.
-- [ ] Step 2: Add cross-document Pydantic contracts and exports.
+- [x] Step 1: Add RED tests for cross-document contract models and legacy single-document payload compatibility.
+- [x] Step 2: Add cross-document Pydantic contracts and exports.
 - [ ] Step 3: Add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 - [ ] Step 4: Implement canonical-key-based cross-document reconciliation without LLM calls.
 - [ ] Step 5: Add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
@@ -69,6 +69,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_39_cross_document_reconciliation.md:1` | Active Phase 39 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_phase_39_cross_document_contracts.py:1` | Added RED/GREEN coverage for Phase 39 cross-document contracts and legacy single-document payload readability. | Steps 1-2 |
+| `src/extractor/contracts/cross_document.py:1` | Added typed cross-document source ref, fact key, fact group, conflict, skipped-input, result, and run-manifest contracts. | Step 2 |
+| `src/extractor/contracts/__init__.py:1` | Exported Phase 39 cross-document contracts. | Step 2 |
 
 ---
 
@@ -95,6 +98,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Steps 1-2 | `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py -q` failed RED with 4 expected missing-contract export failures and 1 passed legacy compatibility test; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py -q` passed with 5 passed; `python3 -m pytest tests/unit/test_contracts.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_phase_39_cross_document_contracts.py -q` passed with 24 passed; `git diff --check`; `wc -l src/extractor/contracts/cross_document.py src/extractor/contracts/__init__.py tests/unit/test_phase_39_cross_document_contracts.py` reported 169, 164, and 280 lines. | PASS | 2026-05-29 |
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md docs/boards/phase_39_cross_document_reconciliation.md` returned no matches; `rg -n "Status: approved|Date approved|Open Questions Before Approval|No static prompt body changes|Do not change existing CLI behavior|cross_document_report\\.v1|multi-document orchestration entrypoint|BOARD OPEN|Step 1" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md PROGRESS.md docs/boards/phase_39_cross_document_reconciliation.md`. | PASS | 2026-05-29 |
 
 ### Final Gate
@@ -119,9 +123,11 @@ Reverse chronological. Log every session.
 
 - Resumed from Phase 38 acceptance after operator continuation.
 - Completed: approved the Phase 39 spec for implementation, opened this board, pinned gate interpretations, and updated active phase tracking.
+- Completed Step 1: added RED tests for cross-document contract models and legacy single-document payload compatibility.
+- Completed Step 2: added cross-document Pydantic contracts and exports.
 - Issues found: none.
-- Tests: board-opening verification passed as recorded above.
-- Next: Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
+- Tests: board-opening and Steps 1-2 verification passed as recorded above.
+- Next: Step 3 - add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
 
 ---
 

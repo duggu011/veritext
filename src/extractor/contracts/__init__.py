@@ -17,6 +17,17 @@ from extractor.contracts.ingestion import (
     validate_ingestion_boundaries,
 )
 from extractor.contracts.documents import Document, PageSpan
+from extractor.contracts.cross_document import (
+    CrossDocumentConflict,
+    CrossDocumentConflictStatus,
+    CrossDocumentFactGroup,
+    CrossDocumentFactKey,
+    CrossDocumentReconciliationResult,
+    CrossDocumentRunManifest,
+    CrossDocumentRunStatus,
+    CrossDocumentSkippedInput,
+    CrossDocumentSourceRef,
+)
 from extractor.contracts.dedup import (
     CanonicalValueKey,
     CanonicalValueSource,
@@ -92,6 +103,15 @@ __all__ = [
     "ChunkTokenizerPolicy",
     "CriticIssue",
     "CriticReport",
+    "CrossDocumentConflict",
+    "CrossDocumentConflictStatus",
+    "CrossDocumentFactGroup",
+    "CrossDocumentFactKey",
+    "CrossDocumentReconciliationResult",
+    "CrossDocumentRunManifest",
+    "CrossDocumentRunStatus",
+    "CrossDocumentSkippedInput",
+    "CrossDocumentSourceRef",
     "DataPoint",
     "DedupCluster",
     "Document",
