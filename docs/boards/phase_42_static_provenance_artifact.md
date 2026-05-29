@@ -21,6 +21,9 @@ remains awaiting operator acceptance; Phase 43 has not started.
 README public-facing correction completed: phase/status/board language was
 removed from the top-level README while preserving the stable project guide.
 
+Operator-updated README presentation committed as a public-facing docs update.
+Phase 42 remains awaiting operator acceptance; Phase 43 has not started.
+
 ---
 
 ## Implementation Steps
@@ -86,7 +89,7 @@ Every file this phase creates or modifies. Updated as work happens.
 | `config/default.yaml:1` | Added default `reporting.static_provenance_context_radius`. | Step 5 |
 | `tests/unit/test_phase_42_static_provenance_cli.py:1` | Added RED/GREEN CLI coverage for static provenance writing and missing audited document rejection. | Step 5 |
 | `tests/unit/test_phase_42_static_provenance_acceptance.py:1` | Added source-neutral acceptance coverage combining generic data point provenance, signed manifest identity, rejection trail, static artifact construction, HTML writing, and output hashing. | Step 6 |
-| `README.md:1` | Refreshed the top-level project guide with a Mermaid flow diagram, supported inputs/outputs, setup, CLI examples, provenance artifact commands, evaluation commands, development gates, repository map, and domain-neutral design rules; removed phase/status/board language for public-facing clarity. | Docs follow-up |
+| `README.md:1` | Refreshed the top-level project guide with a Mermaid flow diagram, supported inputs/outputs, setup, CLI examples, provenance artifact commands, evaluation commands, development gates, repository map, and domain-neutral design rules; removed phase/status/board language for public-facing clarity; committed operator presentation updates. | Docs follow-up |
 | `docs/boards/phase_42_static_provenance_artifact.md:1` | Recorded the README docs-only follow-up, references, test results, and next-step handoff. | Docs follow-up |
 | `PROGRESS.md:1` | Recorded the README docs-only follow-up and verification status while preserving the Phase 42 acceptance gate. | Docs follow-up |
 
@@ -126,6 +129,7 @@ _(No issues yet.)_
 | Step 8 | Filled the Phase 42 board summary and updated `PROGRESS.md`; `git diff --check`; `git diff --exit-code -- prompts`; `git status --short` showed summary/board tracking edits plus unrelated `?? .codex/`; `git log --oneline -10` showed Phase 42 commits through `e2d47cd`. | PASS | 2026-05-30 |
 | Docs follow-up | `git diff --check`; `git diff --exit-code -- prompts`; `python3 -m compileall -q src tests`; `git status --short`; `git log --oneline -10`. | PASS | 2026-05-30 |
 | README public correction | `rg -n "Phase\|phase_[0-9]\|board\|operator\|Current State\|active phase\|active spec\|PROGRESS" README.md` returned no matches; `git diff --check`; `git diff --exit-code -- prompts`; `python3 -m compileall -q src tests`; `git status --short`; `git log --oneline -10`. | PASS | 2026-05-30 |
+| README operator update | `git diff --check`; `git diff --exit-code -- prompts`; `python3 -m compileall -q src tests`; `git status --short`; `git log --oneline -10`. | PASS | 2026-05-30 |
 
 ### Final Gate
 
@@ -145,6 +149,16 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - README Operator Update
+
+- Resumed after the operator updated the README and asked to commit and push.
+- Completed: preserved the operator's README presentation changes and recorded
+  the internal board/progress handoff.
+- Issues found: none.
+- Tests: README operator update checks passed as recorded above.
+- Next: operator acceptance of Phase 42; do not begin Phase 43 without explicit
+  continuation after acceptance.
 
 ### 2026-05-30 - README Public Correction
 
