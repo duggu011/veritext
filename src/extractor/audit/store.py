@@ -4,6 +4,7 @@ from pathlib import Path
 
 from extractor.audit.base import UsageSummary
 from extractor.audit.core_records import CoreAuditRecords
+from extractor.audit.cross_document_records import CrossDocumentAuditRecords
 from extractor.audit.errors import (
     AuditIntegrityError,
     AuditNotFoundError,
@@ -14,7 +15,7 @@ from extractor.audit.review_records import ReviewAuditRecords
 from extractor.audit.schema import SCHEMA_SQL, SCHEMA_VERSION
 
 
-class AuditStore(CoreAuditRecords, ReviewAuditRecords):
+class AuditStore(CoreAuditRecords, ReviewAuditRecords, CrossDocumentAuditRecords):
     """SQLite audit store preserving the public audit persistence interface."""
 
 

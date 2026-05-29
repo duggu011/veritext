@@ -119,6 +119,20 @@ CREATE TABLE IF NOT EXISTS run_stage_states (
     PRIMARY KEY (run_id, stage),
     FOREIGN KEY (run_id) REFERENCES run_manifests(run_id)
 );
+
+CREATE TABLE IF NOT EXISTS cross_document_run_manifests (
+    cross_document_run_id TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    payload_json TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cross_document_results (
+    cross_document_run_id TEXT PRIMARY KEY,
+    payload_json TEXT NOT NULL,
+    FOREIGN KEY (cross_document_run_id) REFERENCES cross_document_run_manifests(cross_document_run_id)
+);
 """
 
 

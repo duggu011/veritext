@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 6 of 11.
-- Next required work: Phase 39 Step 6 - add audit persistence and readback for cross-document manifests and results.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 7 of 11.
+- Next required work: Phase 39 Step 7 - extend audit inspection and reporter output for additive cross-document fields.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Step 6 Cross-Document Audit Persistence
+
+- Completed Phase 39 Step 6.
+- Added additive audit tables and store methods for cross-document run manifests and reconciliation results without changing the audit schema version or existing single-document table behavior.
+- Added RED/GREEN readback, duplicate, and orphan-result coverage.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped audit change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_audit.py -q` failed RED with 3 expected missing audit-store method failures before implementation
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_audit.py -q` passed with 3 passed
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 36 passed
+  - `git diff --check`
+  - `wc -l src/extractor/audit/cross_document_records.py src/extractor/audit/schema.py src/extractor/audit/store.py tests/unit/test_phase_39_cross_document_audit.py src/extractor/reconciler/cross_document.py src/extractor/reconciler/cross_document_inputs.py tests/unit/test_phase_39_cross_document_input_validation.py` reported 73, 142, 36, 109, 334, 132, and 147 lines
+- Next: Phase 39 Step 7 - extend audit inspection and reporter output for additive cross-document fields.
 
 ### 2026-05-29 - Phase 39 Step 5 Input Validation and Skipped Inputs
 
