@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 8 of 11
+Step: 9 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: Step 9 - add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
+Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ---
 
@@ -27,7 +27,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 6: Add audit persistence and readback for cross-document manifests and results.
 - [x] Step 7: Extend audit inspection and reporter output for additive cross-document fields.
 - [x] Step 8: Add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
-- [ ] Step 9: Add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
+- [x] Step 9: Add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
 - [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - [ ] Step 11: Fill the Phase 39 board summary and stop for operator acceptance.
 
@@ -91,6 +91,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/orchestrator/cross_document.py:1` | Added Python batch orchestration entrypoint for independent single-document runs followed by audited cross-document reconciliation/reporting. | Step 8 |
 | `src/extractor/orchestrator/models.py:1` | Added `CrossDocumentBatchResult`. | Step 8 |
 | `src/extractor/orchestrator/__init__.py:1` | Exported the Phase 39 batch orchestration entrypoint and result model. | Step 8 |
+| `tests/unit/test_phase_39_cross_document_acceptance.py:1` | Added source-neutral acceptance coverage for cross-document grouping, conflict surfacing, exact provenance, and local conflict metadata preservation. | Step 9 |
+| `src/extractor/contracts/cross_document.py:1` | Added additive local conflict metadata fields to `CrossDocumentSourceRef`. | Step 9 |
+| `src/extractor/reconciler/cross_document.py:1` | Preserved single-document conflict metadata when materializing cross-document source references. | Step 9 |
 
 ---
 
@@ -117,6 +120,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Step 9 | `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py -q` failed while refining a test ordering assertion, then failed RED with expected missing `CrossDocumentSourceRef.conflict_status`; `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py -q` passed with 1 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_orchestrator.py -q` passed with 24 passed; `git diff --check`; `wc -l tests/unit/test_phase_39_cross_document_acceptance.py src/extractor/contracts/cross_document.py src/extractor/reconciler/cross_document.py` reported 221, 180, and 337 lines. | PASS | 2026-05-29 |
 | Step 8 | `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py -q` failed RED with 2 expected missing-entrypoint failures and 1 passing CLI regression; `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py -q` passed with 25 passed; `git diff --check`; `wc -l src/extractor/orchestrator/cross_document.py src/extractor/orchestrator/models.py src/extractor/orchestrator/__init__.py tests/unit/test_phase_39_cross_document_orchestrator.py` reported 181, 71, 21, and 123 lines. | PASS | 2026-05-29 |
 | Step 7 | `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` failed RED with 2 expected missing cross-document inspection/reporter failures; `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py -q` passed with 9 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 45 passed; `git diff --check`; `wc -l src/extractor/audit/inspection.py src/extractor/reporter/models.py src/extractor/reporter/service.py src/extractor/reporter/__init__.py src/extractor/audit/cross_document_records.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py` reported 351, 128, 337, 27, 90, 327, 335, and 109 lines. | PASS | 2026-05-29 |
 | Step 6 | `python3 -m pytest tests/unit/test_phase_39_cross_document_audit.py -q` failed RED with 3 expected missing audit-store method failures before implementation; `python3 -m pytest tests/unit/test_phase_39_cross_document_audit.py -q` passed with 3 passed; `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_audit_store.py tests/unit/test_reconciler.py -q` passed with 36 passed; `git diff --check`; `wc -l src/extractor/audit/cross_document_records.py src/extractor/audit/schema.py src/extractor/audit/store.py tests/unit/test_phase_39_cross_document_audit.py src/extractor/reconciler/cross_document.py src/extractor/reconciler/cross_document_inputs.py tests/unit/test_phase_39_cross_document_input_validation.py` reported 73, 142, 36, 109, 334, 132, and 147 lines. | PASS | 2026-05-29 |
@@ -155,9 +159,10 @@ Reverse chronological. Log every session.
 - Completed Step 6: added audit persistence and readback for cross-document manifests and results.
 - Completed Step 7: extended audit inspection and reporter output for additive cross-document fields.
 - Completed Step 8: added the Python multi-document batch orchestration entrypoint while keeping CLI behavior unchanged.
+- Completed Step 9: added source-neutral equivalent unit coverage for cross-document evaluation acceptance and preserved local conflict metadata on source refs.
 - Issues found: none.
-- Tests: board-opening and Steps 1-8 verification passed as recorded above.
-- Next: Step 9 - add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
+- Tests: board-opening and Steps 1-9 verification passed as recorded above.
+- Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ---
 

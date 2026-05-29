@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 9 of 11.
-- Next required work: Phase 39 Step 9 - add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 10 of 11.
+- Next required work: Phase 39 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Step 9 Source-Neutral Acceptance Coverage
+
+- Completed Phase 39 Step 9.
+- Added equivalent source-neutral unit coverage for cross-document evaluation acceptance rather than extending the current single-document evaluation harness.
+- Covered deterministic grouping, conflict surfacing, exact per-document source hashes/spans, supporting spans, skipped-input absence, and local single-document conflict metadata preservation.
+- Added additive local conflict metadata fields to `CrossDocumentSourceRef` and copied them from each `DataPoint` during cross-document source-reference materialization.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped acceptance-coverage change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py -q` failed while refining a test ordering assertion, then failed RED with expected missing `CrossDocumentSourceRef.conflict_status`
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py -q` passed with 1 passed
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_acceptance.py tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_orchestrator.py -q` passed with 24 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_39_cross_document_acceptance.py src/extractor/contracts/cross_document.py src/extractor/reconciler/cross_document.py` reported 221, 180, and 337 lines
+- Next: Phase 39 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
 
 ### 2026-05-29 - Phase 39 Step 8 Batch Orchestrator
 

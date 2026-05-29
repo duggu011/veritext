@@ -30,6 +30,9 @@ class CrossDocumentSourceRef(ContractModel):
     data_point_id: NonEmptyStr
     source_span: SourceSpan
     supporting_source_spans: tuple[SourceSpan, ...] = ()
+    conflict_status: CrossDocumentConflictStatus = "none"
+    conflict_group_id: NonEmptyStr | None = None
+    conflict_reason: NonEmptyStr | None = None
     source_sha256: Sha256Hex
     text_sha256: Sha256Hex
     value: NonEmptyStr
@@ -48,6 +51,14 @@ class CrossDocumentSourceRef(ContractModel):
         for span in self.supporting_source_spans:
             if span.doc_id != self.doc_id:
                 raise ValueError("supporting_source_spans doc_id must match source ref doc_id")
+        if self.conflict_status == "none" and (
+            self.conflict_group_id is not None or self.conflict_reason is not None
+        ):
+            raise ValueError("conflict details require unresolved conflict_status")
+        if self.conflict_status == "unresolved" and (
+            self.conflict_group_id is None or self.conflict_reason is None
+        ):
+            raise ValueError("unresolved conflict_status requires conflict details")
         validate_normalization_metadata(
             value=self.value,
             value_verbatim=self.value_verbatim,
