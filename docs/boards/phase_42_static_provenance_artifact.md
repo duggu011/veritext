@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 5 of 8
+Step: 6 of 8
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -13,7 +13,7 @@ Phase 42 opened after operator approval to begin spec work and operator-trust
 readiness checks found no open questions, unfinished-work markers, prompt changes, or
 scope conflicts with the Phase 41 static-artifact allowance.
 
-Next: Step 6 - add source-neutral acceptance coverage.
+Next: Step 7 - run final phase gates.
 
 ---
 
@@ -26,7 +26,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 3: Add deterministic HTML rendering and escaping tests.
 - [x] Step 4: Implement static HTML writing with output hash and byte-length reporting.
 - [x] Step 5: Extend `veritext-report` with the provenance command and CLI tests.
-- [ ] Step 6: Add source-neutral acceptance coverage.
+- [x] Step 6: Add source-neutral acceptance coverage.
 - [ ] Step 7: Run final phase gates.
 - [ ] Step 8: Fill the Phase 42 summary and stop for operator acceptance.
 
@@ -79,6 +79,7 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/config/models.py:1` | Added validated reporting config for static provenance source-context radius. | Step 5 |
 | `config/default.yaml:1` | Added default `reporting.static_provenance_context_radius`. | Step 5 |
 | `tests/unit/test_phase_42_static_provenance_cli.py:1` | Added RED/GREEN CLI coverage for static provenance writing and missing audited document rejection. | Step 5 |
+| `tests/unit/test_phase_42_static_provenance_acceptance.py:1` | Added source-neutral acceptance coverage combining generic data point provenance, signed manifest identity, rejection trail, static artifact construction, HTML writing, and output hashing. | Step 6 |
 
 ---
 
@@ -111,6 +112,7 @@ _(No issues yet.)_
 | Step 3 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_rendering.py -q` failed RED with 2 expected missing renderer export failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 17 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/static_provenance.py src/extractor/reporter/static_provenance_html.py tests/unit/test_phase_42_static_provenance_rendering.py src/extractor/reporter/__init__.py` reported 229, 203, 117, and 61 lines. | PASS | 2026-05-30 |
 | Step 4 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py -q` failed RED with 2 expected missing writer export failures, then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_reporter.py -q` passed with 19 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/static_provenance_html.py tests/unit/test_phase_42_static_provenance_writer.py src/extractor/reporter/__init__.py` reported 248, 68, and 69 lines. | PASS | 2026-05-30 |
 | Step 5 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py -q` failed RED with missing `provenance` subcommand and then passed with 2 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 38 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/reporter/cli.py tests/unit/test_phase_42_static_provenance_cli.py src/extractor/config/models.py config/default.yaml` reported 275, 102, 186, and 62 lines. | PASS | 2026-05-30 |
+| Step 6 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py -q` passed with 1 passed after fixing the fixture to avoid an unrelated audited-candidate FK requirement; `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 42 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l tests/unit/test_phase_42_static_provenance_acceptance.py` reported 187 lines. | PASS | 2026-05-30 |
 
 ### Final Gate
 
@@ -130,6 +132,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - Step 6
+
+- Resumed at Step 6.
+- Completed: added source-neutral acceptance coverage for generic data point provenance, signed manifest identity, rejection trail, HTML output, and output hash verification.
+- Issues found: none.
+- Tests: Step 6 tests passed as recorded above.
+- Next: Step 7 - run final phase gates.
 
 ### 2026-05-30 - Step 5
 

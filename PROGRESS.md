@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is board-open at Step 5 of 8.
-- Next required work: Phase 42 Step 6 - add source-neutral acceptance coverage.
+- Current status: Phase 42 Static Provenance Artifact is board-open at Step 6 of 8.
+- Next required work: Phase 42 Step 7 - run final phase gates.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Step 6 Source-Neutral Acceptance Coverage
+
+- Completed Phase 42 Step 6.
+- Added `tests/unit/test_phase_42_static_provenance_acceptance.py` with source-neutral acceptance coverage combining a generic data point, exact source span, signed manifest identity, rejection trail, static artifact construction, HTML writing, and output hash verification.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped Step 6 change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py -q` passed with 1 passed after fixing the fixture to avoid an unrelated audited-candidate FK requirement
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_acceptance.py tests/unit/test_phase_42_static_provenance_cli.py tests/unit/test_phase_42_static_provenance_writer.py tests/unit/test_phase_42_static_provenance_rendering.py tests/unit/test_phase_42_static_provenance_builder.py tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_cli.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_run_diff.py tests/unit/test_config.py tests/unit/test_reporter.py -q` passed with 42 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `wc -l tests/unit/test_phase_42_static_provenance_acceptance.py` reported 187 lines
+- Next: Phase 42 Step 7 - run final phase gates.
 
 ### 2026-05-30 - Phase 42 Step 5 Static Provenance CLI
 
