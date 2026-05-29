@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 42 - Static Provenance Artifact, If Approved** | Status: NOT OPENED | Spec: _(not opened)_ | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 42 - Static Provenance Artifact** | Status: BOARD OPEN | Spec: [approved](../specs/phase_42_static_provenance_artifact.md) | Board: [active](phase_42_static_provenance_artifact.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -40,7 +40,7 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 39 - Cross-Document Reconciliation | [approved](../specs/phase_39_cross_document_reconciliation.md) | [board](phase_39_cross_document_reconciliation.md) | COMPLETE (2026-05-30) |
 | 40 - Signed Reports and Run Diffs | [approved](../specs/phase_40_signed_reports_and_run_diffs.md) | [board](phase_40_signed_reports_and_run_diffs.md) | COMPLETE (2026-05-30) |
 | 41 - Architecture Rule Amendment for Viewer, Governance, and CI | [approved](../specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | [board](phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md) | COMPLETE (2026-05-30) |
-| 42 - Static Provenance Artifact, If Approved | _(not opened)_ | _(not opened)_ | NOT OPENED; requires explicit continuation before spec work |
+| 42 - Static Provenance Artifact | [approved](../specs/phase_42_static_provenance_artifact.md) | [board](phase_42_static_provenance_artifact.md) | BOARD OPEN (2026-05-30) |
 | 43 - Cost Observability and Cost-per-Correct-Fact | _(not opened)_ | _(not opened)_ | PLANNED |
 | 44 - Stage Model Comparison | _(not opened)_ | _(not opened)_ | PLANNED |
 | 45 - Deployment-Economics Cost Cuts | _(not opened)_ | _(not opened)_ | PLANNED |

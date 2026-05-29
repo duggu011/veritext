@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact, If Approved is the next active phase and is not opened.
-- Next required work: explicit operator continuation to begin Phase 42 spec work through the board/spec creation workflow.
-- Next-phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
+- Current status: Phase 42 Static Provenance Artifact is board-open at Step 0 of 8.
+- Next required work: Phase 42 Step 1 - add static provenance view contracts and source-context validation tests.
+- Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Spec Approval and Board Opening
+
+- Interpreted operator `approved` as explicit continuation to begin Phase 42 spec work.
+- Drafted and approved `docs/specs/phase_42_static_provenance_artifact.md` under operator-trust readiness rules.
+- Opened `docs/boards/phase_42_static_provenance_artifact.md` with 8 implementation steps.
+- Updated `docs/boards/README.md` so Phase 42 is the active board-open phase.
+- Kept Phase 42 scoped to deterministic local static report artifacts only; web UI, web servers, REST APIs, dynamic browser apps, client-side data fetching, persistent browser/local state, extraction behavior changes, prompt changes, and invariant-weakening shortcuts remain banned.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_42_static_provenance_artifact.md docs/boards/phase_42_static_provenance_artifact.md` returned no matches
+  - `rg -n "Status: dr[a]ft|Date approved: _\\(|SPEC DR[A]FT" docs/specs/phase_42_static_provenance_artifact.md docs/boards/phase_42_static_provenance_artifact.md docs/boards/README.md` returned no matches
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `wc -l docs/specs/phase_42_static_provenance_artifact.md docs/boards/phase_42_static_provenance_artifact.md docs/boards/README.md PROGRESS.md` reported 314, 142, 192, and 3364 lines before final tracking edits
+- Next: Phase 42 Step 1 - add static provenance view contracts and source-context validation tests.
 
 ### 2026-05-30 - Phase 41 Acceptance
 
