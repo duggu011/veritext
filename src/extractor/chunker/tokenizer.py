@@ -2,9 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-from collections.abc import Sequence
 
 from extractor.audit import AuditStore
+from extractor.chunker.token_offsets import (
+    TokenOffsetError,
+    TokenOffsetMap,
+    build_token_offset_map,
+    next_token_end_at_char_boundary,
+    next_token_start_at_char_boundary,
+    token_span_to_text_range,
+)
 from extractor.config import ChunkingConfig
 from extractor.contracts import Chunk, Document
 
@@ -32,35 +39,35 @@ def _chunk_document_sync(document: Document, config: ChunkingConfig) -> tuple[Ch
     if not tokens:
         raise ChunkingError(f"Document has no tokens: {document.doc_id}")
 
-    token_starts, token_ends = _token_byte_offsets(document.text, encoding, tokens)
-    byte_to_char = _byte_to_char_boundaries(document.text)
+    try:
+        offsets = build_token_offset_map(document.text, encoding, tokens)
 
-    chunks: list[Chunk] = []
-    start_token = 0
-    while start_token < len(tokens):
-        start_token = _next_token_start_at_char_boundary(start_token, token_starts, byte_to_char)
-        if start_token >= len(tokens):
-            break
+        chunks: list[Chunk] = []
+        start_token = 0
+        while start_token < len(offsets.tokens):
+            start_token = next_token_start_at_char_boundary(start_token, offsets)
+            if start_token >= len(offsets.tokens):
+                break
 
-        raw_end_token = min(start_token + config.window_tokens, len(tokens))
-        end_token = _next_token_end_at_char_boundary(raw_end_token, token_ends, byte_to_char)
-        if end_token <= start_token:
-            raise ChunkingError("Token window did not advance")
+            raw_end_token = min(start_token + config.window_tokens, len(offsets.tokens))
+            end_token = next_token_end_at_char_boundary(raw_end_token, offsets)
+            if end_token <= start_token:
+                raise ChunkingError("Token window did not advance")
 
-        chunk = _build_chunk(
-            document=document,
-            chunk_index=len(chunks),
-            start_token=start_token,
-            end_token=end_token,
-            token_starts=token_starts,
-            token_ends=token_ends,
-            byte_to_char=byte_to_char,
-        )
-        chunks.append(chunk)
+            chunk = _build_chunk(
+                document=document,
+                chunk_index=len(chunks),
+                start_token=start_token,
+                end_token=end_token,
+                offsets=offsets,
+            )
+            chunks.append(chunk)
 
-        if end_token >= len(tokens):
-            break
-        start_token = max(end_token - config.overlap_tokens, start_token + 1)
+            if end_token >= len(offsets.tokens):
+                break
+            start_token = max(end_token - config.overlap_tokens, start_token + 1)
+    except TokenOffsetError as exc:
+        raise ChunkingError(str(exc)) from exc
 
     if not chunks:
         raise ChunkingError(f"Document produced no chunks: {document.doc_id}")
@@ -78,90 +85,32 @@ def _load_encoding(tokenizer: str) -> object:
         raise ChunkingError("tiktoken is required for document chunking") from exc
 
 
-def _token_byte_offsets(
-    text: str,
-    encoding: object,
-    tokens: Sequence[int],
-) -> tuple[tuple[int, ...], tuple[int, ...]]:
-    starts: list[int] = []
-    ends: list[int] = []
-    cursor = 0
-    pieces: list[bytes] = []
-    for token in tokens:
-        piece = encoding.decode_single_token_bytes(token)
-        starts.append(cursor)
-        cursor += len(piece)
-        ends.append(cursor)
-        pieces.append(piece)
-
-    text_bytes = text.encode("utf-8")
-    if b"".join(pieces) != text_bytes:
-        raise ChunkingError("Tokenizer byte reconstruction did not match document text")
-    return tuple(starts), tuple(ends)
-
-
-def _byte_to_char_boundaries(text: str) -> dict[int, int]:
-    boundaries = {0: 0}
-    cursor = 0
-    for char_index, character in enumerate(text, start=1):
-        cursor += len(character.encode("utf-8"))
-        boundaries[cursor] = char_index
-    return boundaries
-
-
-def _next_token_start_at_char_boundary(
-    token_index: int,
-    token_starts: Sequence[int],
-    byte_to_char: dict[int, int],
-) -> int:
-    while token_index < len(token_starts) and token_starts[token_index] not in byte_to_char:
-        token_index += 1
-    return token_index
-
-
-def _next_token_end_at_char_boundary(
-    token_index: int,
-    token_ends: Sequence[int],
-    byte_to_char: dict[int, int],
-) -> int:
-    while token_index < len(token_ends) and token_ends[token_index - 1] not in byte_to_char:
-        token_index += 1
-    if token_index == len(token_ends) and token_ends[token_index - 1] not in byte_to_char:
-        raise ChunkingError("Final token boundary does not align with UTF-8 text")
-    return token_index
-
-
 def _build_chunk(
     *,
     document: Document,
     chunk_index: int,
     start_token: int,
     end_token: int,
-    token_starts: Sequence[int],
-    token_ends: Sequence[int],
-    byte_to_char: dict[int, int],
+    offsets: TokenOffsetMap,
 ) -> Chunk:
-    start_byte = token_starts[start_token]
-    end_byte = token_ends[end_token - 1]
-    start_char = byte_to_char[start_byte]
-    end_char = byte_to_char[end_byte]
-    text = document.text[start_char:end_char]
+    text_range = token_span_to_text_range(offsets, start_token, end_token)
+    text = document.text[text_range.start_char : text_range.end_char]
     return Chunk(
         chunk_id=_stable_chunk_id(
             document=document,
             chunk_index=chunk_index,
-            start_byte=start_byte,
-            end_byte=end_byte,
+            start_byte=text_range.start_byte,
+            end_byte=text_range.end_byte,
             start_token=start_token,
             end_token=end_token,
         ),
         doc_id=document.doc_id,
         chunk_index=chunk_index,
         text=text,
-        start_char=start_char,
-        end_char=end_char,
-        start_byte=start_byte,
-        end_byte=end_byte,
+        start_char=text_range.start_char,
+        end_char=text_range.end_char,
+        start_byte=text_range.start_byte,
+        end_byte=text_range.end_byte,
         start_token=start_token,
         end_token=end_token,
     )

@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking is at Step 2 of 6.
-- Next required work: Phase 35 Step 2 - split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
+- Current status: Phase 35 Layout-Aware Chunking is at Step 3 of 6.
+- Next required work: Phase 35 Step 3 - add boundary collection and validation from page maps, layout spans, and table spans.
 - Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Step 2 Token Offset Helpers
+
+- Completed Phase 35 Step 2.
+- Added `src/extractor/chunker/token_offsets.py` with reusable token byte offset, UTF-8 character-boundary, and token-span range helpers.
+- Routed the legacy fixed-window chunker through the helper module while preserving `chunk_document(document, config, audit_store=None)`.
+- Added focused helper tests for split-emoji token windows and tokenizer byte reconstruction mismatch errors.
+- Verification:
+  - `python3 -m pytest tests/unit/test_chunker_token_offsets.py -q` first failed with missing `extractor.chunker.token_offsets`, then passed after helper extraction
+  - `python3 -m pytest tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py -q` passed with 6 passed
+  - `python3 -m pytest tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 51 passed
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/chunker/tokenizer.py src/extractor/chunker/token_offsets.py tests/unit/test_chunker_token_offsets.py` reported 135, 128, and 40 lines
+- Next: Phase 35 Step 3 - add boundary collection and validation from page maps, layout spans, and table spans.
 
 ### 2026-05-29 — Phase 35 Step 1 Chunk Contracts and Config
 

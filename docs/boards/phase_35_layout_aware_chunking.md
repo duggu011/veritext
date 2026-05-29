@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 2 of 6
+Step: 3 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md
 
 Phase 35 opened under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
 
-Next: Step 2 - Split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
+Next: Step 3 - Add boundary collection and validation from page maps, layout spans, and table spans.
 
 ---
 
@@ -20,7 +20,7 @@ Next: Step 2 - Split reusable token-offset helpers from the current fixed-window
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
 - [x] Step 1: Add contract and config tests for additive chunk metadata, legacy chunk payload readback, tokenizer-policy validation, and unchanged public imports.
-- [ ] Step 2: Split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
+- [x] Step 2: Split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 - [ ] Step 3: Add boundary collection and validation from page maps, layout spans, and table spans.
 - [ ] Step 4: Add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
 - [ ] Step 5: Add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
@@ -69,6 +69,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/config/models.py:1` | Added boundary mode, tokenizer policy, and oversized atomic chunk config fields with strict validation and legacy defaults. | Step 1 |
 | `src/extractor/config/__init__.py:1` | Exported additive chunking config literal types without removing existing public config imports. | Step 1 |
 | `config/default.yaml:1` | Declared Phase 35 chunking defaults in canonical runtime config. | Step 1 |
+| `tests/unit/test_chunker_token_offsets.py:1` | Added RED/GREEN coverage for reusable token-offset helper reconstruction, UTF-8 character-boundary advancement, and mismatch rejection. | Step 2 |
+| `src/extractor/chunker/token_offsets.py:1` | Added reusable tokenizer byte, character, and token-span offset helpers for legacy and future boundary-aware chunking. | Step 2 |
+| `src/extractor/chunker/tokenizer.py:1` | Routed the fixed-window chunker through reusable token-offset helpers without changing the public `chunk_document(...)` behavior. | Step 2 |
 
 ---
 
@@ -97,6 +100,7 @@ _(No issues yet.)_
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_35_layout_aware_chunking.md docs/boards/README.md docs/boards/phase_35_layout_aware_chunking.md`; `rg -n "Phase 35|phase_35_layout_aware_chunking.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_35_layout_aware_chunking.md docs/boards/phase_35_layout_aware_chunking.md`; `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this phase. | PASS with noted unrelated drift | 2026-05-29 |
 | 1 | `python3 -m pytest tests/unit/test_phase_35_chunk_contracts.py -q` first failed with missing chunk metadata and config policy fields, then passed with 6 passed; `python3 -m pytest tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_chunker.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 49 passed; `make lint` passed; `git diff --check` passed; `wc -l tests/unit/test_phase_35_chunk_contracts.py src/extractor/contracts/models.py src/extractor/config/models.py` reported 146, 355, and 137 lines. | PASS | 2026-05-29 |
+| 2 | `python3 -m pytest tests/unit/test_chunker_token_offsets.py -q` first failed with missing `extractor.chunker.token_offsets`, then passed after helper extraction; `python3 -m pytest tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py -q` passed with 6 passed; `python3 -m pytest tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 51 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/tokenizer.py src/extractor/chunker/token_offsets.py tests/unit/test_chunker_token_offsets.py` reported 135, 128, and 40 lines. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -121,9 +125,10 @@ Reverse chronological. Log every session.
 - Resumed at Step 0 from the Phase 35 spec draft after operator `start`.
 - Completed: approved the Phase 35 spec for implementation, opened this board, pinned open-question resolutions and gate interpretations, and updated active phase tracking.
 - Completed Step 1: added additive chunk metadata and chunking config contracts, legacy chunk payload readback coverage, tokenizer-policy validation, and focused tests without growing oversized existing test files.
+- Completed Step 2: split reusable token-offset mapping helpers from the fixed-window chunker and kept legacy chunking behavior green.
 - Issues found: none.
-- Tests: board-opening and Step 1 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 2 - split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
+- Tests: board-opening, Step 1, and Step 2 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: Step 3 - add boundary collection and validation from page maps, layout spans, and table spans.
 
 ---
 
