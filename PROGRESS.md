@@ -4,12 +4,28 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is summarized and awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 40. Do not begin Phase 41 without explicit continuation after acceptance.
-- Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
+- Last completed phase: Phase 40 - Signed Reports and Run Diffs
+- Current status: Phase 41 Architecture Rule Amendment for Viewer, Governance, and CI has a draft spec with open questions.
+- Next required work: resolve Phase 41 architecture-rule amendment questions before approving the spec or opening a board.
+- Next-phase context: Phase 41 must explicitly decide whether to allow deterministic static HTML artifacts, CI gates, and governance records, or defer them. It must not approve web UI, REST API, Docker, vector DB, embedding, local model serving, external signing services, agent frameworks, or invariant-weakening shortcuts by implication.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Acceptance and Phase 41 Spec Draft
+
+- Accepted Phase 40 after operator continuation.
+- Marked Phase 40 complete in `docs/boards/README.md` and updated the Phase 40 board handoff.
+- Drafted `docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md` from the Reporter, Evaluation, Human Review/Governance, and phase roadmap items.
+- Kept Phase 41 as a draft because architecture-rule amendments need explicit operator decisions before approval.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `cmp -s AGENTS.md CLAUDE.md`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/README.md docs/boards/phase_40_signed_reports_and_run_diffs.md` returned no matches
+  - `rg -n "Status: draft|Date drafted|Open Questions Before Approval|Static Generated HTML|CI Integration|Governance Workflow|SPEC DRAFT|COMPLETE \\(2026-05-30\\)|Phase 41" docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/README.md PROGRESS.md docs/boards/phase_40_signed_reports_and_run_diffs.md`
+  - `wc -l docs/specs/phase_41_architecture_rule_amendment_for_viewer_governance_and_ci.md docs/boards/phase_40_signed_reports_and_run_diffs.md` reported 209 and 200 lines
+- Next: Phase 41 spec readiness checks and resolution of open amendment questions.
 
 ### 2026-05-30 - Phase 40 Summary and Handoff
 

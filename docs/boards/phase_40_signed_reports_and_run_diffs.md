@@ -11,7 +11,9 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:9. Reporter`; `docs/PROJECT_OVERVIEW.m
 
 Phase 40 opened after operator continuation accepted Phase 39 and the Phase 40 draft spec passed readiness checks with no open questions.
 
-Next: operator acceptance of Phase 40. Do not begin Phase 41 without explicit continuation after acceptance.
+Accepted by operator continuation on 2026-05-30.
+
+Next: Phase 41 spec readiness and architecture-rule amendment questions.
 
 ---
 
@@ -172,7 +174,8 @@ Reverse chronological. Log every session.
 - Completed Step 11: filled the Phase 40 summary and prepared the operator acceptance handoff.
 - Issues found: none.
 - Tests: board-opening and Steps 1-10 verification passed as recorded above.
-- Next: operator acceptance of Phase 40. Do not begin Phase 41 without explicit continuation after acceptance.
+- Accepted by operator continuation on 2026-05-30.
+- Next: Phase 41 spec readiness and architecture-rule amendment questions.
 
 ---
 
