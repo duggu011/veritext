@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 0 of 8
+Step: 1 of 8
 Branch: main
 Started: 2026-05-30
 Last session: 2026-05-30
@@ -13,8 +13,9 @@ Phase 42 opened after operator approval to begin spec work and operator-trust
 readiness checks found no open questions, unfinished-work markers, prompt changes, or
 scope conflicts with the Phase 41 static-artifact allowance.
 
-Next: Step 1 - add static provenance view contracts and source-context
-validation tests.
+Next: Step 2 - implement typed artifact construction from `ExtractionReport`,
+optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited
+`Document`/rejections.
 
 ---
 
@@ -22,7 +23,7 @@ validation tests.
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add static provenance view contracts and source-context validation tests.
+- [x] Step 1: Add static provenance view contracts and source-context validation tests.
 - [ ] Step 2: Implement typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited `Document`/rejections.
 - [ ] Step 3: Add deterministic HTML rendering and escaping tests.
 - [ ] Step 4: Implement static HTML writing with output hash and byte-length reporting.
@@ -64,6 +65,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/phase_42_static_provenance_artifact.md:1` | Active Phase 42 board, decisions, gates, references, tests, and handoff tracking. | Opening |
 | `docs/boards/README.md:1` | Updated active Phase 42 pointer from pre-board state to approved board/spec. | Opening |
 | `PROGRESS.md:1` | Updated current gate and session log for Phase 42 opening. | Opening |
+| `src/extractor/contracts/static_provenance.py:1` | Added static provenance artifact, warning, source-context, data point view, manifest identity, document summary, rejection summary, and diff summary contracts plus source-context construction. | Step 1 |
+| `src/extractor/contracts/__init__.py:1` | Exported Phase 42 static provenance contracts and source-context builder. | Step 1 |
+| `tests/unit/test_phase_42_static_provenance_contracts.py:1` | Added RED/GREEN coverage for contract exports, data point view order, source-context match/mismatch handling, and context identity validation. | Step 1 |
 
 ---
 
@@ -91,6 +95,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Opening | `rg -n "T[B]D\|T[O]DO\|i[m]plement later\|f[i]ll in\|place[h]older\|\\?\\?" docs/specs/phase_42_static_provenance_artifact.md docs/boards/phase_42_static_provenance_artifact.md` returned no matches; `rg -n "Status: dr[a]ft\|Date approved: _\\(\|SPEC DR[A]FT" docs/specs/phase_42_static_provenance_artifact.md docs/boards/phase_42_static_provenance_artifact.md docs/boards/README.md` returned no matches; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l docs/specs/phase_42_static_provenance_artifact.md docs/boards/phase_42_static_provenance_artifact.md docs/boards/README.md PROGRESS.md` reported 314, 142, 192, and 3364 lines. | PASS | 2026-05-30 |
+| Step 1 | `python3 -m pytest tests/unit/test_phase_42_static_provenance_contracts.py -q` failed RED with 3 expected missing export failures, then passed with 3 passed; `python3 -m pytest tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_contracts.py -q` passed with 19 passed; `git diff --check`; `git diff --exit-code -- prompts`; `wc -l src/extractor/contracts/static_provenance.py tests/unit/test_phase_42_static_provenance_contracts.py src/extractor/contracts/__init__.py` reported 257, 176, and 222 lines. | PASS | 2026-05-30 |
 
 ### Final Gate
 
@@ -110,6 +115,14 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-30 - Step 1
+
+- Resumed at Step 1.
+- Completed: added static provenance contracts, source-context validation/construction, contract exports, and unit coverage.
+- Issues found: none.
+- Tests: Step 1 tests passed as recorded above.
+- Next: Step 2 - implement typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited `Document`/rejections.
 
 ### 2026-05-30 - Opening
 

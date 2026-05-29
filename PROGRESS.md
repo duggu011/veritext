@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 41 - Architecture Rule Amendment for Viewer, Governance, and CI
-- Current status: Phase 42 Static Provenance Artifact is board-open at Step 0 of 8.
-- Next required work: Phase 42 Step 1 - add static provenance view contracts and source-context validation tests.
+- Current status: Phase 42 Static Provenance Artifact is board-open at Step 1 of 8.
+- Next required work: Phase 42 Step 2 - implement typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited `Document`/rejections.
 - Phase context: Phase 42 may only implement deterministic static report artifacts as local files under the Phase 41 allowances. Web UI, web servers, REST APIs, dynamic browser apps, Docker, vector DBs, embeddings, local model serving, secret-backed external services, agent frameworks, active-learning loops, fine-tuning behavior, and invariant-weakening shortcuts remain banned.
 
 ## Session Log
+
+### 2026-05-30 - Phase 42 Step 1 Static Provenance Contracts
+
+- Completed Phase 42 Step 1.
+- Added `src/extractor/contracts/static_provenance.py` with static provenance artifact, warning, source-context, data point view, manifest identity, document summary, rejection summary, and diff summary contracts.
+- Added deterministic source-context construction that preserves exact source span text, flags audited document slice mismatches as warnings, and distinguishes missing document text.
+- Exported the Phase 42 contracts from `extractor.contracts`.
+- Added `tests/unit/test_phase_42_static_provenance_contracts.py` with source-neutral contract and source-context coverage.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped Step 1 change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_contracts.py -q` failed RED with 3 expected missing export failures, then passed with 3 passed
+  - `python3 -m pytest tests/unit/test_phase_42_static_provenance_contracts.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_contracts.py -q` passed with 19 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `wc -l src/extractor/contracts/static_provenance.py tests/unit/test_phase_42_static_provenance_contracts.py src/extractor/contracts/__init__.py` reported 257, 176, and 222 lines
+- Next: Phase 42 Step 2 - implement typed artifact construction from `ExtractionReport`, optional `SignedReportManifest`, optional `RunDiffReport`, and optional audited `Document`/rejections.
 
 ### 2026-05-30 - Phase 42 Spec Approval and Board Opening
 
