@@ -92,7 +92,44 @@ def _chunk_document_layout_aware(
     )
     if not chunks:
         raise ChunkingError(f"Document produced no chunks: {document.doc_id}")
-    return chunks
+    return _attach_layout_hierarchy(chunks)
+
+
+def _attach_layout_hierarchy(chunks: tuple[Chunk, ...]) -> tuple[Chunk, ...]:
+    section_path: tuple[str, ...] = ()
+    section_chunk_id: str | None = None
+    updated_chunks: list[Chunk] = []
+
+    for chunk in chunks:
+        updates: dict[str, object] = {}
+        if chunk.chunk_kind == "section":
+            section_label = _first_content_line(chunk.text)
+            if section_label is not None:
+                section_path = (section_label,)
+                section_chunk_id = chunk.chunk_id
+                updates["section_path"] = section_path
+        elif section_path and section_chunk_id is not None:
+            updates["section_path"] = section_path
+            updates["parent_chunk_id"] = section_chunk_id
+            updates["depends_on_chunk_ids"] = _prepend_unique_dependency(
+                section_chunk_id,
+                chunk.depends_on_chunk_ids,
+            )
+
+        updated_chunks.append(chunk.model_copy(update=updates) if updates else chunk)
+    return tuple(updated_chunks)
+
+
+def _first_content_line(text: str) -> str | None:
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped
+    return None
+
+
+def _prepend_unique_dependency(chunk_id: str, dependencies: tuple[str, ...]) -> tuple[str, ...]:
+    return (chunk_id, *(dependency for dependency in dependencies if dependency != chunk_id))
 
 
 def _load_encoding(tokenizer: str) -> object:

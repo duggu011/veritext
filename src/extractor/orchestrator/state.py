@@ -69,6 +69,14 @@ def validate_resume_chunks(
             raise OrchestratorError("Cannot resume: chunk doc_id does not match document.")
         if document.text[chunk.start_char : chunk.end_char] != chunk.text:
             raise OrchestratorError("Cannot resume: chunk text no longer matches document offsets.")
+    chunk_ids = {chunk.chunk_id for chunk in chunks}
+    for chunk in chunks:
+        if chunk.parent_chunk_id is not None:
+            if chunk.parent_chunk_id == chunk.chunk_id or chunk.parent_chunk_id not in chunk_ids:
+                raise OrchestratorError("Cannot resume: chunk parent references missing chunk.")
+        for dependency_id in chunk.depends_on_chunk_ids:
+            if dependency_id == chunk.chunk_id or dependency_id not in chunk_ids:
+                raise OrchestratorError("Cannot resume: chunk dependency references missing chunk.")
     return chunks
 
 

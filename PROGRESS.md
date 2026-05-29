@@ -5,11 +5,27 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
-- Current status: Phase 35 Layout-Aware Chunking is at Step 5 of 6.
-- Next required work: Phase 35 Step 5 - add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
+- Current status: Phase 35 Layout-Aware Chunking is at Step 6 of 6.
+- Next required work: Phase 35 Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 - Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 35 Step 5 Hierarchy and Resume Metadata
+
+- Completed Phase 35 Step 5.
+- Added section-path and parent/dependency metadata for layout-aware chunks after materialization so dependency IDs reference emitted chunk IDs.
+- Added audit readback coverage for persisted layout-aware chunk metadata.
+- Added resume validation that rejects parent or dependency chunk references that do not point to emitted chunks.
+- Confirmed prompt neutrality.
+- Verification:
+  - `python3 -m pytest tests/unit/test_chunker_hierarchy.py -q` first failed with missing hierarchy metadata and resume dependency validation, then passed with 3 passed
+  - `python3 -m pytest tests/unit/test_chunker_hierarchy.py tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` passed with 73 passed
+  - `git diff --exit-code -- prompts`
+  - `make lint`
+  - `git diff --check`
+  - `wc -l src/extractor/chunker/tokenizer.py src/extractor/orchestrator/state.py tests/unit/test_chunker_hierarchy.py` reported 235, 376, and 116 lines
+- Next: Phase 35 Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ### 2026-05-29 — Phase 35 Step 4 Layout-Aware Packing
 

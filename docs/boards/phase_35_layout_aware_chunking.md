@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 5 of 6
+Step: 6 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md
 
 Phase 35 opened under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
 
-Next: Step 5 - Add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
+Next: Step 6 - Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
 
@@ -23,7 +23,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 2: Split reusable token-offset helpers from the current fixed-window chunker and keep the legacy path green.
 - [x] Step 3: Add boundary collection and validation from page maps, layout spans, and table spans.
 - [x] Step 4: Add boundary-aware packing that preserves headings, paragraphs, sentences, and tables, including explicit oversized atomic chunk handling.
-- [ ] Step 5: Add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
+- [x] Step 5: Add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
 - [ ] Step 6: Run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
@@ -79,6 +79,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_chunker_layout_aware.py:1` | Added RED/GREEN coverage for layout-aware sentence/heading boundaries, atomic oversized tables, and oversized-table rejection. | Step 4 |
 | `src/extractor/chunker/packing.py:1` | Added boundary-aware block packing for paragraphs, headings, tables, sentence boundaries, whitespace gaps, and oversized atomic handling. | Step 4 |
 | `src/extractor/chunker/tokenizer.py:1` | Routed explicit `boundary_mode: layout_aware` chunking through the boundary-aware packer while preserving the default token-window path. | Step 4 |
+| `tests/unit/test_chunker_hierarchy.py:1` | Added RED/GREEN coverage for section hierarchy metadata, dependency metadata, audit readback, and resume validation failures. | Step 5 |
+| `src/extractor/chunker/tokenizer.py:1` | Added post-materialization hierarchy and dependency metadata for layout-aware section chunks. | Step 5 |
+| `src/extractor/orchestrator/state.py:1` | Added resume validation for chunk parent and dependency references. | Step 5 |
 
 ---
 
@@ -110,6 +113,7 @@ _(No issues yet.)_
 | 2 | `python3 -m pytest tests/unit/test_chunker_token_offsets.py -q` first failed with missing `extractor.chunker.token_offsets`, then passed after helper extraction; `python3 -m pytest tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py -q` passed with 6 passed; `python3 -m pytest tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 51 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/tokenizer.py src/extractor/chunker/token_offsets.py tests/unit/test_chunker_token_offsets.py` reported 135, 128, and 40 lines. | PASS | 2026-05-29 |
 | 3 | `python3 -m pytest tests/unit/test_chunker_boundaries.py -q` first failed with missing `extractor.chunker.boundaries`, then passed after collector implementation; `python3 -m pytest tests/unit/test_chunker_boundaries.py tests/unit/test_chunker.py -q` passed with 8 passed; `python3 -m pytest tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 60 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/boundaries.py src/extractor/chunker/errors.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_boundaries.py` reported 221, 5, 132, and 144 lines. | PASS | 2026-05-29 |
 | 4 | `python3 -m pytest tests/unit/test_chunker_layout_aware.py -q` first failed against the legacy fixed-window path, then passed after layout-aware packing; `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker.py -q` passed with 7 passed; `python3 -m pytest tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py -q` passed with 63 passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/packing.py src/extractor/chunker/tokenizer.py tests/unit/test_chunker_layout_aware.py` reported 323, 198, and 176 lines. | PASS | 2026-05-29 |
+| 5 | `python3 -m pytest tests/unit/test_chunker_hierarchy.py -q` first failed with missing hierarchy metadata and resume dependency validation, then passed with 3 passed; `python3 -m pytest tests/unit/test_chunker_hierarchy.py tests/unit/test_chunker_layout_aware.py tests/unit/test_chunker_boundaries.py tests/unit/test_chunker_token_offsets.py tests/unit/test_chunker.py tests/unit/test_phase_35_chunk_contracts.py tests/unit/test_ingestion_boundaries.py tests/unit/test_contracts.py tests/unit/test_config.py tests/unit/test_audit_store.py tests/unit/test_orchestrator.py -q` passed with 73 passed; `git diff --exit-code -- prompts` passed; `make lint` passed; `git diff --check` passed; `wc -l src/extractor/chunker/tokenizer.py src/extractor/orchestrator/state.py tests/unit/test_chunker_hierarchy.py` reported 235, 376, and 116 lines. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -137,9 +141,10 @@ Reverse chronological. Log every session.
 - Completed Step 2: split reusable token-offset mapping helpers from the fixed-window chunker and kept legacy chunking behavior green.
 - Completed Step 3: added page, layout, and table boundary collection/validation with explicit `ChunkingError` failures for unreconciled page gaps and spans outside declared pages.
 - Completed Step 4: added explicit layout-aware chunk packing for headings, paragraph sentence boundaries, atomic oversized tables, and oversized-table rejection.
+- Completed Step 5: added section hierarchy metadata, dependency metadata, chunk audit readback coverage, resume dependency validation, and prompt-neutrality verification.
 - Issues found: none.
-- Tests: board-opening and Steps 1-4 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 5 - add hierarchy and dependency metadata, audit readback coverage, resume validation coverage, and prompt-neutrality verification.
+- Tests: board-opening and Steps 1-5 verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
+- Next: Step 6 - run final project, smoke, lint, prompt-neutrality, and evaluation gates; fill the board summary and stop for operator acceptance.
 
 ---
 
