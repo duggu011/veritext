@@ -5,11 +5,25 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 3 of 11.
-- Next required work: Phase 39 Step 3 - add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 5 of 11.
+- Next required work: Phase 39 Step 5 - add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Steps 3-4 Cross-Document Reconciliation Service
+
+- Completed Phase 39 Steps 3-4.
+- Added RED/GREEN tests for deterministic cross-document grouping, separate per-document source references, unresolved canonical conflicts, and unsafe raw-text near-match non-merges.
+- Added a deterministic canonical-key-based cross-document reconciliation service under `src/extractor/reconciler/cross_document.py` without LLM calls, prompt changes, audit persistence, reporter output, orchestrator changes, CLI changes, or architecture-rule changes.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped reconciliation change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` failed RED with 3 expected missing-service failures
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_reconciliation.py -q` passed with 3 passed
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_contracts.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_reconciler.py -q` passed with 21 passed
+  - `git diff --check`
+  - `wc -l src/extractor/reconciler/cross_document.py tests/unit/test_phase_39_cross_document_reconciliation.py src/extractor/contracts/cross_document.py tests/unit/test_phase_39_cross_document_contracts.py` reported 328, 279, 169, and 280 lines
+- Next: Phase 39 Step 5 - add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
 
 ### 2026-05-29 - Phase 39 Steps 1-2 Cross-Document Contracts
 
