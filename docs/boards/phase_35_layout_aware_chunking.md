@@ -9,9 +9,9 @@ Last session: 2026-05-29
 Spec: `docs/specs/phase_35_layout_aware_chunking.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:2. Chunker`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 35 was accepted by the operator on 2026-05-29. Phase 36 is open as a spec draft; do not start implementation until the Phase 36 spec is approved and its board is opened.
+Phase 35 was accepted by the operator on 2026-05-29. Phase 36 has been approved and opened as the active board.
 
-Next: operator review of `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`.
+Next: continue from `docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`.
 
 ---
 

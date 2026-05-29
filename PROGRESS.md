@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 35 - Layout-Aware Chunking
-- Current status: Phase 36 Lens Taxonomy and Normalization Contracts is in spec draft.
-- Next required work: operator review of `docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md`; after approval, open the Phase 36 board before implementation.
+- Current status: Phase 36 Lens Taxonomy and Normalization Contracts is at Step 1 of 6.
+- Next required work: Phase 36 Step 1 - add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
 - Next-phase context: Phase 36 should add source-grounded lens taxonomy and value-normalization contracts before prompt/executor expansion, preserving verbatim values, exact source spans, audit payloads, and current four-lens runtime compatibility.
 
 ## Session Log
+
+### 2026-05-29 — Phase 36 Board Opening
+
+- Approved Phase 36 for implementation under operator-trust resume mode after spec-readiness checks found no open questions, unresolved draft markers outside board-template text, architecture-rule changes, invariant risk, or unclear gate interpretations.
+- Opened `docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md` with six implementation steps from the approved spec.
+- Updated `docs/boards/README.md` to show Phase 36 as `BOARD OPEN`.
+- Preserved the known unrelated local `AGENTS.md` drift and unrelated `.codex/` worktree entry outside this scoped board-opening change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/README.md docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`
+  - `rg -n "Phase 36|phase_36_lens_taxonomy_and_normalization_contracts.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/phase_36_lens_taxonomy_and_normalization_contracts.md`
+  - `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this board-opening step
+- Next: Phase 36 Step 1 - add lens taxonomy and normalization contract tests, including legacy audit payload readability and executable-vs-contract-only lens validation.
 
 ### 2026-05-29 — Phase 35 Acceptance and Phase 36 Spec Draft
 
@@ -24,7 +37,7 @@ Running log for repository sessions and accepted phase gates.
   - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/README.md docs/boards/phase_35_layout_aware_chunking.md`
   - `rg -n "Phase 35|Phase 36|phase_36_lens_taxonomy_and_normalization_contracts.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/specs/phase_36_lens_taxonomy_and_normalization_contracts.md docs/boards/phase_35_layout_aware_chunking.md`
   - `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this acceptance/spec-draft step
-- Next: operator review of the Phase 36 spec draft. Do not start Phase 36 implementation until the spec is approved and its board is opened.
+- Next: Phase 36 spec-readiness checks and board opening under operator-trust resume mode.
 
 ### 2026-05-29 — Phase 35 Step 6 Final Verification
 

@@ -6,7 +6,7 @@ This is where agents look first every session. Find the active phase, then read 
 
 ## Active Phase
 
-**Phase 36 - Lens Taxonomy and Normalization Contracts** | Status: SPEC DRAFT | Spec: [draft](../specs/phase_36_lens_taxonomy_and_normalization_contracts.md) | Board: _(not opened)_ | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
+**Phase 36 - Lens Taxonomy and Normalization Contracts** | Status: BOARD OPEN | Spec: [approved](../specs/phase_36_lens_taxonomy_and_normalization_contracts.md) | Board: [board](phase_36_lens_taxonomy_and_normalization_contracts.md) | Roadmap source: [`docs/PROJECT_OVERVIEW.md`](../PROJECT_OVERVIEW.md), [`docs/phase_26_plus_roadmap.md`](../phase_26_plus_roadmap.md)
 
 Exactly one phase is active. Completed phases live in the Phase Index below.
 
@@ -34,7 +34,7 @@ Exactly one phase is active. Completed phases live in the Phase Index below.
 | 33 - PDF and Table Ingestion | [approved](../specs/phase_33_pdf_and_table_ingestion.md) | [board](phase_33_pdf_and_table_ingestion.md) | COMPLETE (2026-05-29) |
 | 34 - DOCX, HTML, and Email Ingestion | [approved](../specs/phase_34_docx_html_email_ingestion.md) | [board](phase_34_docx_html_email_ingestion.md) | COMPLETE (2026-05-29) |
 | 35 - Layout-Aware Chunking | [approved](../specs/phase_35_layout_aware_chunking.md) | [board](phase_35_layout_aware_chunking.md) | COMPLETE (2026-05-29) |
-| 36 - Lens Taxonomy and Normalization Contracts | [draft](../specs/phase_36_lens_taxonomy_and_normalization_contracts.md) | _(not opened)_ | ACTIVE - SPEC DRAFT |
+| 36 - Lens Taxonomy and Normalization Contracts | [approved](../specs/phase_36_lens_taxonomy_and_normalization_contracts.md) | [board](phase_36_lens_taxonomy_and_normalization_contracts.md) | ACTIVE - BOARD OPEN |
 | 37 - Expanded Lenses Round 1 | _(not opened)_ | _(not opened)_ | PLANNED |
 | 38 - Dedup, Canonical Values, and Conflict Preservation | _(not opened)_ | _(not opened)_ | PLANNED |
 | 39 - Cross-Document Reconciliation | _(not opened)_ | _(not opened)_ | PLANNED |

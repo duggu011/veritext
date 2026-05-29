@@ -1,8 +1,9 @@
 # Phase 36 - Lens Taxonomy and Normalization Contracts
 
-Status: draft.
+Status: approved for implementation.
 
 Date drafted: 2026-05-29
+Date approved: 2026-05-29
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` sections `4. Executor`,
 `5. Dedup`, `8. Reconciler`, `Highest-leverage accuracy/provenance
