@@ -29,10 +29,12 @@ Rules:
 Budget examples:
 - If enabled_lenses=("claim", "number") and there are 3 chunks, return max_calls 3 for claim and 3 for number.
 - If enabled_lenses=("event",) and there is 1 chunk, return max_calls 1 for event.
+- If enabled_lenses=("definition", "citation", "temporal", "quantity_with_unit") and there are 2 chunks, return max_calls 2 for each of definition, citation, temporal, and quantity_with_unit.
 - If the document contains many facts but still has 2 chunks, do not inflate max_calls above 2; execution is one call per chunk per lens in this pipeline.
 
 Anti-patterns:
 - Do not allocate a budget to entity when entity is not enabled.
+- Do not allocate budgets to definition, citation, temporal, or quantity_with_unit unless that lens is enabled.
 - Do not set max_calls below the chunk count.
 - Do not use high concurrency to compensate for schema uncertainty.
 

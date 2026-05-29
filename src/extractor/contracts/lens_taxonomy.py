@@ -25,7 +25,16 @@ LensTaxonomyName = Literal[
 LensRuntimeStatus = Literal["contract_only", "executable"]
 
 EXECUTABLE_LENS_NAMES: frozenset[str] = frozenset(
-    {"entity", "event", "claim", "number"}
+    {
+        "entity",
+        "event",
+        "claim",
+        "number",
+        "definition",
+        "citation",
+        "temporal",
+        "quantity_with_unit",
+    }
 )
 
 
@@ -116,28 +125,28 @@ def default_lens_registry() -> LensRegistry:
             ),
             LensDefinition(
                 name="definition",
-                runtime_status="contract_only",
+                runtime_status="executable",
                 description="Source-backed defined term or meaning.",
                 source_requirements=("exact source span",),
                 allowed_value_kinds=("text",),
             ),
             LensDefinition(
                 name="citation",
-                runtime_status="contract_only",
+                runtime_status="executable",
                 description="Source-backed cross-reference or authority citation.",
                 source_requirements=("exact source span",),
                 allowed_value_kinds=("citation", "text"),
             ),
             LensDefinition(
                 name="temporal",
-                runtime_status="contract_only",
+                runtime_status="executable",
                 description="Source-backed date, time, or duration fact.",
                 source_requirements=("exact source span",),
                 allowed_value_kinds=("date", "datetime", "duration", "text"),
             ),
             LensDefinition(
                 name="quantity_with_unit",
-                runtime_status="contract_only",
+                runtime_status="executable",
                 description="Source-backed quantity with explicit unit and scope.",
                 source_requirements=("exact source span",),
                 allowed_value_kinds=("quantity", "number", "text"),

@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 1 of 8
+Step: 6 of 8
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:4. Executor`; `docs/PROJECT_OVERVIEW.m
 
 Phase 37 opened after operator continuation resolved the prompt-content gate by authorizing agent-authored prompt bodies and planner prompt updates for this phase.
 
-Next: Step 1 - add RED tests for the expanded executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
+Next: Step 6 - add focused fixture or evaluation coverage for source-role-neutral recall improvement without fixture-specific source patches.
 
 ---
 
@@ -19,11 +19,11 @@ Next: Step 1 - add RED tests for the expanded executable lens contract boundary,
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add RED tests for the new executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
-- [ ] Step 2: Extend `LensName`, `LLMStage`, `PROMPT_STAGES`, and the lens taxonomy registry for `definition`, `citation`, `temporal`, and `quantity_with_unit`.
-- [ ] Step 3: Add approved executor prompt files for `definition`, `citation`, `temporal`, and `quantity_with_unit`.
-- [ ] Step 4: Update planner strategy and budget prompts so live planning can select and budget the new executable lenses.
-- [ ] Step 5: Run new lenses through existing executor materialization, normalization metadata, rejection, and audit paths.
+- [x] Step 1: Add RED tests for the new executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
+- [x] Step 2: Extend `LensName`, `LLMStage`, `PROMPT_STAGES`, and the lens taxonomy registry for `definition`, `citation`, `temporal`, and `quantity_with_unit`.
+- [x] Step 3: Add approved executor prompt files for `definition`, `citation`, `temporal`, and `quantity_with_unit`.
+- [x] Step 4: Update planner strategy and budget prompts so live planning can select and budget the new executable lenses.
+- [x] Step 5: Run new lenses through existing executor materialization, normalization metadata, rejection, and audit paths.
 - [ ] Step 6: Add focused fixture or evaluation coverage for source-role-neutral recall improvement without fixture-specific source patches.
 - [ ] Step 7: Run final project, smoke, lint, prompt-change review, and evaluation gates.
 - [ ] Step 8: Fill the board summary and stop for operator acceptance.
@@ -62,6 +62,17 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_37_expanded_lenses_round_1.md:1` | Active Phase 37 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_phase_37_expanded_lenses.py:1` | Added RED/GREEN coverage for Phase 37 executable lens contracts, prompt stages, planner lens/budget models, planner prompt language, executor routing, and audit readback. | Steps 1-5 |
+| `src/extractor/contracts/base.py:1` | Added Phase 37 round-one lenses to `LensName` and executor stages to `LLMStage`. | Step 2 |
+| `src/extractor/contracts/lens_taxonomy.py:1` | Marked `definition`, `citation`, `temporal`, and `quantity_with_unit` executable while leaving relation/obligation/condition/exception contract-only. | Step 2 |
+| `src/extractor/llm/prompts.py:1` | Added Phase 37 executor stages to prompt loading. | Step 2 |
+| `prompts/executor/definition.md:1` | Added approved definition-lens executor prompt body. | Step 3 |
+| `prompts/executor/citation.md:1` | Added approved citation-lens executor prompt body. | Step 3 |
+| `prompts/executor/temporal.md:1` | Added approved temporal-lens executor prompt body. | Step 3 |
+| `prompts/executor/quantity_with_unit.md:1` | Added approved quantity-with-unit executor prompt body. | Step 3 |
+| `prompts/planner/select_strategy.md:1` | Updated strategy-selection prompt to describe and allow the Phase 37 executable lenses. | Step 4 |
+| `prompts/planner/allocate_budget.md:1` | Updated budget prompt to budget Phase 37 executable lenses only when enabled. | Step 4 |
+| `tests/unit/test_phase_36_lens_normalization_contracts.py:1` | Updated prior contract-boundary expectations so only remaining planned roles are contract-only after Phase 37. | Step 2 |
 
 ---
 
@@ -89,6 +100,8 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_37_expanded_lenses_round_1.md docs/boards/README.md docs/boards/phase_37_expanded_lenses_round_1.md` returned no matches; `rg -n "Phase 37|phase_37_expanded_lenses_round_1.md|BOARD OPEN|Step 1|approved|prompt-content gate|Agent-authored" docs/boards/README.md PROGRESS.md docs/specs/phase_37_expanded_lenses_round_1.md docs/boards/phase_37_expanded_lenses_round_1.md`. | PASS | 2026-05-29 |
+| 1 | `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py -q` failed RED with 5 failures covering missing executable lens registry entries, missing prompt stages/files, planner model rejection of new lenses, missing planner prompt language, and executor plan validation rejection for new lenses. | RED verified | 2026-05-29 |
+| 2-5 | `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py -q` passed with 5 passed; `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_llm_client.py tests/unit/test_prompt_schema_quality.py tests/unit/test_executor.py tests/unit/test_audit_inspection.py tests/unit/test_contracts.py tests/unit/test_planner.py -q` first failed because Phase 36 tests still expected `definition` to be contract-only, then passed with 95 passed after updating those expectations; `make lint` passed; `git diff --check` passed; `wc -l tests/unit/test_phase_37_expanded_lenses.py src/extractor/contracts/base.py src/extractor/contracts/lens_taxonomy.py src/extractor/llm/prompts.py prompts/executor/definition.md prompts/executor/citation.md prompts/executor/temporal.md prompts/executor/quantity_with_unit.md prompts/planner/select_strategy.md prompts/planner/allocate_budget.md` reported 277, 76, 186, 121, 59, 59, 59, 62, 63, and 41 lines. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -112,9 +125,14 @@ Reverse chronological. Log every session.
 
 - Resumed from the Phase 37 spec draft after the prompt-content gate was resolved by operator continuation.
 - Completed: approved the Phase 37 spec for implementation, opened this board, pinned gate interpretations, and updated active phase tracking.
+- Completed Step 1: added RED tests for new executable lens contracts, prompt loading, planner lens selection/budgeting, planner prompt coverage, executor routing, and audit readback.
+- Completed Step 2: extended executable lens and LLM stage contracts plus the taxonomy registry for definition, citation, temporal, and quantity-with-unit.
+- Completed Step 3: added approved executor prompt files for the four new lenses.
+- Completed Step 4: updated planner selection and budget prompts for the new executable lenses.
+- Completed Step 5: verified the new lenses run through existing executor materialization, normalization metadata, rejection, and audit paths.
 - Issues found: none.
-- Tests: board-opening verification passed as recorded above.
-- Next: Step 1 - add RED tests for the expanded executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
+- Tests: board-opening and Steps 1-5 verification passed as recorded above.
+- Next: Step 6 - add focused fixture or evaluation coverage for source-role-neutral recall improvement without fixture-specific source patches.
 
 ---
 

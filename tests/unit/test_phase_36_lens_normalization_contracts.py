@@ -123,15 +123,25 @@ def test_default_lens_registry_separates_executable_and_contract_only_roles() ->
     registry = default_lens_registry()
 
     assert registry.definition_for("entity").runtime_status == "executable"
-    assert registry.definition_for("definition").runtime_status == "contract_only"
-    assert registry.executable_names == ("entity", "event", "claim", "number")
-    assert "quantity_with_unit" in registry.contract_only_names
+    assert registry.definition_for("definition").runtime_status == "executable"
+    assert registry.definition_for("relation").runtime_status == "contract_only"
+    assert registry.executable_names == (
+        "entity",
+        "event",
+        "claim",
+        "number",
+        "definition",
+        "citation",
+        "temporal",
+        "quantity_with_unit",
+    )
+    assert "condition" in registry.contract_only_names
 
     with pytest.raises(ValidationError, match="planned-only lens cannot be executable"):
         LensDefinition(
-            name="definition",
+            name="relation",
             runtime_status="executable",
-            description="Defined terms in source text.",
+            description="Relationships between facts.",
             source_requirements=("exact source span",),
             allowed_value_kinds=("text",),
         )
@@ -217,7 +227,7 @@ def test_candidate_and_data_point_validate_canonicalization_metadata() -> None:
         LensCandidate.model_validate(make_candidate_payload(**invalid))
 
 
-def test_extraction_plan_rejects_contract_only_lens_execution() -> None:
+def test_extraction_plan_rejects_remaining_contract_only_lens_execution() -> None:
     category = CategoryDefinition(
         name="Finding",
         description="A source-backed finding.",
@@ -237,11 +247,11 @@ def test_extraction_plan_rejects_contract_only_lens_execution() -> None:
             doc_id="doc-1",
             domain_hints=("generic",),
             approved_categories=(category,),
-            enabled_lenses=("definition",),
+            enabled_lenses=("relation",),
             chunk_policy=ChunkPolicy(window_tokens=100, overlap_tokens=10),
             budget=ExtractionBudget(
                 per_chunk_concurrency=1,
-                lens_budgets=(LensBudget(lens="definition", max_calls=1),),
+                lens_budgets=(LensBudget(lens="relation", max_calls=1),),
             ),
         )
 

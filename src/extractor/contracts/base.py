@@ -13,7 +13,16 @@ NonNegativeInt = Annotated[int, Field(strict=True, ge=0)]
 PositiveInt = Annotated[int, Field(strict=True, ge=1)]
 Timestamp = Annotated[datetime, Field(strict=True)]
 
-LensName = Literal["entity", "event", "claim", "number"]
+LensName = Literal[
+    "entity",
+    "event",
+    "claim",
+    "number",
+    "definition",
+    "citation",
+    "temporal",
+    "quantity_with_unit",
+]
 RunStatus = Literal["created", "running", "completed", "failed", "refused"]
 DocumentFormat = Literal["plain_text", "markdown", "pdf", "docx", "html", "email"]
 LLMStage = Literal[
@@ -26,6 +35,10 @@ LLMStage = Literal[
     "executor.event",
     "executor.claim",
     "executor.number",
+    "executor.definition",
+    "executor.citation",
+    "executor.temporal",
+    "executor.quantity_with_unit",
     "critic",
     "verifier",
     "reconciler",

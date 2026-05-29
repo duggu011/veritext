@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 36 - Lens Taxonomy and Normalization Contracts
-- Current status: Phase 37 Expanded Lenses Round 1 board is open at Step 1 of 8.
-- Next required work: Phase 37 Step 1 - add RED tests for the expanded executable lens contract boundary, prompt loader stage list, planner lens selection, executor call routing, and audit readback.
+- Current status: Phase 37 Expanded Lenses Round 1 is at Step 6 of 8.
+- Next required work: Phase 37 Step 6 - add focused fixture or evaluation coverage for source-role-neutral recall improvement without fixture-specific source patches.
 - Next-phase context: Phase 37 expands executable source-grounded lenses with operator-authorized prompt text while preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 37 Steps 1-5 Expanded Executable Lenses
+
+- Completed Phase 37 Steps 1-5 as one executable-lens expansion.
+- Added RED/GREEN coverage for new executable lens contracts, prompt loading, planner lens selection/budgeting, planner prompt coverage, executor routing, and audit readback.
+- Made `definition`, `citation`, `temporal`, and `quantity_with_unit` executable by extending `LensName`, `LLMStage`, `PROMPT_STAGES`, and the lens taxonomy registry.
+- Added approved executor prompt bodies for the four new lenses.
+- Updated planner selection and budget prompts so live plans can select and budget the new executable lenses.
+- Verified the new lenses use the existing executor service, source resolution, materialization, normalization metadata, rejection, LLM audit logging, and candidate audit readback paths.
+- Updated Phase 36 tests so the contract-only boundary now applies to relation, obligation, condition, and exception.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py -q` failed RED with 5 failures covering missing executable lens registry entries, missing prompt stages/files, planner model rejection of new lenses, missing planner prompt language, and executor plan validation rejection for new lenses
+  - `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py -q` passed with 5 passed
+  - `python3 -m pytest tests/unit/test_phase_37_expanded_lenses.py tests/unit/test_phase_36_lens_normalization_contracts.py tests/unit/test_llm_client.py tests/unit/test_prompt_schema_quality.py tests/unit/test_executor.py tests/unit/test_audit_inspection.py tests/unit/test_contracts.py tests/unit/test_planner.py -q` first failed because Phase 36 tests still expected `definition` to be contract-only, then passed with 95 passed after updating those expectations
+  - `make lint`
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_37_expanded_lenses.py src/extractor/contracts/base.py src/extractor/contracts/lens_taxonomy.py src/extractor/llm/prompts.py prompts/executor/definition.md prompts/executor/citation.md prompts/executor/temporal.md prompts/executor/quantity_with_unit.md prompts/planner/select_strategy.md prompts/planner/allocate_budget.md` reported 277, 76, 186, 121, 59, 59, 59, 62, 63, and 41 lines
+- Next: Phase 37 Step 6 - add focused fixture or evaluation coverage for source-role-neutral recall improvement without fixture-specific source patches.
 
 ### 2026-05-29 - Phase 37 Board Opening
 
