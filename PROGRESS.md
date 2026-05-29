@@ -5,11 +5,21 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 11 of 11.
-- Next required work: Phase 39 Step 11 - fill the Phase 39 board summary and stop for operator acceptance.
+- Current status: Phase 39 Cross-Document Reconciliation is implemented and awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 39. Do not start Phase 40 without explicit continuation.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Summary and Handoff
+
+- Completed Phase 39 Step 11.
+- Filled the Phase 39 board summary with shipped scope, deferred items, and downstream lessons.
+- Left Phase 39 awaiting operator acceptance; Phase 40 must not start without explicit continuation.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped phase-summary change.
+- Verification:
+  - Phase 39 final gates passed in Step 10 as recorded above.
+- Next: operator acceptance of Phase 39.
 
 ### 2026-05-29 - Phase 39 Step 10 Final Gates
 

@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 10 of 11
+Step: 11 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW
 
 Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
 
-Next: Step 11 - fill the Phase 39 board summary and stop for operator acceptance.
+Next: operator acceptance of Phase 39; do not start Phase 40 without explicit continuation.
 
 ---
 
@@ -29,7 +29,7 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 8: Add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
 - [x] Step 9: Add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
 - [x] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
-- [ ] Step 11: Fill the Phase 39 board summary and stop for operator acceptance.
+- [x] Step 11: Fill the Phase 39 board summary and stop for operator acceptance.
 
 ---
 
@@ -139,8 +139,8 @@ _(No issues yet.)_
 - [x] `git diff --check` passes
 - [x] Evaluation gates pass, if this phase changes extraction behavior
 - [x] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
@@ -162,9 +162,10 @@ Reverse chronological. Log every session.
 - Completed Step 8: added the Python multi-document batch orchestration entrypoint while keeping CLI behavior unchanged.
 - Completed Step 9: added source-neutral equivalent unit coverage for cross-document evaluation acceptance and preserved local conflict metadata on source refs.
 - Completed Step 10: ran final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- Completed Step 11: filled the Phase 39 summary and prepared the operator acceptance handoff.
 - Issues found: none.
 - Tests: board-opening and Steps 1-10 verification passed as recorded above.
-- Next: Step 11 - fill the Phase 39 board summary and stop for operator acceptance.
+- Next: operator acceptance of Phase 39. Do not start Phase 40 without explicit continuation.
 
 ---
 
@@ -176,14 +177,14 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: 
-- Deferred: 
-- Added beyond spec: 
+- Built as specified: typed cross-document contracts, deterministic canonical-key grouping, explicit unresolved cross-document conflicts, skipped-input accounting, additive audit persistence/readback, audit inspection summaries, `cross_document_report.v1`, and a Python multi-document batch orchestration entrypoint.
+- Deferred: none.
+- Added beyond spec: no scope expansion. The source refs now preserve local single-document conflict metadata because the approved spec required existing conflict metadata to remain visible in cross-document outputs.
 
 ### Lessons for downstream phases
 
-- 
+- Cross-document evaluation is currently covered by source-neutral unit acceptance tests because the existing evaluation harness scores single-document `report.v2` payloads. Add a dedicated cross-document scorer only if a future phase explicitly approves that surface.
+- CLI behavior is intentionally unchanged; downstream phases that want user-facing batch execution should add that as a separate approved command contract.
+- The cross-document result is additive and provenance-first: every group/conflict traces back to original run IDs, document IDs, data point IDs, source hashes, exact spans, and supporting spans.
