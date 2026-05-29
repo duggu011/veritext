@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from extractor.audit import UsageSummary
 from extractor.contracts import (
     Chunk,
+    CrossDocumentReconciliationResult,
+    CrossDocumentRunManifest,
     Document,
     ExtractionPlan,
     PlanningRefusal,
@@ -53,4 +55,17 @@ class PipelineRefusalResult(OrchestratorModel):
 PipelineResult = PipelineRunResult | PipelineRefusalResult
 
 
-__all__ = ["PipelineRefusalResult", "PipelineResult", "PipelineRunResult"]
+class CrossDocumentBatchResult(OrchestratorModel):
+    cross_document_run_id: NonEmptyStr
+    input_results: tuple[PipelineRunResult, ...] = Field(min_length=2)
+    reconciliation: CrossDocumentReconciliationResult
+    report: ReportWriteResult
+    completed_manifest: CrossDocumentRunManifest
+
+
+__all__ = [
+    "CrossDocumentBatchResult",
+    "PipelineRefusalResult",
+    "PipelineResult",
+    "PipelineRunResult",
+]

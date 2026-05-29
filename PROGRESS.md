@@ -5,11 +5,26 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is at Step 8 of 11.
-- Next required work: Phase 39 Step 8 - add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 9 of 11.
+- Next required work: Phase 39 Step 9 - add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Step 8 Batch Orchestrator
+
+- Completed Phase 39 Step 8.
+- Added a Python multi-document batch orchestration entrypoint that runs the existing single-document pipeline independently for each source, stops on refusals, performs cross-document reconciliation, persists the cross-document manifest/result, and writes `cross_document_report.v1`.
+- Added `CrossDocumentBatchResult` and public orchestrator exports without changing single-document `run_extraction_pipeline(...)` behavior or CLI parsing.
+- Added RED/GREEN unit coverage for the batch entrypoint, audited report output, validation of source/run ID inputs, and unchanged single-source CLI behavior.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped orchestrator change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py -q` failed RED with 2 expected missing-entrypoint failures and 1 passing CLI regression
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py -q` passed with 3 passed
+  - `python3 -m pytest tests/unit/test_phase_39_cross_document_orchestrator.py tests/unit/test_orchestrator.py tests/unit/test_reporter.py tests/unit/test_phase_39_cross_document_audit.py tests/unit/test_phase_39_cross_document_reconciliation.py tests/unit/test_phase_39_cross_document_input_validation.py -q` passed with 25 passed
+  - `git diff --check`
+  - `wc -l src/extractor/orchestrator/cross_document.py src/extractor/orchestrator/models.py src/extractor/orchestrator/__init__.py tests/unit/test_phase_39_cross_document_orchestrator.py` reported 181, 71, 21, and 123 lines
+- Next: Phase 39 Step 9 - add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
 
 ### 2026-05-29 - Phase 39 Step 7 Audit Inspection and Reporter Output
 
