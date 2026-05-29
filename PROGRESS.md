@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 4 of 11.
-- Next required work: Phase 40 Step 4 - implement canonical hashing, config hashing, HMAC signing, and verification helpers without external signing services.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 5 of 11.
+- Next required work: Phase 40 Step 5 - add audit integrity-chain persistence and readback.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 4 Signing Helpers
+
+- Completed Phase 40 Step 4.
+- Added canonical JSON hashing, file hashing, config hashing, HMAC signing, and signature verification helpers under `src/extractor/reporter/signing.py`.
+- Kept signing key material outside YAML, reports, and audit payloads; helpers require the configured environment key when signing is requested.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped signing-helper change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_report_signing.py -q` failed RED with expected missing `extractor.reporter.signing`, then passed with 4 passed
+  - `python3 -m pytest tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_reporting_config.py tests/unit/test_reporter.py tests/unit/test_config.py -q` passed with 33 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_report_signing.py src/extractor/reporter/signing.py src/extractor/reporter/__init__.py` reported 81, 114, and 43 lines
+- Next: Phase 40 Step 5 - add audit integrity-chain persistence and readback.
 
 ### 2026-05-30 - Phase 40 Steps 1-3 Contracts and Reporting Config
 
