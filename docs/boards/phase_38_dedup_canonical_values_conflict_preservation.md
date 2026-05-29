@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 10 of 11
+Step: 11 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8
 
 Phase 38 opened after operator continuation accepted Phase 37 and the Phase 38 draft spec passed readiness checks with no open questions.
 
-Next: Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+Next: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
 
 ---
 
@@ -28,8 +28,8 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 7: Add validation or retry complaints for silent rejection of otherwise valid conflicting candidates.
 - [x] Step 8: Extend audit inspection and report/eval tests for additive fields.
 - [x] Step 9: Add focused source-neutral dedup/conflict fixture coverage if needed for evaluation acceptance. Not needed after source-neutral unit, reporter, audit, and eval invariant coverage.
-- [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
-- [ ] Step 11: Fill the Phase 38 board summary and stop for operator acceptance.
+- [x] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- [x] Step 11: Fill the Phase 38 board summary and stop for operator acceptance.
 
 ---
 
@@ -82,6 +82,7 @@ Every file this phase creates or modifies. Updated as work happens.
 | `tests/unit/test_audit_inspection.py:1` | Added audit inspection coverage for Phase 38 additive fields. | Step 8 |
 | `tests/unit/test_reporter.py:1` | Added report serialization coverage for Phase 38 additive fields without changing `report.v2`. | Step 8 |
 | `tests/unit/test_evals.py:1` | Added evaluation invariant coverage for supporting source spans. | Step 8 |
+| `docs/boards/README.md:1` | Updated active phase status to acceptance gate after final verification. | Step 11 |
 
 ---
 
@@ -108,6 +109,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Steps 10-11 | `make test` passed with 348 passed and 2 skipped; `make lint`; `make smoke` passed with 1 passed; `git diff --check`; `git diff --exit-code -- prompts`; `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` passed with 1 passed; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual data points, 21 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual data points, 49 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations; `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed; `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0; `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched, 0 unmatched, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754. | PASS | 2026-05-29 |
 | Step 9 | `rg -n "same_field_distinct_canonical_values|supporting_source_spans|supporting_source_span|conflict_status|conflict_group_id" tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_evals.py tests/unit/test_reporter.py tests/unit/test_audit_inspection.py tests/unit/test_phase_38_dedup_conflict_contracts.py`. Existing source-neutral tests cover the behavior; no new fixture was needed before final evaluation gates. | PASS | 2026-05-29 |
 | Step 8 | `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py` failed RED with 2 expected failures before audit/eval implementation; `python3 -m pytest tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py`; `git diff --check`; `wc -l src/extractor/evals/scoring.py src/extractor/evals/invariants.py src/extractor/audit/inspection.py tests/unit/test_audit_inspection.py tests/unit/test_reporter.py tests/unit/test_evals.py`. | PASS | 2026-05-29 |
 | Steps 4-7 | `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py` failed RED with 2 expected failures before materialization/conflict changes and later failed RED with 1 expected validation failure before Step 7; `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`; `wc -l src/extractor/canonical_values.py src/extractor/reconciler/batching.py src/extractor/reconciler/conflicts.py src/extractor/reconciler/materialization.py tests/unit/test_phase_38_reconciler_conflicts.py`. | PASS | 2026-05-29 |
@@ -116,21 +118,31 @@ _(No issues yet.)_
 
 ### Final Gate
 
-- [ ] Narrow relevant tests pass
-- [ ] `make test` passes when feasible
-- [ ] `make lint` passes
-- [ ] `make smoke` passes when feasible
-- [ ] `git diff --check` passes
-- [ ] Evaluation gates pass, if this phase changes extraction behavior
-- [ ] All OPEN issues are resolved or explicitly deferred
-- [ ] Phase Summary filled in
-- [ ] `PROGRESS.md` updated
+- [x] Narrow relevant tests pass
+- [x] `make test` passes when feasible
+- [x] `make lint` passes
+- [x] `make smoke` passes when feasible
+- [x] `git diff --check` passes
+- [x] Evaluation gates pass, if this phase changes extraction behavior
+- [x] All OPEN issues are resolved or explicitly deferred
+- [x] Phase Summary filled in
+- [x] `PROGRESS.md` updated
 
 ---
 
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 6
+
+- Completed Steps 10-11.
+- Ran final project, lint, smoke, prompt-neutrality, source-neutrality, and evaluation gates.
+- Verified no static prompt-body changes in Phase 38.
+- Filled the final gate and phase summary for operator acceptance.
+- Issues found: none.
+- Tests: final gate verification passed as recorded above.
+- Next: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
 
 ### 2026-05-29 - Session 5
 
@@ -193,14 +205,20 @@ _(None yet.)_
 
 ## Phase Summary
 
-_(Filled in when phase is complete.)_
-
 ### What shipped vs spec
 
-- Built as specified: pending.
-- Deferred: pending.
-- Added beyond spec: pending.
+- Built as specified: deterministic canonical value key contracts and helpers, conservative safe dedup identity, cross-chunk exact duplicate merging, canonicalized duplicate merging, stable duplicate rejection trails, and dedup cluster detail.
+- Built as specified: additive `DataPoint` fields for `supporting_source_spans`, `conflict_status`, `conflict_group_id`, and `conflict_reason` with legacy-safe defaults.
+- Built as specified: reconciler materialization now preserves all contributing source spans while keeping the selected primary `source_span`.
+- Built as specified: unresolved canonicalized same-category/same-field disagreements are marked with stable conflict group IDs and explicit reasons.
+- Built as specified: reconciler batch validation now complains when canonicalized same-field conflicting candidates are omitted or rejected, while plain unnormalized text remains outside automatic conflict detection.
+- Built as specified: audit inspection, reporter serialization, and eval invariant checks surface or validate the additive provenance/conflict fields without changing `report.v2`.
+- Built as specified: no static prompt-body changes, no cross-document reconciliation, no architecture-rule changes, and no document-specific dedup/conflict rules.
+- Deferred: none for Phase 38.
+- Added beyond spec: shared `src/extractor/canonical_values.py` and `src/extractor/evals/invariants.py` modules to keep canonical-key and invariant logic reusable while respecting file-size limits.
 
 ### Lessons for downstream phases
 
-- Pending.
+- Phase 39 can rely on single-document canonical value keys, preserved conflict groups, and `supporting_source_spans` when designing cross-document reconciliation.
+- Conflict preservation is intentionally conservative: only canonicalized values are compared for automatic unresolved conflict marking; raw text disagreements should remain explicit downstream decisions rather than guessed equivalences.
+- Evaluation now validates supporting source spans as well as selected primary spans, so future report fields that carry provenance should be added to invariant checks at the same time they become serializable.

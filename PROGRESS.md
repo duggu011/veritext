@@ -5,11 +5,33 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 10 of 11.
-- Next required work: Phase 38 Step 10 - run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation has completed final gates and is awaiting operator acceptance.
+- Next required work: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
 - Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Final Gates and Summary
+
+- Completed Phase 38 Steps 10-11.
+- Ran final project, lint, smoke, prompt-neutrality, source-neutrality, and evaluation gates.
+- Verified no static prompt-body changes in Phase 38.
+- Filled the Phase 38 final gate and phase summary for operator acceptance.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped final tracking change.
+- Verification:
+  - `make test` passed with 348 passed and 2 skipped
+  - `make lint`
+  - `make smoke` passed with 1 passed
+  - `git diff --check`
+  - `git diff --exit-code -- prompts`
+  - `python3 -m pytest tests/unit/test_phase28_source_neutrality.py -q` passed with 1 passed
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_29_core.json` passed with 21 expected/actual data points, 21 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 expected/actual data points, 49 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --suite evals/suites/phase_37_expanded_lenses_round_1.json` passed with 4 expected/actual data points, 4 exact provenance matches, and zero invariant violations
+  - `PYTHONPATH=src python3 -m extractor.evals --adversarial-suite evals/suites/phase_31_adversarial.json` passed
+  - `PYTHONPATH=src python3 -m extractor.evals --mutation-suite evals/suites/phase_31_mutation.json` passed with source sensitivity 1.0
+  - `PYTHONPATH=src python3 -m extractor.evals --calibration-suite evals/suites/phase_30_diverse_corpus_round_1.json` passed with 49 matched, 0 unmatched, expected calibration error 0.048979591836734754, and provenance calibration error 0.048979591836734754
+- Next: operator acceptance of Phase 38. Do not start Phase 39 without explicit continuation.
 
 ### 2026-05-29 - Phase 38 Step 9 Fixture Decision
 
