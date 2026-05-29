@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 6 of 11.
-- Next required work: Phase 40 Step 6 - extend reporter services with detached signed manifest writing and verification for existing report schemas.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 7 of 11.
+- Next required work: Phase 40 Step 7 - add deterministic run diff service and report writer.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 6 Signed Report Manifests
+
+- Completed Phase 40 Step 6.
+- Added detached signed report manifest writing and verification on top of the canonical HMAC helpers.
+- Signed manifests bind report bytes, audited source hashes, schema hashes, prompt hashes, config hash, confidence buckets, and the prior audit integrity chain head, then record a new integrity event.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped reporter change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_signed_report_manifest.py -q` failed RED with expected missing `verify_signed_report_manifest` export, then passed with 1 passed
+  - `python3 -m pytest tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_audit_integrity.py tests/unit/test_reporter.py tests/unit/test_audit_store.py tests/unit/test_config.py -q` passed with 39 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_signed_report_manifest.py src/extractor/reporter/signing.py src/extractor/reporter/__init__.py` reported 99, 376, and 47 lines
+- Next: Phase 40 Step 7 - add deterministic run diff service and report writer.
 
 ### 2026-05-30 - Phase 40 Step 5 Audit Integrity Persistence
 

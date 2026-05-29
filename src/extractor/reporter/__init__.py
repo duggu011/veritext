@@ -20,7 +20,9 @@ from extractor.reporter.signing import (
     config_sha256,
     file_sha256,
     sign_payload,
+    verify_signed_report_manifest,
     verify_payload_signature,
+    write_signed_report_manifest,
 )
 
 __all__ = [
@@ -36,7 +38,9 @@ __all__ = [
     "file_sha256",
     "render_report_json",
     "sign_payload",
+    "verify_signed_report_manifest",
     "verify_payload_signature",
+    "write_signed_report_manifest",
     "write_cross_document_report",
     "write_refusal_report",
     "write_report",
