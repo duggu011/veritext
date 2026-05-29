@@ -1,29 +1,16 @@
 from __future__ import annotations
 
 import hashlib
-import re
-import unicodedata
 
 from datetime import datetime, timezone
 
 from extractor.audit import CandidateRejection
+from extractor.canonical_values import canonical_value_key_for_candidate
 from extractor.contracts import (
-    CanonicalValueKey,
     DedupCluster,
     LensCandidate,
     RejectionReason,
 )
-
-
-def canonical_value_key_for_candidate(candidate: LensCandidate) -> CanonicalValueKey:
-    raw_value, source = _canonical_key_source(candidate)
-    return CanonicalValueKey(
-        kind=candidate.value_kind,
-        key=_normalize_key_text(raw_value),
-        source=source,
-        policy_id=candidate.normalization_policy_id,
-        policy_version=candidate.normalization_policy_version,
-    )
 
 
 def deduplicate_candidates(
@@ -137,38 +124,6 @@ def _dedup_identity(candidate: LensCandidate) -> tuple[object, ...]:
     if candidate.normalization_status == "canonicalized":
         return ("canonical", *identity)
     return ("source_span", *identity, _absolute_source_span_identity(candidate))
-
-
-def _canonical_key_source(candidate: LensCandidate) -> tuple[str, str]:
-    if candidate.normalization_status == "canonicalized":
-        return candidate.value_canonical or candidate.value, "value_canonical"
-    if candidate.normalization_status == "verbatim_only":
-        return candidate.value_verbatim or candidate.value, "value_verbatim"
-    return candidate.value, "value"
-
-
-def _normalize_key_text(value: str) -> str:
-    text = unicodedata.normalize("NFKC", value)
-    text = text.translate(
-        str.maketrans(
-            {
-                "\u2010": "-",
-                "\u2011": "-",
-                "\u2012": "-",
-                "\u2013": "-",
-                "\u2014": "-",
-                "\u2015": "-",
-                "\u2212": "-",
-                "\u2018": "'",
-                "\u2019": "'",
-                "\u201c": '"',
-                "\u201d": '"',
-            }
-        )
-    )
-    text = text.strip().strip("\"'`.,;:()[]{}<>")
-    normalized = re.sub(r"\s+", " ", text).casefold()
-    return normalized or value
 
 
 def _primary_candidate(candidates: list[LensCandidate]) -> LensCandidate:

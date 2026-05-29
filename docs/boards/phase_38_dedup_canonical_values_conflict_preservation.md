@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step: 4 of 11
+Step: 8 of 11
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:5. Dedup`; `docs/PROJECT_OVERVIEW.md:8
 
 Phase 38 opened after operator continuation accepted Phase 37 and the Phase 38 draft spec passed readiness checks with no open questions.
 
-Next: Step 4 - add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
+Next: Step 8 - extend audit inspection and report/eval tests for additive fields.
 
 ---
 
@@ -22,10 +22,10 @@ From the approved spec. Check off only after verification and commit or explicit
 - [x] Step 1: Add RED tests for canonical key contracts, legacy payload readability, cross-chunk dedup, canonical duplicate dedup, and no-merge conflict cases.
 - [x] Step 2: Add canonical value key helpers and dedup cluster contracts.
 - [x] Step 3: Extend dedup to drop `chunk_id` from duplicate identity where safe, use canonical keys, preserve deterministic clusters, and keep stable rejection trails.
-- [ ] Step 4: Add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
-- [ ] Step 5: Extend `DataPoint` and reconciler materialization to populate supporting source spans from contributing candidates.
-- [ ] Step 6: Add reconciler conflict detection and stable unresolved conflict metadata.
-- [ ] Step 7: Add validation or retry complaints for silent rejection of otherwise valid conflicting candidates.
+- [x] Step 4: Add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
+- [x] Step 5: Extend `DataPoint` and reconciler materialization to populate supporting source spans from contributing candidates.
+- [x] Step 6: Add reconciler conflict detection and stable unresolved conflict metadata.
+- [x] Step 7: Add validation or retry complaints for silent rejection of otherwise valid conflicting candidates.
 - [ ] Step 8: Extend audit inspection and report/eval tests for additive fields.
 - [ ] Step 9: Add focused source-neutral dedup/conflict fixture coverage if needed for evaluation acceptance.
 - [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
@@ -71,6 +71,11 @@ Every file this phase creates or modifies. Updated as work happens.
 | `src/extractor/contracts/models.py:304` | Added legacy-safe additive `DataPoint` provenance and conflict defaults. | Steps 1-3 |
 | `src/extractor/executor/dedup.py:1` | Added canonical value key helpers, cross-chunk dedup identity, canonical duplicate merging, and cluster detail. | Steps 2-3 |
 | `tests/unit/test_phase_38_dedup_conflict_contracts.py:1` | Added RED/GREEN coverage for Phase 38 dedup contracts and behavior. | Step 1 |
+| `src/extractor/canonical_values.py:1` | Shared deterministic canonical value-key construction across dedup and reconciler conflict detection. | Steps 4-7 |
+| `src/extractor/reconciler/materialization.py:1` | Populated supporting source spans and applied conflict marking after materialization. | Steps 5-6 |
+| `src/extractor/reconciler/conflicts.py:1` | Added stable unresolved conflict marking for canonicalized same-field disagreements. | Step 6 |
+| `src/extractor/reconciler/batching.py:1` | Added validation complaints for omitted or rejected canonicalized same-field conflicts. | Step 7 |
+| `tests/unit/test_phase_38_reconciler_conflicts.py:1` | Added RED/GREEN coverage for supporting spans, conflict metadata, and conflict omission complaints. | Steps 4-7 |
 
 ---
 
@@ -97,6 +102,7 @@ _(No issues yet.)_
 
 | Step | Tests | Result | Date |
 |---|---|---|---|
+| Steps 4-7 | `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py` failed RED with 2 expected failures before materialization/conflict changes and later failed RED with 1 expected validation failure before Step 7; `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`; `wc -l src/extractor/canonical_values.py src/extractor/reconciler/batching.py src/extractor/reconciler/conflicts.py src/extractor/reconciler/materialization.py tests/unit/test_phase_38_reconciler_conflicts.py`. | PASS | 2026-05-29 |
 | Steps 1-3 | `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py` failed RED with 6 expected failures before production changes; `python3 -m pytest tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`; `git diff --check`. | PASS | 2026-05-29 |
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/README.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`; `rg -n "Phase 38|phase_38_dedup_canonical_values_conflict_preservation.md|BOARD OPEN|approved|Step 1|Prompt Changes|Open Questions" docs/boards/README.md PROGRESS.md docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/phase_38_dedup_canonical_values_conflict_preservation.md`. | PASS | 2026-05-29 |
 
@@ -117,6 +123,19 @@ _(No issues yet.)_
 ## Work Log
 
 Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 3
+
+- Completed Steps 4-7.
+- Added RED/GREEN tests for supporting source-span arrays, unresolved same-field canonicalized conflict metadata, and retry-validation complaints for omitted conflicting candidates.
+- Shared canonical value-key construction so dedup and reconciler conflict detection use the same deterministic key identity.
+- Materialized `supporting_source_spans` from every contributing candidate while preserving the selected primary `source_span`.
+- Added stable unresolved conflict group IDs and reasons for canonicalized same-category/same-field disagreements.
+- Added conservative batch validation complaints for omitted or rejected canonicalized same-field conflicts; plain unnormalized text candidates remain outside automatic conflict detection.
+- Kept conflict logic in `src/extractor/reconciler/conflicts.py` so `materialization.py` remains under the 400-line file limit.
+- Issues found: none.
+- Tests: Step 4 RED, Step 7 RED, and Steps 4-7 GREEN verification passed as recorded above.
+- Next: Step 8 - extend audit inspection and report/eval tests for additive fields.
 
 ### 2026-05-29 - Session 2
 

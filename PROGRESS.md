@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 37 - Expanded Lenses Round 1
-- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 4 of 11.
-- Next required work: Phase 38 Step 4 - add RED tests for `DataPoint.supporting_source_spans` and additive conflict metadata.
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is at Step 8 of 11.
+- Next required work: Phase 38 Step 8 - extend audit inspection and report/eval tests for additive fields.
 - Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 38 Steps 4-7 Conflict Preservation
+
+- Completed Phase 38 Steps 4-7.
+- Added RED/GREEN tests for supporting source-span arrays, unresolved same-field canonicalized conflict metadata, and retry-validation complaints for omitted conflicting candidates.
+- Shared deterministic canonical value-key construction across dedup and reconciler conflict detection.
+- Materialized `supporting_source_spans` from every contributing candidate while preserving each selected primary `source_span`.
+- Added stable unresolved conflict group IDs and reasons for canonicalized same-category/same-field disagreements.
+- Added conservative batch validation complaints for omitted or rejected canonicalized same-field conflicts; plain unnormalized text candidates remain outside automatic conflict detection.
+- Moved conflict marking into `src/extractor/reconciler/conflicts.py` so `materialization.py` remains under the 400-line file limit.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped implementation change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py` failed RED with 2 expected failures before materialization/conflict changes
+  - `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py` failed RED with 1 expected validation failure before Step 7
+  - `python3 -m pytest tests/unit/test_phase_38_reconciler_conflicts.py tests/unit/test_reconciler.py tests/unit/test_phase_38_dedup_conflict_contracts.py tests/unit/test_dedup.py tests/unit/test_phase_36_lens_normalization_contracts.py`
+  - `git diff --check`
+  - `wc -l src/extractor/canonical_values.py src/extractor/reconciler/batching.py src/extractor/reconciler/conflicts.py src/extractor/reconciler/materialization.py tests/unit/test_phase_38_reconciler_conflicts.py`
+- Next: Phase 38 Step 8 - extend audit inspection and report/eval tests for additive fields.
 
 ### 2026-05-29 - Phase 38 Steps 1-3 Dedup Canonical Keys
 

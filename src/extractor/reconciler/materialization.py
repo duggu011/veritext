@@ -19,6 +19,7 @@ from extractor.reconciler.models import (
     ReconciledGroupPayload,
     ReconciliationBatch,
 )
+from extractor.reconciler.conflicts import mark_unresolved_conflicts
 from extractor.source_support import candidate_source_specificity_rank
 
 
@@ -95,6 +96,8 @@ def build_reconciliation_result(
                     ),
                 ),
             )
+
+    data_points = list(mark_unresolved_conflicts(tuple(data_points)))
 
     return tuple(data_points), tuple(
         rejections_by_candidate_id[candidate_id]
@@ -266,6 +269,10 @@ def _build_data_point(
         critic_report_ids=critic_report_ids,
         verifier_report_ids=verifier_report_ids,
         reconciliation_decision_id=decision_id,
+        supporting_source_spans=tuple(
+            candidates_by_id[candidate_id].source_span
+            for candidate_id in contributing_candidate_ids
+        ),
         value_verbatim=source_candidate.value_verbatim,
         value_canonical=source_candidate.value_canonical,
         value_kind=source_candidate.value_kind,
