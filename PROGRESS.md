@@ -5,11 +5,29 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion is open as a spec draft.
-- Next required work: Operator review and approval of `docs/specs/phase_34_docx_html_email_ingestion.md`; then create the Phase 34 board only after explicit approval/continuation.
+- Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation and the board is open.
+- Next required work: Phase 34 Step 1 - add format-detection and compatibility tests.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Board Opening
+
+- Approved Phase 34 for implementation after operator continuation under operator-trust resume mode.
+- Created active board `docs/boards/phase_34_docx_html_email_ingestion.md`.
+- Pinned Phase 34 implementation open-question resolutions:
+  - Use Python standard-library ZIP/XML parsing for the first DOCX adapter unless implementation exposes a board-logged need for a parser dependency.
+  - Use Python standard-library HTML parsing for the first HTML adapter unless implementation exposes a board-logged need for a parser dependency.
+  - Support `.eml` only for Phase 34 email ingestion; keep `.msg` out of scope.
+  - Reject non-alternative email attachments explicitly rather than silently omitting them.
+  - Keep decoded DOCX, HTML, and email text `unmapped` unless source byte ranges into the original source bytes are proven.
+- Updated `docs/boards/README.md` to show Phase 34 as `BOARD OPEN`.
+- No source behavior, prompts, configs, tests, eval fixtures, or extraction logic were changed.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/README.md docs/boards/phase_34_docx_html_email_ingestion.md` returned no matches
+  - `rg -n "Phase 34|phase_34_docx_html_email_ingestion.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/phase_34_docx_html_email_ingestion.md` found the expected pointers
+  - `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this phase
 
 ### 2026-05-29 — Phase 33 Acceptance and Phase 34 Spec Draft
 

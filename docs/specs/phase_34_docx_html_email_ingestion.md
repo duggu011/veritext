@@ -1,6 +1,6 @@
 # Phase 34 - DOCX, HTML, and Email Ingestion
 
-Status: spec draft opened on 2026-05-29. Implementation starts only after operator approval and board creation.
+Status: approved for implementation and board opened on 2026-05-29.
 
 Date drafted: 2026-05-29
 
