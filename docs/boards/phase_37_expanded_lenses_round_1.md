@@ -11,7 +11,7 @@ Roadmap source: `docs/PROJECT_OVERVIEW.md:4. Executor`; `docs/PROJECT_OVERVIEW.m
 
 Phase 37 opened after operator continuation resolved the prompt-content gate by authorizing agent-authored prompt bodies and planner prompt updates for this phase.
 
-Next: operator acceptance of Phase 37. Do not start Phase 38 without explicit operator continuation.
+Next: Phase 38 spec readiness and board opening if approved.
 
 ---
 
@@ -150,7 +150,8 @@ Reverse chronological. Log every session.
 - Completed Step 8: filled the final gate and phase summary for operator acceptance.
 - Issues found: ISS-001, resolved in Step 7.
 - Tests: board-opening and Steps 1-8 verification passed as recorded above.
-- Next: operator acceptance of Phase 37. Do not start Phase 38 without explicit operator continuation.
+- Accepted by operator continuation on 2026-05-29.
+- Next: Phase 38 spec readiness and board opening if approved.
 
 ---
 

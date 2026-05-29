@@ -4,12 +4,26 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 36 - Lens Taxonomy and Normalization Contracts
-- Current status: Phase 37 Expanded Lenses Round 1 is complete and awaiting operator acceptance.
-- Next required work: operator acceptance of Phase 37. Do not start Phase 38 without explicit operator continuation.
-- Next-phase context: Phase 37 expands executable source-grounded lenses with operator-authorized prompt text while preserving the executable-vs-contract-only lens boundary, exact source spans, typed contracts, audit payload compatibility, and current architecture rules.
+- Last completed phase: Phase 37 - Expanded Lenses Round 1
+- Current status: Phase 38 Dedup, Canonical Values, and Conflict Preservation is in spec draft.
+- Next required work: Phase 38 spec readiness checks, then board opening if approved.
+- Next-phase context: Phase 38 should preserve duplicate clusters, add deterministic canonical value keys, surface unresolved same-field conflicts, keep single-document scope, avoid prompt-body changes unless explicitly authorized, and preserve exact source spans, Pydantic contracts, audit payload compatibility, and current architecture rules.
 
 ## Session Log
+
+### 2026-05-29 - Phase 37 Acceptance and Phase 38 Spec Draft
+
+- Accepted Phase 37 after operator continuation.
+- Marked Phase 37 complete in `docs/boards/README.md` and updated the Phase 37 board handoff.
+- Drafted `docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md` from the Dedup and Reconciler roadmap, current dedup key behavior, Phase 36 normalization contracts, Phase 37 expanded-lens coverage, and current reconciler ID-only materialization path.
+- Scoped Phase 38 to single-document dedup, canonical value keys, dedup cluster preservation, data-point provenance arrays, and unresolved conflict metadata.
+- Kept cross-document reconciliation, prompt-body edits, architecture-rule amendments, UI/API/CI/Docker/vector/embedding work, and document-specific patches out of scope.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped documentation change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/README.md docs/boards/phase_37_expanded_lenses_round_1.md`
+  - `rg -n "Phase 37|Phase 38|phase_38_dedup_canonical_values_conflict_preservation.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|Prompt Changes|Open Questions" docs/boards/README.md PROGRESS.md docs/specs/phase_38_dedup_canonical_values_conflict_preservation.md docs/boards/phase_37_expanded_lenses_round_1.md`
+- Next: Phase 38 spec readiness checks, then board opening if approved.
 
 ### 2026-05-29 - Phase 37 Final Gates and Summary
 
