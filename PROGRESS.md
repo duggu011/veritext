@@ -5,11 +5,23 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 38 - Dedup, Canonical Values, and Conflict Preservation
-- Current status: Phase 39 Cross-Document Reconciliation is in spec draft.
-- Next required work: Phase 39 spec readiness checks, then board opening if approved.
+- Current status: Phase 39 Cross-Document Reconciliation is at Step 1 of 11.
+- Next required work: Phase 39 Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
 - Next-phase context: Phase 39 should group facts across completed single-document outputs with separate per-document provenance, deterministic cross-document keys, explicit conflict preservation, no vector search, no REST service, no web UI, and no prompt-body changes unless explicitly authorized.
 
 ## Session Log
+
+### 2026-05-29 - Phase 39 Board Opening
+
+- Approved the Phase 39 spec for implementation under operator-trust resume mode after readiness checks found no open questions, unresolved draft markers, architecture-rule changes, invariant risk, prompt-body changes, CLI behavior changes, or unclear gate interpretations.
+- Opened `docs/boards/phase_39_cross_document_reconciliation.md` with eleven implementation steps from the approved spec.
+- Updated `docs/boards/README.md` to show Phase 39 as `BOARD OPEN`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped board-opening change.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md docs/boards/phase_39_cross_document_reconciliation.md` returned no matches
+  - `rg -n "Status: approved|Date approved|Open Questions Before Approval|No static prompt body changes|Do not change existing CLI behavior|cross_document_report\\.v1|multi-document orchestration entrypoint|BOARD OPEN|Step 1" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md PROGRESS.md docs/boards/phase_39_cross_document_reconciliation.md`
+- Next: Phase 39 Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
 
 ### 2026-05-29 - Phase 38 Acceptance and Phase 39 Spec Draft
 

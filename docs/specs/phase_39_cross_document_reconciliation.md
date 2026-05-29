@@ -1,8 +1,9 @@
 # Phase 39 - Cross-Document Reconciliation
 
-Status: draft.
+Status: approved for implementation.
 
 Date drafted: 2026-05-29
+Date approved: 2026-05-29
 
 Roadmap sources: `docs/PROJECT_OVERVIEW.md` section `8. Reconciler`,
 `docs/PROJECT_OVERVIEW.md` highest-leverage item 4,
@@ -33,6 +34,7 @@ disagreements without any silent drop or LLM-generated rewrite.
   serving, or open-web crawling.
 - Do not add cross-document semantic search or entity resolution based on
   embeddings.
+- Do not change existing CLI behavior or the single-source command contract.
 - Do not add domain-specific authority rankings, organization names, fixture
   strings, market sectors, or proper nouns as reconciliation policy.
 - Do not change `report.v2` by removing or renaming existing fields.
@@ -179,8 +181,9 @@ The service must:
 
 ## Orchestrator and Batch Mode
 
-Phase 39 may add a multi-document orchestration entrypoint after the pure
-reconciliation service is tested.
+Phase 39 adds a multi-document orchestration entrypoint after the pure
+reconciliation service is tested. The entrypoint should be callable from Python
+code and tests; CLI behavior remains unchanged in this phase.
 
 The conservative batch shape is:
 
@@ -191,9 +194,7 @@ The conservative batch shape is:
 4. Persist and report the cross-document result.
 
 This must not change existing single-document `run_extraction_pipeline(...)`
-behavior or CLI summary output. If CLI support is added, it should be an
-additive command or option with tests that prove the old single-source command
-still behaves exactly as before.
+behavior or CLI summary output.
 
 ## Audit and Provenance Effects
 
@@ -221,7 +222,7 @@ Every cross-document group and conflict must remain traceable to original
 
 ## Reporter Effects
 
-If Phase 39 writes a report artifact, it should use an additive schema such as
+Phase 39 writes a report artifact using an additive schema such as
 `cross_document_report.v1`. It must not modify `report.v2` semantics.
 
 The report should include:
@@ -268,9 +269,10 @@ Narrow tests:
   runs, missing documents, missing data points, and unreadable audit inputs.
 - Audit persistence/readback tests for cross-document manifests and results.
 - Audit inspection tests for group/conflict/source-ref summaries.
-- Reporter tests for additive cross-document report output if a report artifact
-  is implemented.
-- Orchestrator or CLI tests if multi-document batch mode is added.
+- Reporter tests for additive cross-document report output.
+- Orchestrator tests for multi-document batch mode.
+- CLI regression tests proving existing single-source behavior remains
+  unchanged.
 
 Regression and final gates:
 
@@ -304,10 +306,11 @@ Evaluation acceptance:
 5. Add validation and skipped-input accounting for duplicate, incomplete,
    missing, or unreadable inputs.
 6. Add audit persistence and readback for cross-document manifests and results.
-7. Extend audit inspection and optional reporter output for additive
-   cross-document fields.
-8. Add multi-document orchestrator or CLI batch mode only after the pure
-   reconciliation service and audit path are passing.
+7. Extend audit inspection and reporter output for additive cross-document
+   fields.
+8. Add multi-document orchestrator batch mode only after the pure
+   reconciliation service and audit path are passing; keep CLI behavior
+   unchanged.
 9. Add focused source-neutral cross-document fixture or equivalent unit
    coverage for evaluation acceptance.
 10. Run final project, prompt-neutrality, smoke, lint, and evaluation gates.

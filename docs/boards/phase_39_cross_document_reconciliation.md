@@ -1,0 +1,146 @@
+# Phase 39 - Cross-Document Reconciliation
+
+## Current Status
+
+Step: 0 of 11
+Branch: main
+Started: 2026-05-29
+Last session: 2026-05-29
+Spec: `docs/specs/phase_39_cross_document_reconciliation.md`
+Roadmap source: `docs/PROJECT_OVERVIEW.md:8. Reconciler`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
+
+Phase 39 opened after operator continuation accepted Phase 38 and the Phase 39 draft spec passed readiness checks with no open questions.
+
+Next: Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
+
+---
+
+## Implementation Steps
+
+From the approved spec. Check off only after verification and commit or explicit handoff.
+
+- [ ] Step 1: Add RED tests for cross-document contract models and legacy single-document payload compatibility.
+- [ ] Step 2: Add cross-document Pydantic contracts and exports.
+- [ ] Step 3: Add RED tests for deterministic grouping, source references, and conflict surfacing across completed single-document outputs.
+- [ ] Step 4: Implement canonical-key-based cross-document reconciliation without LLM calls.
+- [ ] Step 5: Add validation and skipped-input accounting for duplicate, incomplete, missing, or unreadable inputs.
+- [ ] Step 6: Add audit persistence and readback for cross-document manifests and results.
+- [ ] Step 7: Extend audit inspection and reporter output for additive cross-document fields.
+- [ ] Step 8: Add multi-document orchestrator batch mode after the pure reconciliation service and audit path are passing; keep CLI behavior unchanged.
+- [ ] Step 9: Add focused source-neutral cross-document fixture or equivalent unit coverage for evaluation acceptance.
+- [ ] Step 10: Run final project, prompt-neutrality, smoke, lint, and evaluation gates.
+- [ ] Step 11: Fill the Phase 39 board summary and stop for operator acceptance.
+
+---
+
+## Open Question Resolutions
+
+| # | Decision | Rationale |
+|---|---|---|
+| Q1 | Phase 39 uses deterministic server-side cross-document reconciliation by default. | Phase 38 already provides canonical value keys and conflict metadata; no prompt-body or LLM-routing change is needed to preserve invariants. |
+| Q2 | CLI behavior stays unchanged in Phase 39. | The phase needs a tested Python orchestration entrypoint and report artifact, not a new user-facing command contract. |
+| Q3 | `report.v2` remains single-document and unchanged. | Cross-document reporting is additive and should use a separate schema such as `cross_document_report.v1`. |
+| Q4 | Authority policy defaults to visibility over resolution. | Safe matches are grouped; safe disagreements are surfaced as conflicts; unsafe near-matches are not guessed. |
+
+---
+
+## Gate Interpretations
+
+- Phase 39 may add typed contracts for cross-document source refs, fact keys, fact groups, conflicts, results, and run manifests.
+- Phase 39 may add deterministic cross-document reconciliation under `src/extractor/reconciler/`.
+- Phase 39 may add additive audit tables and store methods for cross-document manifests and results.
+- Phase 39 may add additive cross-document reporter models and report writing.
+- Phase 39 may add a Python orchestration entrypoint for multi-document batch mode.
+- Phase 39 must not change CLI behavior or the single-source CLI contract.
+- Phase 39 must not change static prompt bodies unless a test proves prompt text is necessary and the operator explicitly authorizes it.
+- Phase 39 must not use embeddings, vector search, REST APIs, web UI, Docker, CI/CD, local model serving, or agent frameworks.
+- Cross-document grouping must be source-role-neutral and schema-role-neutral, not fixture-specific.
+- Existing single-document `DataPoint.source_span`, `supporting_source_spans`, conflict metadata, and `report.v2` behavior must remain compatible.
+
+---
+
+## References
+
+Every file this phase creates or modifies. Updated as work happens.
+
+| File | Change | Step |
+|---|---|---|
+| `docs/specs/phase_39_cross_document_reconciliation.md:1` | Approved Phase 39 spec after readiness checks. | Board opening |
+| `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
+| `docs/boards/phase_39_cross_document_reconciliation.md:1` | Active Phase 39 board. | Board opening |
+| `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+
+---
+
+## Issues
+
+_(No issues yet.)_
+
+<!--
+### ISS-NNN - <short title>
+**Status:** <OPEN|RESOLVED|DEFERRED> | **Severity:** high/medium/low | **Found:** Step K, 2026-05-29
+**Files:** `path/to/file.py:line`
+**What is wrong:** <expected vs actual>
+**How to reproduce:** <command or scenario>
+**Root cause:** _(filled when diagnosed)_
+**Resolution:** _(filled when fixed or deferred)_
+**Resolved:** _(date + step, or "deferred to Phase NN")_
+-->
+
+---
+
+## Tests
+
+### Per-Step Results
+
+| Step | Tests | Result | Date |
+|---|---|---|---|
+| Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md docs/boards/phase_39_cross_document_reconciliation.md` returned no matches; `rg -n "Status: approved|Date approved|Open Questions Before Approval|No static prompt body changes|Do not change existing CLI behavior|cross_document_report\\.v1|multi-document orchestration entrypoint|BOARD OPEN|Step 1" docs/specs/phase_39_cross_document_reconciliation.md docs/boards/README.md PROGRESS.md docs/boards/phase_39_cross_document_reconciliation.md`. | PASS | 2026-05-29 |
+
+### Final Gate
+
+- [ ] Narrow relevant tests pass
+- [ ] `make test` passes when feasible
+- [ ] `make lint` passes
+- [ ] `make smoke` passes when feasible
+- [ ] `git diff --check` passes
+- [ ] Evaluation gates pass, if this phase changes extraction behavior
+- [ ] All OPEN issues are resolved or explicitly deferred
+- [ ] Phase Summary filled in
+- [ ] `PROGRESS.md` updated
+
+---
+
+## Work Log
+
+Reverse chronological. Log every session.
+
+### 2026-05-29 - Session 1
+
+- Resumed from Phase 38 acceptance after operator continuation.
+- Completed: approved the Phase 39 spec for implementation, opened this board, pinned gate interpretations, and updated active phase tracking.
+- Issues found: none.
+- Tests: board-opening verification passed as recorded above.
+- Next: Step 1 - add RED tests for cross-document contract models and legacy single-document payload compatibility.
+
+---
+
+## Deferred Issues
+
+_(None yet.)_
+
+---
+
+## Phase Summary
+
+_(Filled in when phase is complete.)_
+
+### What shipped vs spec
+
+- Built as specified: 
+- Deferred: 
+- Added beyond spec: 
+
+### Lessons for downstream phases
+
+- 
