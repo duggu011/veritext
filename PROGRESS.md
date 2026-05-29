@@ -5,11 +5,24 @@ Running log for repository sessions and accepted phase gates.
 ## Current Gate
 
 - Last completed phase: Phase 39 - Cross-Document Reconciliation
-- Current status: Phase 40 Signed Reports and Run Diffs is at Step 7 of 11.
-- Next required work: Phase 40 Step 7 - add deterministic run diff service and report writer.
+- Current status: Phase 40 Signed Reports and Run Diffs is at Step 8 of 11.
+- Next required work: Phase 40 Step 8 - add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
 - Next-phase context: Phase 40 should add non-UI audit surfaces for signed report manifests, deterministic run diffs, confidence buckets, and audit integrity chaining without adding web UI, REST APIs, CI/CD, external signing services, prompt-body changes, or invariant-weakening shortcuts.
 
 ## Session Log
+
+### 2026-05-30 - Phase 40 Step 7 Run Diff Service
+
+- Completed Phase 40 Step 7.
+- Added deterministic `report.v2` diffing for added, removed, changed value, changed provenance, changed confidence, unchanged, and ambiguous entries.
+- Added stable JSON writing for `run_diff_report.v1`.
+- Preserved the unrelated `.codex/` worktree entry outside this scoped run-diff change.
+- Verification:
+  - `python3 -m pytest tests/unit/test_phase_40_run_diff.py -q` failed RED with expected missing `diff_reports` export, then passed with 2 passed after correcting the test fixture to satisfy existing normalization invariants
+  - `python3 -m pytest tests/unit/test_phase_40_run_diff.py tests/unit/test_phase_40_report_integrity_contracts.py tests/unit/test_phase_40_report_signing.py tests/unit/test_phase_40_signed_report_manifest.py tests/unit/test_reporter.py -q` passed with 16 passed
+  - `git diff --check`
+  - `wc -l tests/unit/test_phase_40_run_diff.py src/extractor/reporter/diff.py src/extractor/reporter/__init__.py` reported 134, 228, and 57 lines
+- Next: Phase 40 Step 8 - add CLI surface for sign, verify, and diff while preserving existing CLI behavior.
 
 ### 2026-05-30 - Phase 40 Step 6 Signed Report Manifests
 
