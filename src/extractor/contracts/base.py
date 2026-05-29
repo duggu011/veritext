@@ -15,7 +15,7 @@ Timestamp = Annotated[datetime, Field(strict=True)]
 
 LensName = Literal["entity", "event", "claim", "number"]
 RunStatus = Literal["created", "running", "completed", "failed", "refused"]
-DocumentFormat = Literal["plain_text", "markdown", "pdf"]
+DocumentFormat = Literal["plain_text", "markdown", "pdf", "docx", "html", "email"]
 LLMStage = Literal[
     "planner.classify_document",
     "planner.propose_schema",

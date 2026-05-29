@@ -19,6 +19,9 @@ from extractor.ingestion.pdf import PdfIngestionResult, extract_pdf_document
 TEXT_SUFFIXES = {".txt", ".text"}
 MARKDOWN_SUFFIXES = {".md", ".markdown"}
 PDF_SUFFIXES = {".pdf"}
+DOCX_SUFFIXES = {".docx"}
+HTML_SUFFIXES = {".html", ".htm"}
+EMAIL_SUFFIXES = {".eml"}
 def detect_document_format(source_path: str | Path) -> DocumentFormat:
     suffix = Path(source_path).suffix.lower()
     if suffix in TEXT_SUFFIXES:
@@ -27,6 +30,12 @@ def detect_document_format(source_path: str | Path) -> DocumentFormat:
         return "markdown"
     if suffix in PDF_SUFFIXES:
         return "pdf"
+    if suffix in DOCX_SUFFIXES:
+        return "docx"
+    if suffix in HTML_SUFFIXES:
+        return "html"
+    if suffix in EMAIL_SUFFIXES:
+        return "email"
     raise UnsupportedDocumentFormatError(f"Unsupported document format for path: {source_path}")
 
 

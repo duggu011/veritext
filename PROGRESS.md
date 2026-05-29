@@ -6,10 +6,26 @@ Running log for repository sessions and accepted phase gates.
 
 - Last completed phase: Phase 33 - PDF and Table Ingestion
 - Current status: Phase 34 DOCX, HTML, and Email Ingestion is approved for implementation and the board is open.
-- Next required work: Phase 34 Step 1 - add format-detection and compatibility tests.
+- Next required work: Phase 34 Step 2 - add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Step 1 Format Detection and Compatibility
+
+- Completed Phase 34 Step 1.
+- Added `tests/unit/test_ingestion_docx_html_email.py` with new red tests for `.docx`, `.html`, `.htm`, and `.eml` suffix routing and `Document` contract acceptance for `docx`, `html`, and `email`.
+- Extended `DocumentFormat` additively with `docx`, `html`, and `email`.
+- Added suffix routing in `detect_document_format(...)` for `.docx`, `.html`, `.htm`, and `.eml`.
+- Did not add DOCX, HTML, or EML parser behavior yet; unsupported ingestion still fails at the extraction boundary until later Phase 34 steps implement adapters.
+- Verification:
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with missing format support
+  - `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` passed with 2 passed
+  - `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 24 passed
+  - `make lint`
+  - `git diff --check`
+  - `git status --short`
+  - `git log --oneline -10`
 
 ### 2026-05-29 — Phase 34 Board Opening
 

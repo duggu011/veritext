@@ -2,14 +2,14 @@
 
 ## Current Status
 
-Step: 0 of 6
+Step: 1 of 6
 Branch: main
 Started: 2026-05-29
 Last session: 2026-05-29
 Spec: `docs/specs/phase_34_docx_html_email_ingestion.md`
 Roadmap source: `docs/PROJECT_OVERVIEW.md:1. Ingestion`; `docs/PROJECT_OVERVIEW.md:Highest-leverage accuracy/provenance improvements, ranked`; `docs/phase_26_plus_roadmap.md`
 
-Phase 34 was approved for implementation and the board was opened on 2026-05-29. Next up: Step 1 - add format-detection and compatibility tests.
+Step 1 is complete. Next up: Step 2 - add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 
 ---
 
@@ -17,7 +17,7 @@ Phase 34 was approved for implementation and the board was opened on 2026-05-29.
 
 From the approved spec. Check off only after verification and commit or explicit handoff.
 
-- [ ] Step 1: Add format-detection and compatibility tests.
+- [x] Step 1: Add format-detection and compatibility tests.
 - [ ] Step 2: Add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [ ] Step 3: Add HTML ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 - [ ] Step 4: Add EML ingestion fixtures, adapter, metadata, body selection, and failure handling.
@@ -60,6 +60,9 @@ Every file this phase creates or modifies. Updated as work happens.
 | `docs/boards/README.md:1` | Active phase status and board link. | Board opening |
 | `docs/boards/phase_34_docx_html_email_ingestion.md:1` | Active Phase 34 board. | Board opening |
 | `PROGRESS.md:1` | Current gate and board-opening session log. | Board opening |
+| `tests/unit/test_ingestion_docx_html_email.py:1` | Added Phase 34 format-detection and `Document` contract compatibility tests. | Step 1 |
+| `src/extractor/contracts/base.py:1` | Extended `DocumentFormat` with `docx`, `html`, and `email`. | Step 1 |
+| `src/extractor/ingestion/documents.py:1` | Added suffix routing for `.docx`, `.html`, `.htm`, and `.eml`. | Step 1 |
 
 ---
 
@@ -87,6 +90,7 @@ _(No issues yet.)_
 | Step | Tests | Result | Date |
 |---|---|---|---|
 | Board opening | `git diff --check`; `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/README.md docs/boards/phase_34_docx_html_email_ingestion.md`; `rg -n "Phase 34|phase_34_docx_html_email_ingestion.md|BOARD OPEN|Step 1|approved" docs/boards/README.md PROGRESS.md docs/specs/phase_34_docx_html_email_ingestion.md docs/boards/phase_34_docx_html_email_ingestion.md`; `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this phase. | PASS with noted unrelated drift | 2026-05-29 |
+| 1 | `python3 -m pytest tests/unit/test_ingestion_docx_html_email.py -q` first failed with missing format support, then passed with 2 passed; `python3 -m pytest tests/unit/test_ingestion.py tests/unit/test_ingestion_boundaries.py tests/unit/test_ingestion_docx_html_email.py tests/unit/test_contracts.py -q` passed with 24 passed; `make lint` passed; `git diff --check` passed. | PASS | 2026-05-29 |
 
 ### Final Gate
 
@@ -110,9 +114,10 @@ Reverse chronological. Log every session.
 
 - Resumed after operator continued from the Phase 34 spec draft.
 - Completed: approved the Phase 34 spec for implementation, opened this board, pinned Phase 34 open-question resolutions, and updated active phase tracking.
+- Completed Step 1: added format-detection and contract compatibility tests for DOCX, HTML, and email, then extended `DocumentFormat` and suffix routing with no parser behavior yet.
 - Issues found: none for Phase 34 board opening.
-- Tests: board-opening verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase.
-- Next: Step 1 - add format-detection and compatibility tests.
+- Tests: board-opening verification passed as recorded above, with the known unrelated `AGENTS.md`/`CLAUDE.md` drift preserved outside this phase; Step 1 red/green, compatibility, `make lint`, and `git diff --check` verification passed as recorded above.
+- Next: Step 2 - add DOCX ingestion fixtures, adapter, metadata, layout, table, and failure handling.
 
 ---
 
