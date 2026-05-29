@@ -4,12 +4,25 @@ Running log for repository sessions and accepted phase gates.
 
 ## Current Gate
 
-- Last completed phase: Phase 33 - PDF and Table Ingestion
-- Current status: Phase 34 DOCX, HTML, and Email Ingestion implementation is complete and ready for operator acceptance.
-- Next required work: operator acceptance of Phase 34 before opening Phase 35 - Layout-Aware Chunking.
-- Next-phase context: Phase 34 should add boundary-preserving DOCX, HTML, and `.eml` ingestion without weakening generated/unmapped source-map semantics, exact extracted-text offsets, audit payload readback, or the existing PDF/text/Markdown behavior.
+- Last completed phase: Phase 34 - DOCX, HTML, and Email Ingestion
+- Current status: Phase 35 Layout-Aware Chunking is open as a spec draft.
+- Next required work: operator review and approval of `docs/specs/phase_35_layout_aware_chunking.md`, then open the Phase 35 board before implementation.
+- Next-phase context: Phase 35 should replace fixed token-window chunking with boundary-aware chunking that preserves exact `Document.text` slices, UTF-8 byte offsets, token offsets, table atomicity, chunk audit payloads, and downstream mechanical span enforcement.
 
 ## Session Log
+
+### 2026-05-29 — Phase 34 Acceptance and Phase 35 Spec Draft
+
+- Accepted Phase 34 after operator continuation.
+- Marked Phase 34 complete in `docs/boards/README.md` and updated the Phase 34 board handoff.
+- Drafted `docs/specs/phase_35_layout_aware_chunking.md` from the chunker roadmap, Phase 34 handoff, current chunker contracts, config models, audit storage, and chunker tests.
+- Opened Phase 35 as a spec draft only; no Phase 35 board was opened and no runtime/source behavior changed.
+- Preserved the known unrelated local `AGENTS.md` drift.
+- Verification:
+  - `git diff --check`
+  - `rg -n "T[B]D|T[O]DO|i[m]plement later|f[i]ll in|place[h]older|\\?\\?" docs/specs/phase_35_layout_aware_chunking.md docs/boards/README.md docs/boards/phase_34_docx_html_email_ingestion.md`
+  - `rg -n "Phase 34|Phase 35|phase_35_layout_aware_chunking.md|SPEC DRAFT|COMPLETE \\(2026-05-29\\)|ACTIVE - SPEC DRAFT" docs/boards/README.md PROGRESS.md docs/specs/phase_35_layout_aware_chunking.md docs/boards/phase_34_docx_html_email_ingestion.md`
+  - `cmp -s AGENTS.md CLAUDE.md` returned `1` because of pre-existing local `AGENTS.md` drift unrelated to this acceptance step
 
 ### 2026-05-29 — Phase 34 Step 6 Final Verification
 
